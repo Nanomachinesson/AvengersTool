@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "ui_strafedowntime.h"
-#include "Avengers.h"
 
 ui_strafedowntime::ui_strafedowntime(Avengers* avengers) :
 	avengers(avengers)

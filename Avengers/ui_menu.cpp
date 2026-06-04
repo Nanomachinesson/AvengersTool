@@ -241,6 +241,18 @@ void ui_menu::menu(Avengers* hud)
 
 	//#######################################################
 
+	//################# Misc ################################
+
+	if (ImGui::Checkbox("RPG Timer", &rpgtimer_toggle)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Show velocity on bounce", &bouncevelocity_toggle)) {
+		hud->save_configuration();
+	}
+
+	//#######################################################
+
 	//################# FPS Wheel #######################
 	if (ImGui::Checkbox("FPS Wheel", &fpswheel_toggle)) {
 		hud->save_configuration();
@@ -325,6 +337,15 @@ void ui_menu::render()
 	//Strafe downtime
 	if (strafedowntime_toggle) {
 		hud->inst_ui_strafedowntime->render();
+	}
+
+	//bounce info
+	if (rpgtimer_toggle) {
+		hud->inst_ui_bounceinfo->renderRpgTimer();
+	}
+
+	if (bouncevelocity_toggle) {
+		hud->inst_ui_bounceinfo->renderBounceVelocity();
 	}
 
 	//Draw markers

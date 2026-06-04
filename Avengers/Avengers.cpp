@@ -174,14 +174,28 @@ void Avengers::load_configuration() {
 				sscanf_s(line.c_str(), "JumpoffSpeed_bottom: %d", &value1);
 
 				inst_ui_menu->jumpoffspeed_display_bottom = value1 == 1;
-				}
+			}
 			else if (line.find("Strafedowntime:") != std::string::npos) {
 				int value1;
 				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "Strafedowntime: %d", &value1);
 
 				inst_ui_menu->strafedowntime_toggle = value1 == 1;
-				}
+			}
+			else if (line.find("rpgtimer:") != std::string::npos) {
+				int value1;
+				//Parse fps wheel boolean
+				sscanf_s(line.c_str(), "rpgtimer: %d", &value1);
+
+				inst_ui_menu->rpgtimer_toggle = value1 == 1;
+			}
+			else if (line.find("bouncevelocity:") != std::string::npos) {
+				int value1;
+				//Parse fps wheel boolean
+				sscanf_s(line.c_str(), "bouncevelocity: %d", &value1);
+
+				inst_ui_menu->bouncevelocity_toggle = value1 == 1;
+			}
 		}
 
 		config_file.close();
@@ -244,6 +258,8 @@ void Avengers::save_configuration() {
 
 		configFile << "Strafedowntime: " << inst_ui_menu->strafedowntime_toggle << "\n";
 		configFile << "JumpoffSpeed_bottom: " << inst_ui_menu->jumpoffspeed_display_bottom << "\n";
+		configFile << "rpgtimer: " << inst_ui_menu->rpgtimer_toggle << "\n";
+		configFile << "bouncevelocity: " << inst_ui_menu->bouncevelocity_toggle << "\n";
 		configFile.close();  // Close the file
 	} else {
 		std::cerr << "Error opening config file for writing\n";
@@ -271,6 +287,7 @@ Avengers::Avengers()
 	inst_ui_90_lines = std::shared_ptr<ui_90_lines>(new ui_90_lines(this));
 	inst_ui_fpswheel = std::shared_ptr<ui_fpswheel>(new ui_fpswheel(this));
 	inst_ui_strafedowntime = std::shared_ptr<ui_strafedowntime>(new ui_strafedowntime(this));
+	inst_ui_bounceinfo = std::shared_ptr<ui_bounceinfo>(new ui_bounceinfo(this));
 
 	//Added both INSERT and F6 to open the menu for people who have smaller keyboards and cant find that INSERT key ¬_¬
 	inst_input->add_callback(VK_INSERT, [this](UINT key_state) { return this->bind_toggle_input(key_state); });

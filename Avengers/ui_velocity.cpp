@@ -119,14 +119,15 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 	bool onGround = hud->inst_game->isOnGround();
 	float offset = 50.f;
 	ImVec2 position(pos.x, pos.y + offset);
+	float VELO_CUTOFF = 5.f;
 
 	float velo = hud->inst_game->get_velocity().Length2D();
 	std::string veloText;
 
-	if (onGroundLastFrame && !onGround) {
+	if (onGroundLastFrame && !onGround && velo >= VELO_CUTOFF) {
 		jumpOffVelo = velo;
 		if (hud->inst_ui_menu->jumpoffspeed_display_bottom) {
-			veloText = std::to_string(static_cast<int>(jumpOffVelo));
+			veloText = "^3Jump speed: " + std::to_string(static_cast<int>(jumpOffVelo));
 			hud->inst_game->add_obituary(veloText);
 		}
 	}

@@ -30,6 +30,8 @@ class ui_menu
 	float wheel_pixel_scale = 1.f;
 	bool lines_toggle = false;
 	bool strafedowntime_toggle = false;
+	bool rpgtimer_toggle = false;
+	bool bouncevelocity_toggle = false;
 	// Default the position to the center of the screen if there is no position in the config file
 	vec2<float> velo_pos = vec2<float>(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);
 	

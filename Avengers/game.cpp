@@ -253,7 +253,12 @@ float game::get_optimal_angle(const Lmove& lMove)
 
 bool game::isOnGround()
 {
-	return *reinterpret_cast<int*>(addr_inair) != 1023;
+	bool onGround = false;
+	pmove_t* pm = get_pmove_current();
+	if (pm && pm->ps) {
+		onGround = pm->ps->groundEntityNum != 1023;
+	}
+	return onGround;
 }
 
 int game::getJumpTime()
