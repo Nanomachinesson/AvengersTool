@@ -97,6 +97,12 @@
     <ClCompile Include="ui_jump_target.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="ui_strafedowntime.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ui_bounceinfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Avengers.h">
@@ -202,6 +208,12 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="ui_anglehelper.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_bounceinfo.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_strafedowntime.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
