@@ -60,6 +60,7 @@ public:
 	bool isOnGround();
 	static void send_command_to_console(const char* command);
 	bool world_to_screen(vec3<float> world, float* screen_x, float* screen_y);
+    int get_fps(bool adjustForSpectator = false);
 	int get_fps_wtmod();
 	int get_fps_3_xp();
 	void add_obituary(const std::string& msg);
@@ -83,7 +84,6 @@ private:
     float get_dir_diff();
     float get_dir_diff(const Lmove& lMove);
     float get_accel();
-    int get_fps();
     constexpr static float g_speed = 190.f;
 
 };

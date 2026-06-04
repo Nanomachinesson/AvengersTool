@@ -56,6 +56,10 @@ class ui_menu
 
 	bool jump_target = false;
 	vec3<float> jump_target_origin;
+	bool drawfps_toggle = false;
+	bool drawfps_spectateonly = false;
+	float fpsScale = 1.f;
+	ImVec4 fpsColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 
 	bool should_focus_next_frame = false;
 };

@@ -196,6 +196,30 @@ void Avengers::load_configuration() {
 
 				inst_ui_menu->bouncevelocity_toggle = value1 == 1;
 			}
+			else if (line.find("drawfps:") != std::string::npos) {
+				int value1;
+				//Parse fps wheel boolean
+				sscanf_s(line.c_str(), "drawfps: %d", &value1);
+
+				inst_ui_menu->drawfps_toggle = value1 == 1;
+			}
+			else if (line.find("color_fps:") != std::string::npos) {
+				// Parse color
+				sscanf_s(line.c_str(), "color_fps: %f %f %f %f", &inst_ui_menu->fpsColor.x, &inst_ui_menu->fpsColor.y, &inst_ui_menu->fpsColor.z, &inst_ui_menu->fpsColor.w);
+			}
+			else if (line.find("scale_fps:") != std::string::npos) {
+				float value1;
+				sscanf_s(line.c_str(), "scale_fps: %f", &value1);
+
+				inst_ui_menu->fpsScale = value1;
+			}
+			else if (line.find("drawfps_spectateonly:") != std::string::npos) {
+				int value1;
+				//Parse fps wheel boolean
+				sscanf_s(line.c_str(), "drawfps_spectateonly: %d", &value1);
+
+				inst_ui_menu->drawfps_spectateonly = value1 == 1;
+			}
 		}
 
 		config_file.close();
@@ -260,6 +284,11 @@ void Avengers::save_configuration() {
 		configFile << "JumpoffSpeed_bottom: " << inst_ui_menu->jumpoffspeed_display_bottom << "\n";
 		configFile << "rpgtimer: " << inst_ui_menu->rpgtimer_toggle << "\n";
 		configFile << "bouncevelocity: " << inst_ui_menu->bouncevelocity_toggle << "\n";
+		configFile << "drawfps: " << inst_ui_menu->drawfps_toggle << "\n";
+		configFile << "color_fps: " << inst_ui_menu->fpsColor.x << " " << inst_ui_menu->fpsColor.y << " " << inst_ui_menu->fpsColor.z << " " << inst_ui_menu->fpsColor.w << "\n";
+		configFile << "scale_fps: " << inst_ui_menu->fpsScale << "\n";
+		configFile << "drawfps_spectateonly: " << inst_ui_menu->drawfps_spectateonly << "\n";
+
 		configFile.close();  // Close the file
 	} else {
 		std::cerr << "Error opening config file for writing\n";

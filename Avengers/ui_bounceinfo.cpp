@@ -1,9 +1,41 @@
 #include "pch.h"
 #include "ui_bounceinfo.h"
 
+bool bouncedInProjVel = false;
+void __cdecl PM_StepSlideMove_hook(pmove_t* pm, void* pml, bool gravity)
+{
+	Avengers* hud = Avengers::get_instance();
+	bouncedInProjVel = false;
+	hud->inst_hooks->hook_map["PM_StepSlideMove"]->original(PM_StepSlideMove_hook)(pm, pml, gravity);
+}
+
+int tramp;
+
+__declspec(naked)
+void PM_ProjectVelocity()
+{
+	_asm {
+		mov bouncedInProjVel, 1
+		jmp addr_projectvelocity
+	}
+}
+
 ui_bounceinfo::ui_bounceinfo(Avengers* avengers) :
 	avengers(avengers)
 {
+	avengers->inst_hooks->Add("PM_StepSlideMove", addr_stepslidemove, PM_StepSlideMove_hook, hook_type_detour);
+
+	DWORD dwOldProtect;
+	_MEMORY_BASIC_INFORMATION mbi = { 0,0,0,0,0,0,0 };
+	VirtualQuery((LPVOID)addr_projectvelocity_in_stepslidemove, &mbi, sizeof(mbi));
+	VirtualProtect(mbi.BaseAddress, mbi.RegionSize, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+	BYTE* callInstruction = (BYTE*)addr_projectvelocity_in_stepslidemove;
+	*callInstruction = 0xE8;
+	DWORD relativeAddress = (DWORD)PM_ProjectVelocity - (DWORD)addr_projectvelocity_in_stepslidemove - 5;
+	*(DWORD*)((DWORD)addr_projectvelocity_in_stepslidemove + 1) = relativeAddress;
+
+	VirtualProtect((LPVOID)addr_projectvelocity_in_stepslidemove, 1000, dwOldProtect, &dwOldProtect);
 }
 
 ui_bounceinfo::~ui_bounceinfo()
@@ -28,12 +60,13 @@ void ui_bounceinfo::renderRpgTimer()
 	int pmFlags = pm->ps->pm_flags;
 	float velo = avengers->inst_game->get_velocity().Length2D();
 	float weaponDelay = pm->ps->weaponDelay;
-	bool bounced = false;
+	bool bounced = bouncedInProjVel && !onGround;
 	bool shotRpg = false;
 
-	if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
+	/*if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
 		bounced = true;
-	}
+	}*/
+
 	if (weaponDelay == 0.f && lastFrameWeaponDelay != 0.f && pm->ps->weaponstate != 7) {
 		shotRpg = true;
 	}
@@ -91,14 +124,14 @@ void ui_bounceinfo::renderBounceVelocity()
 	bool onGround = avengers->inst_game->isOnGround();
 	int pmFlags = pm->ps->pm_flags;
 	float velo = avengers->inst_game->get_velocity().Length2D();
-	bool bounced = false;
+	bool bounced = bouncedInProjVel && !onGround;
 
-	if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
+	/*if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
 		bounced = true;
-	}
+	}*/
 
 	if (bounced) {
-		std::string bounceVeloText = "Velocity on bounce: ^5" + std::to_string(velo);
+		std::string bounceVeloText = "Velocity on bounce: ^5" + std::to_string(velo) + " ^7z: " + "^5" + std::to_string(avengers->inst_game->get_velocity().z);
 		float veloLost = lastFrameVelo - velo;
 		if (veloLost > 0) {
 			bounceVeloText += "^7, Velocity lost: ^1" + std::to_string(veloLost);

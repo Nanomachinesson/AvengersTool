@@ -224,10 +224,16 @@ float game::get_delta_optimal(const Lmove& lMove)
 	return deltaOpt;
 }
 
-int game::get_fps()
+int game::get_fps(bool adjustForSpectator)
 {
-	cvar_t* maxFpsCvar = getCvar("com_maxfps");
-	int maxFps = maxFpsCvar->current.integer;
+	int maxFps = 0;  //TODO: make this stuff work for spectator
+	if (adjustForSpectator && is_spectating()) {
+		maxFps = get_fps_3_xp();
+	}
+	else {
+		cvar_t* maxFpsCvar = getCvar("com_maxfps");
+		maxFps = maxFpsCvar->current.integer;
+	}
 	return maxFps;
 }
 
@@ -288,7 +294,7 @@ float game::get_fov()
 {
 	cvar_t* fov = getCvar("cg_fov");
 	cvar_t* fovScale = getCvar("cg_fovScale");
-	return fov->value * fovScale->value;
+	return fov->current.value * fovScale->current.value;
 }
 
 pmove_t* game::get_pmove_current()

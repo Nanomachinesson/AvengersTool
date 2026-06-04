@@ -250,7 +250,35 @@ void ui_menu::menu(Avengers* hud)
 	if (ImGui::Checkbox("Show velocity on bounce", &bouncevelocity_toggle)) {
 		hud->save_configuration();
 	}
+	/*
+	if (ImGui::Checkbox("Draw FPS", &drawfps_toggle)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	if (ImGui::SliderFloat("##Scale", &fpsScale, 0.3f, 2.5f)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	ImGui::ColorButton("FPS color", fpsColor);
 
+	if (ImGui::IsItemClicked()) {
+		ImGui::OpenPopup("FpsColorPopup");
+	}
+
+	if (ImGui::BeginPopup("FpsColorPopup")) {
+		ImGui::ColorPicker4("Fps color picker", &fpsColor.x);
+
+		ImGui::EndPopup();
+
+		hud->save_configuration();
+	}
+
+
+	ImGui::Indent(50.f);
+	if (ImGui::Checkbox("Only while spectating", &drawfps_spectateonly)) {
+		hud->save_configuration();
+	}
+	ImGui::Indent(-50.f);*/
 	//#######################################################
 
 	//################# FPS Wheel #######################
@@ -304,6 +332,24 @@ void ui_menu::render()
 
 		hud->save_configuration();
 	}
+
+
+	/* WIP
+	if (drawfps_toggle && hud->inst_game->is_connected()) {
+		if ((drawfps_spectateonly && hud->inst_game->is_spectating()) || !drawfps_spectateonly) {
+			ImGui::SetNextWindowSize(ImVec2(500, 500));
+			ImGui::Begin("FPS", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
+			ImGui::SetWindowFontScale(fpsScale);
+			std::string fps = std::to_string(hud->inst_game->get_fps(true));
+
+			ImGui::PushStyleColor(ImGuiCol_Text, fpsColor);
+			ImGui::Text(fps.c_str());
+			ImGui::PopStyleColor();
+
+			ImGui::SetWindowFontScale(1.f);
+			ImGui::End();
+		}
+	}*/
 
 	//Render speedometer
 	if ((velo_meter || sep_velo) && hud->inst_game->is_connected())
