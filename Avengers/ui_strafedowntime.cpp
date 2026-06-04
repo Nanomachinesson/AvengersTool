@@ -27,7 +27,7 @@ void ui_strafedowntime::render()
 	bool didAccelerate = velocity > lastFrameVelocity;
 	std::chrono::time_point now = std::chrono::system_clock::now();
 
-	if (!inst_game->isOnGround() && velocity > VELO_CUTOFF) {
+	if (!inst_game->isOnGround() && velocity > VELO_CUTOFF && !inst_game->is_spectating() && !inst_game->is_noclipping()) {
 		if (keysPressed != keysPressedLastFrame) {
 			measuringSwitch = true;
 		}

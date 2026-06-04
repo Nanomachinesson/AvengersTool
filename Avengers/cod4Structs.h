@@ -2,10 +2,19 @@
 #ifndef CODSTRUCTS_H
 #define CODSTRUCTS_H
 
-#include "Avengers.h"
 #include "windows.h"
+#include "vectors.h"
 
-#pragma once
+#define PM_NORMAL				0x0
+#define PM_NORMAL_LINKED		0x1
+#define PM_NOCLIP				0x2
+#define PM_UFO					0x3
+#define PM_SPEC					0x4
+#define PM_INTERMISSION			0x5
+#define PM_LASTSTAND			0x6
+#define PM_DEAD					0x7
+#define PM_DEAD_LINKED			0x8
+
 enum team_t
 {
     TEAM_FREE = 0x0,
@@ -195,6 +204,7 @@ struct playerState_t // adress is 0x00794474
     int KillCamEntity; //0x08A0
     char _0x08A4[0x26C0]; //hudelems cba to reverse rn
 }; //Size=0x2F64
+
 struct trajectory_t
 {
     int Type; //0x0000

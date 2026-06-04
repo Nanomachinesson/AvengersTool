@@ -193,6 +193,31 @@ float game::get_fov()
 	return fov->value * fovScale->value;
 }
 
+pmove_t* game::get_pmove_current()
+{
+	return reinterpret_cast<pmove_t*>(addr_pMove_current);
+}
+
+bool game::is_spectating()
+{
+	pmove_t* pm = get_pmove_current();
+	bool nocliping = false;
+	if (pm->ps) {
+		nocliping = pm->ps->pm_type & PM_SPEC;
+	}
+	return nocliping;
+}
+
+bool game::is_noclipping()
+{
+	pmove_t* pm = get_pmove_current();
+	bool nocliping = false;
+	if (pm->ps) {
+		nocliping = pm->ps->pm_type & PM_NOCLIP;
+	}
+	return nocliping;
+}
+
 cvar_t* game::getCvar(const char* name)
 {
 	DWORD addr = 0x56b5d0;

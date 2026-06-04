@@ -82,6 +82,9 @@ public:
 	mem::function<void(int count, int width, GfxPointVertex* verts, bool depthTest)> polyline = 0x613040;
     Lmove get_lmove();
 	float get_fov();
+	pmove_t* get_pmove_current();
+	bool is_spectating();
+	bool is_noclipping();
 	cvar_t* getCvar(const char* name);
 
 private:

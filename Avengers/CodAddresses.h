@@ -18,6 +18,7 @@ constexpr int addr_maxfps = 0x0CBAB8AC;  //float
 constexpr int addr_engine_draw = 0x658860;
 constexpr int addr_writeableAngles = 0x00C84FD8;
 constexpr int addr_deltaAngles = 0x0074E3D0;
+constexpr int addr_pMove_current = 0x008C9C90;
 
 
 #endif
