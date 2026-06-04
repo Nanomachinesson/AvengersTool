@@ -71,6 +71,7 @@ public:
     vec3<float> get_origin();
     vec3<float> get_velocity();
     float get_optimal_angle();
+    float get_optimal_angle(const Lmove& lMove);
 	bool isOnGround();
 	static void send_command_to_console(const char* command);
 	bool world_to_screen(vec3<float> world, float* screen_x, float* screen_y);
@@ -80,7 +81,7 @@ public:
 	int getJumpTime();
     vec2<float> get_screen_res();
 	mem::function<void(int count, int width, GfxPointVertex* verts, bool depthTest)> polyline = 0x613040;
-    Lmove get_lmove();
+    Lmove get_lmove(bool adjustForSpectator = false);
 	float get_fov();
 	pmove_t* get_pmove_current();
 	bool is_spectating();
@@ -90,9 +91,12 @@ public:
 private:
     vec3<float> get_delta_angles();
     float get_delta();
+    float get_delta(const Lmove& lMove);
     float get_delta_optimal();
+    float get_delta_optimal(const Lmove& lMove);
     float get_velocity_angle();
     float get_dir_diff();
+    float get_dir_diff(const Lmove& lMove);
     float get_accel();
     int get_fps();
     constexpr static float g_speed = 190.f;

@@ -32,10 +32,18 @@ vec3<float> game::get_view()
 	vec3<float> deltaAngles = *reinterpret_cast<vec3<float>*>(addr_deltaAngles);
 	vec3<float> cameraAngles = *reinterpret_cast<vec3<float>*>(addr_writeableAngles);
 	vec3<float> normalized;
+	pmove_t* pm = get_pmove_current();
 
-	normalized.x = mm::normalise(cameraAngles.x + deltaAngles.x, 0.f, 360.f);
-	normalized.y = mm::normalise(cameraAngles.y + deltaAngles.y, 0.f, 360.f);
-	normalized.z = mm::normalise(cameraAngles.z + deltaAngles.z, 0.f, 360.f);
+	if (!is_spectating()) {
+		normalized.x = mm::normalise(cameraAngles.x + deltaAngles.x, 0.f, 360.f);
+		normalized.y = mm::normalise(cameraAngles.y + deltaAngles.y, 0.f, 360.f);
+		normalized.z = mm::normalise(cameraAngles.z + deltaAngles.z, 0.f, 360.f);
+	}
+	else if (pm && pm->ps) {
+		normalized.x = mm::normalise(pm->ps->viewangles[0], 0.f, 360.f);
+		normalized.y = mm::normalise(pm->ps->viewangles[1], 0.f, 360.f);
+		normalized.z = mm::normalise(pm->ps->viewangles[2], 0.f, 360.f);
+	}
 
 	return normalized;
 }
@@ -64,10 +72,16 @@ vec3<float> game::get_velocity()
 
 float game::get_dir_diff()
 {
-	Lmove lMove = get_lmove();
+	return get_dir_diff(get_lmove(true));
+}
 
+float game::get_dir_diff(const Lmove& lMove)
+{
 	if (lMove.isForward) {
 		return (lMove.isRight) ? -45.f : 45.f;
+	}
+	else if (lMove.isBack) {
+		return 180.f;
 	}
 	else {
 		return (lMove.isRight) ? -90.f : +90.f;
@@ -76,12 +90,16 @@ float game::get_dir_diff()
 	return 0;
 }
 
-Lmove game::get_lmove()
+Lmove game::get_lmove(bool adjustForSpectator)
 {
 	using namespace mm;
 	input_s* input = (input_s*)addr_usercmd;
 	usercmd_s* cmd = input->GetUserCmd(input->currentCmdNum);
 	Lmove lMove;
+	static Lmove prevLmove {};
+
+	static float prevYaw = 0.f;
+	float yaw = get_view().y;
 
 	lMove.isInAir = *reinterpret_cast<int*>(addr_inair) == 1023 ? true : false;
 	lMove.isSprint = *reinterpret_cast<int*>(addr_sprint) >= 20 || *reinterpret_cast<int*>(addr_sprint) == 5 ? true : false;
@@ -110,22 +128,77 @@ Lmove game::get_lmove()
 		lMove.isRight = false;
 	}
 
+
+	float CHANGE_TOLERANCE = 4.f;
+	float MINIMUM_VELO = 200.f;
+	if (adjustForSpectator && game::is_spectating() && fabsf(yaw - prevYaw) <= CHANGE_TOLERANCE && get_velocity().Length2D() >= MINIMUM_VELO) {
+		if (yaw > prevYaw) {
+			lMove.isLeft = true;
+			lMove.isRight = false;
+		}
+		else if (yaw < prevYaw) {
+			lMove.isLeft = false;
+			lMove.isRight = true;
+		}
+		else {
+			lMove.isRight = prevLmove.isRight;
+			lMove.isLeft = prevLmove.isLeft;
+		}
+
+		Lmove forwardLmove = lMove;
+		Lmove noForwardLmove = lMove;
+		Lmove backMove = lMove;
+		forwardLmove.isForward = true;
+		noForwardLmove.isForward = false;
+		backMove.isForward = false;
+		backMove.isLeft = false;
+		backMove.isRight = false;
+		backMove.isBack = true;
+
+		float optimalAngleForward = get_optimal_angle(forwardLmove);
+		float optimalAngleNoForward = get_optimal_angle(noForwardLmove);
+		float optimalAngleBack = get_optimal_angle(backMove);
+
+		float forwardDiff = fabsf(yaw - optimalAngleForward);
+		float noForwardDiff = fabsf(yaw - optimalAngleNoForward);
+		float backDiff = fabsf(yaw - optimalAngleBack);
+
+		if (forwardDiff <= noForwardDiff && forwardDiff <= backDiff) {
+			lMove.isForward = true;
+			lMove.isBack = false;
+		}
+		else if (noForwardDiff <= forwardDiff && noForwardDiff <= backDiff) {
+			lMove.isForward = false;
+			lMove.isBack = false;
+		}
+		else {
+			lMove.isForward = false;
+			lMove.isBack = true;
+		}
+	}
+
+	prevYaw = yaw;
+	prevLmove = lMove;
 	return lMove;
 }
 
 float game::get_velocity_angle()
 {
 	using namespace mm;
-	vec3<float> velocity = *reinterpret_cast<vec3<float>*>(addr_velocity);
+	vec3<float> velocity = get_velocity();
 	return normalise(tilt_angle(truncate_vector(get_velocity())), 0.f, 360.f);
 }
 
 float game::get_delta()
 {
-	float accelAngle = 0.f;
-	get_view();
+	return get_delta(get_lmove(true));
+}
 
-	accelAngle = mm::normalise(get_view().y + get_dir_diff(), 0.f, 360.f);
+float game::get_delta(const Lmove& lMove)
+{
+	float accelAngle = 0.f;
+
+	accelAngle = mm::normalise(get_view().y + get_dir_diff(lMove), 0.f, 360.f);
 
 	float delta = get_velocity_angle() - accelAngle;
 	return mm::normalise(delta, -180.f, 180.f);
@@ -133,19 +206,22 @@ float game::get_delta()
 
 float game::get_delta_optimal()
 {
+	return get_delta_optimal(get_lmove(true));
+}
+
+float game::get_delta_optimal(const Lmove& lMove)
+{
 	constexpr float g_speed = 190.f;
 
-	Lmove lMove = get_lmove();
 	float speed = get_velocity().Length2D();
 	float deltaOpt = mm::to_degrees(acosf((g_speed - get_accel()) / speed));
 
-	if (get_lmove().isLeft)
+	if (lMove.isLeft)
 	{
 		deltaOpt *= -1.f;
 	}
 
-	return deltaOpt;
-}
+	return deltaOpt;}
 
 int game::get_fps()
 {
@@ -160,8 +236,13 @@ float game::get_accel()
 
 float game::get_optimal_angle()
 {
-	float delta = get_delta();
-	float deltaOptimal = get_delta_optimal();
+	return get_optimal_angle(get_lmove(true));
+}
+
+float game::get_optimal_angle(const Lmove& lMove)
+{
+	float delta = get_delta(lMove);
+	float deltaOptimal = get_delta_optimal(lMove);
 
 	float yaw = get_view().y;
 
@@ -211,11 +292,11 @@ pmove_t* game::get_pmove_current()
 bool game::is_spectating()
 {
 	pmove_t* pm = get_pmove_current();
-	bool nocliping = false;
+	bool spectating = false;
 	if (pm->ps) {
-		nocliping = pm->ps->pm_type & PM_SPEC;
+		spectating = pm->ps->otherFlags & PMF_FOLLOW;
 	}
-	return nocliping;
+	return spectating;
 }
 
 bool game::is_noclipping()

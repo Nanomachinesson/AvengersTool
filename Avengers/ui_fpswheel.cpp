@@ -63,7 +63,7 @@ void ui_fpswheel::render(Avengers* hud)
 		float zonex = zone.x;
 		float zoney = zone.y;
 
-		Lmove lmove = hud->inst_game->get_lmove();
+		Lmove lmove = hud->inst_game->get_lmove(true);
 
 		if (!lmove.isForward) {
 			if (lmove.isRight) {

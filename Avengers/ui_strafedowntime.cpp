@@ -15,7 +15,7 @@ void ui_strafedowntime::render()
 {
 	std::shared_ptr<game> inst_game = avengers->inst_game;
 
-	Lmove lmove = inst_game->get_lmove();
+	Lmove lmove = inst_game->get_lmove(true);
 	static int keysPressedLastFrame = 0;
 	static float lastFrameVelocity = 0.f;
 	static std::chrono::time_point lastAccelerationPoint = std::chrono::system_clock::now();

@@ -5,7 +5,6 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 {
 	vec2<float> screen;
 	vec2<float> center(hud->inst_game->get_screen_res().x / 2, hud->inst_game->get_screen_res().y / 2);
-	float fpsWheelPos = hud->inst_game->get_screen_res().y / 2 + hud->inst_ui_menu->fpswheel_offset_y;
 	float yaw = hud->inst_game->get_view().y;
 	float optAngle = hud->inst_game->get_optimal_angle();
 	float fov = hud->inst_game->get_fov();

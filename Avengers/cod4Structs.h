@@ -14,6 +14,7 @@
 #define PM_LASTSTAND			0x6
 #define PM_DEAD					0x7
 #define PM_DEAD_LINKED			0x8
+#define PMF_FOLLOW  			0x2
 
 enum team_t
 {
