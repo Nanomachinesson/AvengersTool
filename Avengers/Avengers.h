@@ -21,6 +21,7 @@
 #include "ui_menu.h"
 #include "ui_position_marker.h"
 #include "ui_fpswheel.h"
+#include "ui_strafedowntime.h"
 
 extern "C" {
 	bool __declspec(dllexport) __stdcall RIB_Main(int a, int b);
@@ -52,6 +53,7 @@ public:
 	std::shared_ptr<ui_jump_target> inst_ui_jump_target;
 	std::shared_ptr<ui_90_lines> inst_ui_90_lines;
 	std::shared_ptr<ui_fpswheel> inst_ui_fpswheel;
+	std::shared_ptr<ui_strafedowntime> inst_ui_strafedowntime;
 
 	ImFont* toxic_font;
 	ImFont* sep_font;

@@ -12,6 +12,7 @@ class ui_menu
 	bool demoplayer_menu = false;
 	bool show_position = false;
 	bool velo_meter = false;
+	bool draw_jumpoff_speed = false;
 	bool sep_velo = false;
 	ImVec4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
 	ImVec4 lines_color = { 0.0f, 1.0f, 0.0f, 1.0f };
@@ -27,6 +28,7 @@ class ui_menu
 	float wheel_ah_pixel_scale = 1.f;
 	float wheel_pixel_scale = 1.f;
 	bool lines_toggle = false;
+	bool strafedowntime_toggle = false;
 	// Default the position to the center of the screen if there is no position in the config file
 	vec2<float> velo_pos = vec2<float>(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);
 	

@@ -88,6 +88,14 @@ void ui_menu::menu(Avengers* hud)
 	{
 		hud->save_configuration();
 	}
+
+	if (ImGui::Checkbox("Jumpoff speed", &draw_jumpoff_speed)) {
+		hud->save_configuration();
+	}
+
+	if (ImGui::Checkbox("Strafe downtime", &strafedowntime_toggle)) {
+		hud->save_configuration();
+	}
 	//#######################################################
 
 	//################# JUMP TARGET ########################
@@ -278,6 +286,11 @@ void ui_menu::render()
 		hud->inst_ui_velocity->render(hud, lock_velo_pos, velo_pos, velo_scale, color);
 	}
 
+	if ((velo_meter || sep_velo) && draw_jumpoff_speed && hud->inst_game->is_connected()) {
+		ImVec4 color(0.9f, 0.3f, 0.75f, 1.f);
+		hud->inst_ui_velocity->render_jumpoff_speed(hud, velo_pos, velo_scale, color);
+	}
+
 	//Render anglehelper
 	if (anglehelper_toggle && hud->inst_game->is_connected())
 	{
@@ -294,6 +307,11 @@ void ui_menu::render()
 	if(jump_target && hud->inst_game->is_connected())
 	{
 		hud->inst_ui_jump_target->render();
+	}
+
+	//Strafe downtime
+	if (strafedowntime_toggle) {
+		hud->inst_ui_strafedowntime->render();
 	}
 
 	//Draw markers

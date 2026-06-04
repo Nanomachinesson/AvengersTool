@@ -603,4 +603,103 @@ struct input_s // don't really know the type
     }
 };
 
+enum MapType
+{
+    MAPTYPE_NONE = 0x0,
+    MAPTYPE_INVALID1 = 0x1,
+    MAPTYPE_INVALID2 = 0x2,
+    MAPTYPE_2D = 0x3,
+    MAPTYPE_3D = 0x4,
+    MAPTYPE_CUBE = 0x5,
+    MAPTYPE_COUNT = 0x6,
+};
+
+struct GfxImageLoadDef
+{
+    char levelCount;
+    char flags;
+    __int16 dimensions[3];
+    int format;
+    int resourceSize;
+    char data[1];
+};
+union GfxTexture
+{
+    /*IDirect3DBaseTexture9 *basemap;
+    IDirect3DTexture9 *map;
+    IDirect3DVolumeTexture9 *volmap;
+    IDirect3DCubeTexture9 *cubemap;*/
+    GfxImageLoadDef* loadDef;
+    void* data;
+};
+
+struct Picmip
+{
+    char platform[2];
+};
+
+struct CardMemory
+{
+    int platform[2];
+};
+
+struct GfxImage
+{
+    MapType mapType;
+    GfxTexture texture;
+    Picmip picmip;
+    bool noPicmip;
+    char semantic;
+    char track;
+    CardMemory cardMemory;
+    unsigned __int16 width;
+    unsigned __int16 height;
+    unsigned __int16 depth;
+    char category;
+    bool delayLoadPixels;
+    const char* name;
+};
+
+struct __declspec(align(8)) GfxCmdBufInput
+{
+    float consts[58][4];
+    GfxImage* codeImages[27];
+    char codeImageSamplerStates[27];
+    void* data;
+};
+
+struct GfxMatrix
+{
+    float m[4][4];
+};
+
+struct GfxCodeMatrices
+{
+    GfxMatrix matrix[32];
+};
+
+struct GfxViewParms
+{
+    GfxMatrix viewMatrix;
+    GfxMatrix projectionMatrix;
+    GfxMatrix viewProjectionMatrix;
+    GfxMatrix inverseViewProjectionMatrix;
+    float origin[4];
+    float axis[3][3];
+    float depthHackNearClip;
+    float zNear;
+    float zFar;
+};
+
+#pragma warning( push )
+#pragma warning( disable : 4324 )
+struct __declspec(align(16)) GfxCmdBufSourceState
+{
+    GfxCodeMatrices matrices;
+    GfxCmdBufInput input;
+    GfxViewParms viewParms;
+    GfxMatrix shadowLookupMatrix;
+};
+#pragma warning( pop )
+
 #endif

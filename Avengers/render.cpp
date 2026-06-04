@@ -101,7 +101,7 @@ void imgui_easy_theming(ImVec4 color_for_text, ImVec4 color_for_head, ImVec4 col
 }
 
 
-void SetupImGuiStyle2()
+void render::SetupImGuiStyle2()
 {
 	static ImVec4 color_for_text = ImVec4(.92f, .94f, .94f, 0);
 	static ImVec4 color_for_head = ImVec4(ImColor(65, 60, 73, 255).Value);
@@ -122,11 +122,10 @@ void SetupImGuiStyle2()
 	ImGui::GetStyle().AntiAliasedLines = true;
 	
 
-	static bool first_run = true;
-	if (first_run)
+	if (first_run_style)
 	{
 		imgui_easy_theming(color_for_text, color_for_head, color_for_area, color_for_body, color_for_pops);
-		first_run = false;
+		first_run_style = false;
 	}
 
 }
@@ -135,6 +134,13 @@ void render::init_imgui(LPDIRECT3DDEVICE9 dev)
 {
 	if (!imgui_initialized)
 	{
+		if (ImGui::GetCurrentContext()) {
+			ImGui_ImplDX9_Shutdown();
+			ImGui_ImplWin32_Shutdown();
+			ImGui::DestroyContext();
+			first_run_style = true;
+		}
+
 		Avengers* hud = Avengers::get_instance();
 		
 		ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -146,8 +152,10 @@ void render::init_imgui(LPDIRECT3DDEVICE9 dev)
 		ImGui_ImplWin32_Init(Avengers::get_instance()->inst_game->get_window());
 		ImGui_ImplDX9_Init(dev);
 
-		hud->toxic_font = io.Fonts->AddFontFromMemoryTTF((void*)(_acbahnschrift), sizeof(_acbahnschrift) - 1, 24.f);
-		hud->sep_font = io.Fonts->AddFontFromMemoryTTF((void*)(_acawesomefont1), sizeof(_acawesomefont1) - 1, 24.f);
+		ImFontConfig fontConfig;
+		fontConfig.FontDataOwnedByAtlas = false;
+		hud->toxic_font = io.Fonts->AddFontFromMemoryTTF((void*)(_acbahnschrift), sizeof(_acbahnschrift) - 1, 24.f, &fontConfig);
+		hud->sep_font = io.Fonts->AddFontFromMemoryTTF((void*)(_acawesomefont1), sizeof(_acawesomefont1) - 1, 24.f, &fontConfig);
 		
 		ImGui_ImplDX9_CreateDeviceObjects();
 		imgui_initialized = true;

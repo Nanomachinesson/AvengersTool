@@ -111,6 +111,44 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	ImGui::End();
 }
 
+void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& scale, ImVec4& color)
+{
+	ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
+	static bool onGroundLastFrame = true;
+	static float jumpOffVelo = 0.0f;
+	bool onGround = hud->inst_game->isOnGround();
+	float offset = 50.f;
+	ImVec2 position(pos.x, pos.y + offset);
+
+	ImGui::Begin("Jumpoff velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
+
+	float velo = hud->inst_game->get_velocity().Length2D();
+
+	if (onGroundLastFrame && !onGround) {
+		jumpOffVelo = velo;
+	}
+
+	std::string veloText = std::to_string(static_cast<int>(jumpOffVelo));
+
+	ImGui::SetWindowFontScale(scale);
+	if (hud->inst_ui_menu->sep_velo) {
+		ImGui::PushFont(hud->sep_font);
+	}
+	else {
+		ImGui::PushFont(hud->toxic_font);
+	}
+
+	ImGui::SetWindowFontScale(scale);
+
+	draw_list->AddText(position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
+
+	ImGui::SetWindowFontScale(1.f);
+	onGroundLastFrame = onGround;
+
+	ImGui::PopFont();
+	ImGui::End();
+}
+
 ui_velocity::ui_velocity(Avengers* hud)
 {
 	
