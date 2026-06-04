@@ -17,6 +17,107 @@
 #define PMF_FOLLOW  			0x2
 #define PMF_JUMPING             0x4000
 
+/*https://github.com/kejjjjj/1_kej/blob/master/1_kej/dvar.hpp*/
+
+enum dvar_flags : std::uint16_t
+{
+    none = 0x0,
+    saved = 0x1,
+    user_info = 0x2, // sent to server on connect or change
+    server_info = 0x4, // sent in response to front end requests
+    replicated = 0x8,
+    write_protected = 0x10,
+    latched = 0x20,
+    read_only = 0x40,
+    cheat_protected = 0x80,
+    temp = 0x100,
+    no_restart = 0x400, // do not clear when a cvar_restart is issued
+    user_created = 0x4000, // created by a set command
+};
+
+union DvarLimits
+{
+    struct
+    {
+        int stringCount;
+        const char** strings;
+    } enumeration;
+
+    struct
+    {
+        int min;
+        int max;
+    } integer;
+
+    struct
+    {
+        float min;
+        float max;
+    } value;
+
+    struct
+    {
+        float min;
+        float max;
+    } vector;
+};
+
+union DvarValue
+{
+    bool enabled;
+    int integer;
+    unsigned int unsignedInt;
+    float value;
+    float vector[4];
+    const char* string;
+    char color[4];
+};
+
+enum DvarType
+{
+    DVAR_TYPE_BOOL = 0x0,
+    DVAR_TYPE_FLOAT = 0x1,
+    DVAR_TYPE_FLOAT_2 = 0x2,
+    DVAR_TYPE_FLOAT_3 = 0x3,
+    DVAR_TYPE_FLOAT_4 = 0x4,
+    DVAR_TYPE_INT = 0x5,
+    DVAR_TYPE_ENUM = 0x6,
+    DVAR_TYPE_STRING = 0x7,
+    DVAR_TYPE_COLOR = 0x8,
+    DVAR_TYPE_COUNT = 0x9,
+};
+
+enum class dvar_type : std::int8_t
+{
+    boolean = 0,
+    value = 1,
+    vec2 = 2,
+    vec3 = 3,
+    vec4 = 4,
+    integer = 5,
+    enumeration = 6,
+    string = 7,
+    color = 8,
+    rgb = 9 // Color without alpha
+};
+
+struct cvar_t
+{
+    const char* name;
+    const char* description;
+    //unsigned __int16 flags;
+    dvar_flags flags;
+    //char type;
+    dvar_type type;
+    bool modified;
+    DvarValue current;
+    DvarValue latched;
+    DvarValue reset;
+    DvarLimits domain;
+    bool(__cdecl* domainFunc)(cvar_t*, DvarValue);
+    cvar_t* hashNext;
+};
+
 enum team_t
 {
     TEAM_FREE = 0x0,

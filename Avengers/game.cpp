@@ -101,7 +101,7 @@ Lmove game::get_lmove(bool adjustForSpectator)
 	static float prevYaw = 0.f;
 	float yaw = get_view().y;
 
-	lMove.isInAir = *reinterpret_cast<int*>(addr_inair) == 1023 ? true : false;
+	lMove.isInAir = !Avengers::get_instance()->inst_game->isOnGround();
 	lMove.isSprint = *reinterpret_cast<int*>(addr_sprint) >= 20 || *reinterpret_cast<int*>(addr_sprint) == 5 ? true : false;
 	lMove.isMoving = fabsf(get_velocity().Length2D()) > 0 ? true : false;
 	lMove.fullLean = *reinterpret_cast<float*>(addr_lean) >= 0.5f || *reinterpret_cast<float*>(addr_lean) >= 0.25f ? true : false;
@@ -221,11 +221,13 @@ float game::get_delta_optimal(const Lmove& lMove)
 		deltaOpt *= -1.f;
 	}
 
-	return deltaOpt;}
+	return deltaOpt;
+}
 
 int game::get_fps()
 {
-	int maxFps = *reinterpret_cast<int*>(addr_maxfps);
+	cvar_t* maxFpsCvar = getCvar("com_maxfps");
+	int maxFps = maxFpsCvar->current.integer;
 	return maxFps;
 }
 
