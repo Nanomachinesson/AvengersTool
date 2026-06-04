@@ -7,6 +7,11 @@ void ui_menu::menu(Avengers* hud)
 {
 	ImGui::Begin("Avengers Helper");
 
+	if (should_focus_next_frame) {
+		ImGui::SetWindowFocus();
+		should_focus_next_frame = false;
+	}
+
 	//################ Demoplayer menu toggle ###############
 	if(ImGui::Button("Demo Player"))
 	{
@@ -234,6 +239,9 @@ void ui_menu::menu(Avengers* hud)
 	//################# FPS Wheel #######################
 	if (ImGui::Checkbox("FPS Wheel", &fpswheel_toggle)) {
 		hud->save_configuration();
+		if (fpswheel_toggle) {
+			should_focus_next_frame = true;
+		}
 	}
 
 	if (ImGui::SliderFloat("FPS Wheel height", &fpswheel_size, 1.f, 100.f)) {

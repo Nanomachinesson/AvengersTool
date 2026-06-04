@@ -53,5 +53,7 @@ class ui_menu
 
 	bool jump_target = false;
 	vec3<float> jump_target_origin;
+
+	bool should_focus_next_frame = false;
 };
 

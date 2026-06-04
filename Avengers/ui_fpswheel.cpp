@@ -135,7 +135,7 @@ void ui_fpswheel::render(Avengers* hud)
 		ImVec2 windowSize(hud->inst_game->get_screen_res().x * hud->inst_ui_menu->fpswheel_offset_x + 5, hud->inst_game->get_screen_res().y);
 		ImGui::SetNextWindowSize(windowSize);
 		ImGui::SetNextWindowPos(ImVec2(center.x - windowSize.x / 2, center.y - windowSize.y / 2));
-		ImGui::Begin("FPSWheel", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
+		ImGui::Begin("FPSWheel", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
 
 		ImGui::SetWindowFontScale(0.80f + hud->inst_ui_menu->fpswheel_size / 100.f);
 
