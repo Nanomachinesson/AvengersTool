@@ -13,6 +13,7 @@ class ui_menu
 	bool show_position = false;
 	bool velo_meter = false;
 	bool draw_jumpoff_speed = false;
+	bool jumpoffspeed_display_bottom = false;
 	bool sep_velo = false;
 	ImVec4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
 	ImVec4 lines_color = { 0.0f, 1.0f, 0.0f, 1.0f };

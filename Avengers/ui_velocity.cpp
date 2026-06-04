@@ -120,33 +120,40 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 	float offset = 50.f;
 	ImVec2 position(pos.x, pos.y + offset);
 
-	ImGui::Begin("Jumpoff velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
-
 	float velo = hud->inst_game->get_velocity().Length2D();
+	std::string veloText;
 
 	if (onGroundLastFrame && !onGround) {
 		jumpOffVelo = velo;
+		if (hud->inst_ui_menu->jumpoffspeed_display_bottom) {
+			veloText = std::to_string(static_cast<int>(jumpOffVelo));
+			hud->inst_game->add_obituary(veloText);
+		}
+	}
+	veloText = std::to_string(static_cast<int>(jumpOffVelo));
+
+	if (hud->inst_ui_menu->draw_jumpoff_speed) {
+		ImGui::Begin("Jumpoff velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
+
+		ImGui::SetWindowFontScale(scale);
+		if (hud->inst_ui_menu->sep_velo) {
+			ImGui::PushFont(hud->sep_font);
+		}
+		else {
+			ImGui::PushFont(hud->toxic_font);
+		}
+
+		ImGui::SetWindowFontScale(scale);
+
+		draw_list->AddText(position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
+
+		ImGui::SetWindowFontScale(1.f);
+
+		ImGui::PopFont();
+		ImGui::End();
 	}
 
-	std::string veloText = std::to_string(static_cast<int>(jumpOffVelo));
-
-	ImGui::SetWindowFontScale(scale);
-	if (hud->inst_ui_menu->sep_velo) {
-		ImGui::PushFont(hud->sep_font);
-	}
-	else {
-		ImGui::PushFont(hud->toxic_font);
-	}
-
-	ImGui::SetWindowFontScale(scale);
-
-	draw_list->AddText(position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
-
-	ImGui::SetWindowFontScale(1.f);
 	onGroundLastFrame = onGround;
-
-	ImGui::PopFont();
-	ImGui::End();
 }
 
 ui_velocity::ui_velocity(Avengers* hud)

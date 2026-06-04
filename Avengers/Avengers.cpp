@@ -168,6 +168,13 @@ void Avengers::load_configuration() {
 
 				inst_ui_menu->draw_jumpoff_speed = value1 == 1;
 			}
+			else if (line.find("JumpoffSpeed_bottom:") != std::string::npos) {
+				int value1;
+				//Parse fps wheel boolean
+				sscanf_s(line.c_str(), "JumpoffSpeed_bottom: %d", &value1);
+
+				inst_ui_menu->jumpoffspeed_display_bottom = value1 == 1;
+				}
 			else if (line.find("Strafedowntime:") != std::string::npos) {
 				int value1;
 				//Parse fps wheel boolean
@@ -236,6 +243,7 @@ void Avengers::save_configuration() {
 		}
 
 		configFile << "Strafedowntime: " << inst_ui_menu->strafedowntime_toggle << "\n";
+		configFile << "JumpoffSpeed_bottom: " << inst_ui_menu->jumpoffspeed_display_bottom << "\n";
 		configFile.close();  // Close the file
 	} else {
 		std::cerr << "Error opening config file for writing\n";

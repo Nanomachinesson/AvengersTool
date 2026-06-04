@@ -98,6 +98,11 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Display bottom left", &jumpoffspeed_display_bottom)) {
+		hud->save_configuration();
+	}
+
 	if (ImGui::Checkbox("Strafe downtime", &strafedowntime_toggle)) {
 		hud->save_configuration();
 	}
@@ -294,7 +299,7 @@ void ui_menu::render()
 		hud->inst_ui_velocity->render(hud, lock_velo_pos, velo_pos, velo_scale, color);
 	}
 
-	if ((velo_meter || sep_velo) && draw_jumpoff_speed && hud->inst_game->is_connected()) {
+	if ((velo_meter || sep_velo) && (draw_jumpoff_speed || jumpoffspeed_display_bottom) && hud->inst_game->is_connected()) {
 		ImVec4 color(0.9f, 0.3f, 0.75f, 1.f);
 		hud->inst_ui_velocity->render_jumpoff_speed(hud, velo_pos, velo_scale, color);
 	}
