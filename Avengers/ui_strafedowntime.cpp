@@ -48,7 +48,9 @@ void ui_strafedowntime::render()
 				}
 
 				std::string switchText = "^5Switchtime: " + switchtimeColor + std::to_string(switchTime) + "ms";
-				inst_game->add_obituary(switchText);
+				if (switchTime < MAX_SWITCHTIME_CUTOFF) {
+					inst_game->add_obituary(switchText);
+				}
 				measuringSwitch = false;
 			}
 
