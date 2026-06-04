@@ -42,14 +42,24 @@ vec3<float> game::get_view()
 
 vec3<float> game::get_origin()
 {
-	vec3<float> pos = *(vec3<float>*)addr_position;
-	return pos;
+	pmove_t* pm = get_pmove_current();
+	vec3<float> origin{};
+	if (pm && pm->ps) {
+		origin = pm->ps->origin;
+	}
+
+	return origin;
 }
 
 vec3<float> game::get_velocity()
 {
-	vec3<float> vel = *(vec3<float>*)addr_velocity;
-	return vel;
+	pmove_t* pm = get_pmove_current();
+	vec3<float> velocity{};
+	if (pm && pm->ps) {
+		velocity = pm->ps->velocity;
+	}
+
+	return velocity;
 }
 
 float game::get_dir_diff()
