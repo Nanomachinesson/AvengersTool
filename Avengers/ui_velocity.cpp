@@ -113,7 +113,6 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& scale, ImVec4& color)
 {
-	ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 	static bool onGroundLastFrame = true;
 	static float jumpOffVelo = 0.0f;
 	bool onGround = hud->inst_game->isOnGround();
@@ -135,6 +134,7 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 
 	if (hud->inst_ui_menu->draw_jumpoff_speed) {
 		ImGui::Begin("Jumpoff velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
+		ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
 		ImGui::SetWindowFontScale(scale);
 		if (hud->inst_ui_menu->sep_velo) {

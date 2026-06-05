@@ -73,6 +73,7 @@ public:
 	bool is_spectating();
 	bool is_noclipping();
 	cvar_t* getCvar(const char* name);
+	bool decideStechSide(const Lmove& lMove);
 
 private:
     vec3<float> get_delta_angles();

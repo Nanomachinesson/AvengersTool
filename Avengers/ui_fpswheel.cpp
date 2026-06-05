@@ -80,10 +80,23 @@ void ui_fpswheel::render(Avengers* hud)
 			zoney = mm::normalise(180 - zoney, 0, 360);
 		}
 
-		if (!lmove.isRight && !lmove.isForward && !lmove.isLeft) {  //no keys => wd strafe
-			zonex = mm::normalise(zonex + 45.f, 0.f, 360.f);
-			zoney = mm::normalise(zoney + 45.f, 0.f, 360.f);
+		if (!lmove.isRight && !lmove.isForward && !lmove.isLeft) {
+			if (lmove.isBack) {
+				if (!hud->inst_game->decideStechSide(lmove)) {
+					zonex = mm::normalise(180.f - zonex + 45.f, 0.f, 360.f);  //I don't really understand this anymore, and opted to bruteforce the values.
+					zoney = mm::normalise(180.f - zoney + 45.f, 0.f, 360.f);
+				}
+				else {
+					zonex = mm::normalise(zonex - 45.f, 0.f, 360.f);
+					zoney = mm::normalise(zoney - 45.f, 0.f, 360.f);
+				}
+			}
+			else {  //no keys => wd strafe
+				zonex = mm::normalise(zonex + 45.f, 0.f, 360.f);
+				zoney = mm::normalise(zoney + 45.f, 0.f, 360.f);
+			}
 		}
+
 
 		float differencex = 180.f - abs(abs(zonex - yaw) - 180.f);
 		float differencey = 180.f - abs(abs(zoney - yaw) - 180.f);

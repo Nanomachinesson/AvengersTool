@@ -255,9 +255,7 @@ float game::get_optimal_angle(const Lmove& lMove)
 	float yaw = get_view().y;
 
 	if (lMove.isBack) {  //If the user is doing s-tech we need to account for both strafe sides
-		float deltaDiff = fabsf(delta - deltaOptimal);
-		float deltaDiffOtherSide = fabsf(delta - deltaOptimal * -1.f);
-		if (deltaDiffOtherSide < deltaDiff) {
+		if (decideStechSide(lMove)) {
 			deltaOptimal *= -1.f;
 		}
 	}
@@ -338,6 +336,16 @@ cvar_t* game::getCvar(const char* name)
 		mov edi, name
 		call[addr]
 	}
+}
+
+bool game::decideStechSide(const Lmove& lMove)  //True = left, False = right
+{
+	float delta = get_delta(lMove);
+	float deltaOptimal = get_delta_optimal(lMove);
+
+	float deltaDiff = fabsf(delta - deltaOptimal);
+	float deltaDiffOtherSide = fabsf(delta - deltaOptimal * -1.f);
+	return deltaDiffOtherSide < deltaDiff;
 }
 
 void game::send_command_to_console(const char* command)
