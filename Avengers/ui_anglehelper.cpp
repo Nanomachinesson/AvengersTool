@@ -12,7 +12,11 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 	float pixelScale = (hud->inst_game->get_screen_res().x / fov) * hud->inst_ui_menu->ah_pixel_scale;
 
 	screen.y = hud->inst_game->get_screen_res().y / 2;
-	float ahOffset = yaw - optAngle;
+
+	float ahOffset = smallestAngleDiff(yaw, optAngle);
+	if (mm::compare_angles(yaw, optAngle) == 1) {
+		ahOffset *= -1.f;
+	}
 
 	screen.x = center.x + (ahOffset * pixelScale);
 
@@ -33,13 +37,22 @@ void ui_anglehelper::renderOnWheel(Avengers*& hud, ImVec4& color)  //TODO: refac
 	float pixelScale = (hud->inst_game->get_screen_res().x / fov) * hud->inst_ui_menu->wheel_ah_pixel_scale;
 
 	screen.y = fpsWheelPos;
-	float ahOffset = yaw - optAngle;
+	float ahOffset = smallestAngleDiff(yaw, optAngle);
+	if (mm::compare_angles(yaw, optAngle) == 1) {
+		ahOffset *= -1.f;
+	}
 
 	screen.x = center.x + (ahOffset * pixelScale);
 
 	float ahOffsetPixel = ahOffset * pixelScale;
 
 	ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(screen.x, screen.y), ImVec2(2.5 + screen.x, hud->inst_ui_menu->fpswheel_size + screen.y), ImColor(color));
+}
+
+float ui_anglehelper::smallestAngleDiff(float a, float b)
+{
+	float c = 180.f;
+	return c - fabs(fmod(fabs(a - b), 2 * c) - c);
 }
 
 ui_anglehelper::ui_anglehelper(Avengers* hud)

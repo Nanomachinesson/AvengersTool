@@ -25,9 +25,9 @@ class ui_menu
 	float fpswheel_size = 20.f;
 	float fpswheel_offset_y = 0.f;
 	float fpswheel_offset_x = 1.f;
-	float ah_pixel_scale = 1.f;
-	float wheel_ah_pixel_scale = 1.f;
-	float wheel_pixel_scale = 1.f;
+	float ah_pixel_scale = 0.4f;
+	float wheel_ah_pixel_scale = 0.4f;
+	float wheel_pixel_scale = 0.4f;
 	bool lines_toggle = false;
 	bool strafedowntime_toggle = false;
 	bool rpgtimer_toggle = false;
