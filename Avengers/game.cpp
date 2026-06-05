@@ -254,6 +254,14 @@ float game::get_optimal_angle(const Lmove& lMove)
 
 	float yaw = get_view().y;
 
+	if (lMove.isBack) {  //If the user is doing s-tech we need to account for both strafe sides
+		float deltaDiff = fabsf(delta - deltaOptimal);
+		float deltaDiffOtherSide = fabsf(delta - deltaOptimal * -1.f);
+		if (deltaDiffOtherSide < deltaDiff) {
+			deltaOptimal *= -1.f;
+		}
+	}
+
 	yaw += delta - deltaOptimal;
 
 	return mm::normalise(yaw, 0.f, 360.f);
