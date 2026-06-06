@@ -11,6 +11,7 @@ public:
 	void render();
 
 private:
+	std::string lMoveToKey(const Lmove& lMove);
 	Avengers* avengers;
 	const float VELO_CUTOFF = 0.f;
 	const int SWITCHTIME_CUTOFF_GREEN = 100.f;

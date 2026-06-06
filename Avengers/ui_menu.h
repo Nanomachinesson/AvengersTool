@@ -21,6 +21,10 @@ class ui_menu
 	float velo_scale = 1.5;
 	bool lock_velo_pos = true;
 	bool anglehelper_toggle = false;
+	bool drawcenterline = false;
+	ImVec4 centerline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	bool drawfpswheelcenterline = false;
+	ImVec4 fpswheelcenterline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bool fpswheel_toggle = false;
 	float fpswheel_size = 20.f;
 	float fpswheel_offset_y = 0.f;
@@ -31,6 +35,7 @@ class ui_menu
 	bool lines_toggle = false;
 	bool strafedowntime_toggle = false;
 	bool rpgtimer_toggle = false;
+	bool rpgangle_toggle = false;
 	bool bouncevelocity_toggle = false;
 	// Default the position to the center of the screen if there is no position in the config file
 	vec2<float> velo_pos = vec2<float>(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);

@@ -135,8 +135,12 @@ void ui_fpswheel::render(Avengers* hud)
 		ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 200), fpsText.c_str());
 		ImGui::SetWindowFontScale(1.f);
 
-		ImVec4 color(0, 0, 0, 255);
+		ImVec4 color(0, 0, 0, 1.f);
 		hud->inst_ui_anglehelper->renderOnWheel(hud, color);
+
+		if (hud->inst_ui_menu->drawfpswheelcenterline) {
+			hud->inst_ui_anglehelper->renderCenterLineOnWheel(hud, hud->inst_ui_menu->fpswheelcenterline_color);
+		}
 
 		ImGui::End();
 	}

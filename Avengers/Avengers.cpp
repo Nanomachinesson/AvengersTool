@@ -163,48 +163,41 @@ void Avengers::load_configuration() {
 			}
 			else if (line.find("JumpoffSpeed:") != std::string::npos) {
 				int value1;
-				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "JumpoffSpeed: %d", &value1);
 
 				inst_ui_menu->draw_jumpoff_speed = value1 == 1;
 			}
 			else if (line.find("JumpoffSpeed_bottom:") != std::string::npos) {
 				int value1;
-				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "JumpoffSpeed_bottom: %d", &value1);
 
 				inst_ui_menu->jumpoffspeed_display_bottom = value1 == 1;
 			}
 			else if (line.find("Strafedowntime:") != std::string::npos) {
 				int value1;
-				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "Strafedowntime: %d", &value1);
 
 				inst_ui_menu->strafedowntime_toggle = value1 == 1;
 			}
 			else if (line.find("rpgtimer:") != std::string::npos) {
 				int value1;
-				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "rpgtimer: %d", &value1);
 
 				inst_ui_menu->rpgtimer_toggle = value1 == 1;
 			}
 			else if (line.find("bouncevelocity:") != std::string::npos) {
 				int value1;
-				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "bouncevelocity: %d", &value1);
 
 				inst_ui_menu->bouncevelocity_toggle = value1 == 1;
 			}
 			else if (line.find("drawfps:") != std::string::npos) {
 				int value1;
-				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "drawfps: %d", &value1);
 
 				inst_ui_menu->drawfps_toggle = value1 == 1;
 			}
 			else if (line.find("color_fps:") != std::string::npos) {
-				// Parse color
 				sscanf_s(line.c_str(), "color_fps: %f %f %f %f", &inst_ui_menu->fpsColor.x, &inst_ui_menu->fpsColor.y, &inst_ui_menu->fpsColor.z, &inst_ui_menu->fpsColor.w);
 			}
 			else if (line.find("scale_fps:") != std::string::npos) {
@@ -215,10 +208,33 @@ void Avengers::load_configuration() {
 			}
 			else if (line.find("drawfps_spectateonly:") != std::string::npos) {
 				int value1;
-				//Parse fps wheel boolean
 				sscanf_s(line.c_str(), "drawfps_spectateonly: %d", &value1);
 
 				inst_ui_menu->drawfps_spectateonly = value1 == 1;
+			}
+			else if (line.find("rpgangle:") != std::string::npos) {
+				int value1;
+				sscanf_s(line.c_str(), "rpgangle: %d", &value1);
+
+				inst_ui_menu->rpgangle_toggle = value1 == 1;
+			}
+			else if (line.find("centerline_toggle:") != std::string::npos) {
+				int value1;
+				sscanf_s(line.c_str(), "centerline_toggle: %d", &value1);
+
+				inst_ui_menu->drawcenterline = value1 == 1;
+			}
+			else if (line.find("color_centerline:") != std::string::npos) {
+				sscanf_s(line.c_str(), "color_centerline: %f %f %f %f", &inst_ui_menu->centerline_color.x, &inst_ui_menu->centerline_color.y, &inst_ui_menu->centerline_color.z, &inst_ui_menu->centerline_color.w);
+			}
+			else if (line.find("centerline_toggle_fpswheel:") != std::string::npos) {
+				int value1;
+				sscanf_s(line.c_str(), "centerline_toggle_fpswheel: %d", &value1);
+
+				inst_ui_menu->drawfpswheelcenterline = value1 == 1;
+			}
+			else if (line.find("color_fpswheelcenterline:") != std::string::npos) {
+				sscanf_s(line.c_str(), "color_fpswheelcenterline: %f %f %f %f", &inst_ui_menu->fpswheelcenterline_color.x, &inst_ui_menu->fpswheelcenterline_color.y, &inst_ui_menu->fpswheelcenterline_color.z, &inst_ui_menu->fpswheelcenterline_color.w);
 			}
 		}
 
@@ -280,14 +296,20 @@ void Avengers::save_configuration() {
 			configFile << "LastCopiedPosition: " << inst_ui_menu->copied_position << "\n";
 		}
 
+		//Misc
 		configFile << "Strafedowntime: " << inst_ui_menu->strafedowntime_toggle << "\n";
 		configFile << "JumpoffSpeed_bottom: " << inst_ui_menu->jumpoffspeed_display_bottom << "\n";
 		configFile << "rpgtimer: " << inst_ui_menu->rpgtimer_toggle << "\n";
+		configFile << "rpgangle: " << inst_ui_menu->rpgangle_toggle << "\n";
 		configFile << "bouncevelocity: " << inst_ui_menu->bouncevelocity_toggle << "\n";
 		configFile << "drawfps: " << inst_ui_menu->drawfps_toggle << "\n";
 		configFile << "color_fps: " << inst_ui_menu->fpsColor.x << " " << inst_ui_menu->fpsColor.y << " " << inst_ui_menu->fpsColor.z << " " << inst_ui_menu->fpsColor.w << "\n";
 		configFile << "scale_fps: " << inst_ui_menu->fpsScale << "\n";
 		configFile << "drawfps_spectateonly: " << inst_ui_menu->drawfps_spectateonly << "\n";
+		configFile << "centerline_toggle: " << inst_ui_menu->drawcenterline << "\n";
+		configFile << "color_centerline: " << inst_ui_menu->centerline_color.x << " " << inst_ui_menu->centerline_color.y << " " << inst_ui_menu->centerline_color.z << " " << inst_ui_menu->centerline_color.w << "\n";
+		configFile << "centerline_toggle_fpswheel: " << inst_ui_menu->drawfpswheelcenterline << "\n";
+		configFile << "color_fpswheelcenterline: " << inst_ui_menu->fpswheelcenterline_color.x << " " << inst_ui_menu->fpswheelcenterline_color.y << " " << inst_ui_menu->fpswheelcenterline_color.z << " " << inst_ui_menu->fpswheelcenterline_color.w << "\n";
 
 		configFile.close();  // Close the file
 	} else {

@@ -63,10 +63,6 @@ void ui_bounceinfo::renderRpgTimer()
 	bool bounced = bouncedInProjVel && !onGround && !avengers->inst_game->is_noclipping() && !avengers->inst_game->is_spectating() && velo > 0.f;
 	bool shotRpg = false;
 
-	/*if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
-		bounced = true;
-	}*/
-
 	if (weaponDelay == 0.f && lastFrameWeaponDelay != 0.f && pm->ps->weaponstate != 7) {
 		shotRpg = true;
 	}
@@ -95,7 +91,11 @@ void ui_bounceinfo::renderRpgTimer()
 
 			std::string rpgTimerText;
 			if (framesSinceLastBounce > 0) {
-				rpgTimerText = "RPG Delay: " + switchtimeColor + std::to_string(framesSinceLastBounce) + " Frames";
+				std::string frameText = "Frames";
+				if (framesSinceLastBounce == 1) {
+					frameText = "Frame";
+				}
+				rpgTimerText = "RPG Delay: " + switchtimeColor + std::to_string(framesSinceLastBounce) + " " + frameText;
 			}
 			else {
 				rpgTimerText = "^2Perfect";
@@ -109,6 +109,25 @@ void ui_bounceinfo::renderRpgTimer()
 	framesSinceLastBounce++;
 	lastFrameWeaponDelay = weaponDelay;
 	pmFlagsLastFrame = pmFlags;
+}
+
+void ui_bounceinfo::renderRpgAngle()
+{
+	static float lastFrameWeaponDelay = 0.f;
+
+	pmove_t* pm = avengers->inst_game->get_pmove_current();
+	if (!(pm && pm->ps)) {
+		return;
+	}
+
+	float weaponDelay = pm->ps->weaponDelay;
+	float pitch = pm->ps->viewangles[0];
+
+	if (weaponDelay == 0.f && lastFrameWeaponDelay != 0.f && pm->ps->weaponstate != 7) {
+		avengers->inst_game->add_obituary("RPGAngle: ^5" + getStringWithSignificantFigures(pitch, 3));
+	}
+
+	lastFrameWeaponDelay = weaponDelay;
 }
 
 void ui_bounceinfo::renderBounceVelocity()
@@ -126,19 +145,28 @@ void ui_bounceinfo::renderBounceVelocity()
 	float velo = avengers->inst_game->get_velocity().Length2D();
 	bool bounced = bouncedInProjVel && !onGround && !avengers->inst_game->is_noclipping() && !avengers->inst_game->is_spectating() && velo > 0.f;  //JH noclip sets your velo to 0 but is_noclipping doesn't work there
 
-	/*if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
-		bounced = true;
-	}*/
-
 	if (bounced) {
-		std::string bounceVeloText = "Velocity on bounce: ^5" + std::to_string(velo) + " ^7z: " + "^5" + std::to_string(avengers->inst_game->get_velocity().z);
+		std::string veloText = getStringWithSignificantFigures(velo, 3);
+		std::string veloTextZ = getStringWithSignificantFigures(avengers->inst_game->get_velocity().z, 0);
+
+		std::string bounceVeloText = "Bounce: ^5" + veloText + " ^7z: " + "^5" + veloTextZ;
 		float veloLost = lastFrameVelo - velo;
 		if (veloLost > 0) {
-			bounceVeloText += "^7, Velocity lost: ^1" + std::to_string(veloLost);
+			std::string veloLostString = getStringWithSignificantFigures(veloLost, 3);
+			bounceVeloText += "^7, Velocity lost: ^1" + veloLostString;
 		}
 		avengers->inst_game->add_obituary(bounceVeloText);
 	}
 
 	lastFrameVelo = velo;
 	pmFlagsLastFrame = pmFlags;
+}
+
+std::string ui_bounceinfo::getStringWithSignificantFigures(float a, int precision)
+{
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(precision) << a;
+	std::string text = stream.str();
+
+	return text;
 }

@@ -215,6 +215,24 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
+	if (ImGui::Checkbox("Draw centerline", &drawcenterline)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	ImGui::ColorButton("Centerline color", centerline_color);
+
+	if (ImGui::IsItemClicked()) {
+		ImGui::OpenPopup("CenterLineColorPickerPopup");
+	}
+
+	if (ImGui::BeginPopup("CenterLineColorPickerPopup")) {
+		ImGui::ColorPicker4("Centerline Color Picker", &centerline_color.x);
+
+		ImGui::EndPopup();
+
+		hud->save_configuration();
+	}
+
 	//#######################################################
 
 	//################# 90 lines ########################
@@ -246,7 +264,9 @@ void ui_menu::menu(Avengers* hud)
 	if (ImGui::Checkbox("RPG Timer", &rpgtimer_toggle)) {
 		hud->save_configuration();
 	}
-	ImGui::SameLine();
+	if (ImGui::Checkbox("RPG angle", &rpgangle_toggle)) {
+		hud->save_configuration();
+	}
 	if (ImGui::Checkbox("Show velocity on bounce", &bouncevelocity_toggle)) {
 		hud->save_configuration();
 	}
@@ -287,6 +307,23 @@ void ui_menu::menu(Avengers* hud)
 		if (fpswheel_toggle) {
 			should_focus_next_frame = true;
 		}
+	}
+	if (ImGui::Checkbox("Draw wheel centerline", &drawfpswheelcenterline)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	ImGui::ColorButton("wheel centerline color", fpswheelcenterline_color);
+
+	if (ImGui::IsItemClicked()) {
+		ImGui::OpenPopup("WheelCenterLineColorPickerPopup");
+	}
+
+	if (ImGui::BeginPopup("WheelCenterLineColorPickerPopup")) {
+		ImGui::ColorPicker4("Wheel Centerline Color Picker", &fpswheelcenterline_color.x);
+
+		ImGui::EndPopup();
+
+		hud->save_configuration();
 	}
 
 	if (ImGui::SliderFloat("FPS Wheel height", &fpswheel_size, 1.f, 100.f)) {
@@ -371,7 +408,10 @@ void ui_menu::render()
 	if (fpswheel_toggle && hud->inst_game->is_connected())
 	{
 		hud->inst_ui_fpswheel->render(hud);
-		ImVec4 color(0, 0, 0, 255);
+	}
+
+	if (drawcenterline && hud->inst_game->is_connected()) {
+		hud->inst_ui_anglehelper->renderCenterLine(hud, centerline_color);
 	}
 
 	//Jump Target
@@ -381,17 +421,21 @@ void ui_menu::render()
 	}
 
 	//Strafe downtime
-	if (strafedowntime_toggle) {
+	if (strafedowntime_toggle && hud->inst_game->is_connected()) {
 		hud->inst_ui_strafedowntime->render();
 	}
 
 	//bounce info
-	if (rpgtimer_toggle) {
+	if (rpgtimer_toggle && hud->inst_game->is_connected()) {
 		hud->inst_ui_bounceinfo->renderRpgTimer();
 	}
 
-	if (bouncevelocity_toggle) {
+	if (bouncevelocity_toggle && hud->inst_game->is_connected()) {
 		hud->inst_ui_bounceinfo->renderBounceVelocity();
+	}
+
+	if (rpgangle_toggle && hud->inst_game->is_connected()) {
+		hud->inst_ui_bounceinfo->renderRpgAngle();
 	}
 
 	//Draw markers
