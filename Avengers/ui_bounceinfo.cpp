@@ -60,7 +60,7 @@ void ui_bounceinfo::renderRpgTimer()
 	int pmFlags = pm->ps->pm_flags;
 	float velo = avengers->inst_game->get_velocity().Length2D();
 	float weaponDelay = pm->ps->weaponDelay;
-	bool bounced = bouncedInProjVel && !onGround;
+	bool bounced = bouncedInProjVel && !onGround && !avengers->inst_game->is_noclipping() && !avengers->inst_game->is_spectating() && velo > 0.f;
 	bool shotRpg = false;
 
 	/*if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
@@ -124,7 +124,7 @@ void ui_bounceinfo::renderBounceVelocity()
 	bool onGround = avengers->inst_game->isOnGround();
 	int pmFlags = pm->ps->pm_flags;
 	float velo = avengers->inst_game->get_velocity().Length2D();
-	bool bounced = bouncedInProjVel && !onGround;
+	bool bounced = bouncedInProjVel && !onGround && !avengers->inst_game->is_noclipping() && !avengers->inst_game->is_spectating() && velo > 0.f;  //JH noclip sets your velo to 0 but is_noclipping doesn't work there
 
 	/*if (((pmFlags & PMF_JUMPING) == 0) && ((pmFlagsLastFrame & PMF_JUMPING) != 0) && velo >= VELO_CUTOFF && !onGround) {
 		bounced = true;
