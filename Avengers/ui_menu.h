@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include "vectors.h"
 #include "config_manager.h"
 
@@ -27,6 +28,7 @@ public:
 	float velo_scale = 1.5;
 	bool lock_velo_pos = true;
 	bool anglehelper_toggle = false;
+	bool clamp_to_next_zone = false;
 	bool drawcenterline = false;
 	ImVec4 centerline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bool drawfpswheelcenterline = false;
@@ -74,6 +76,8 @@ public:
 	ImVec4 fpsColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 
 	bool should_focus_next_frame = false;
+
+	std::string currentAhStyle = "Style 1";
 
 private:
 	void registerConfigs(Avengers* hud);

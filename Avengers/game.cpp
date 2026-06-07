@@ -242,6 +242,16 @@ float game::get_accel()
 	return g_speed / get_fps();
 }
 
+float game::get_deltamax_bogus()
+{
+	constexpr float g_speed = 190.f;
+
+	float speed = get_velocity().Length2D();
+	float deltaMax = mm::to_degrees(acosf( ( (-1.f * get_accel()) / (2 * speed) ) ));
+
+	return deltaMax;
+}
+
 float game::get_optimal_angle()
 {
 	return get_optimal_angle(get_lmove(true));

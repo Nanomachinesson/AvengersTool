@@ -2,7 +2,6 @@
 #include "ui_menu.h"
 #include "Avengers.h"
 
-
 void ui_menu::menu(Avengers* hud)
 {
 	ImGui::Begin("Avengers Helper");
@@ -112,10 +111,31 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
-	if(ImGui::Checkbox("Sep Speedometer", &sep_velo))
-	{
-		hud->save_configuration();
+	ImGui::SameLine();
+	static std::string currentSpeedoStyle = sep_velo ? "Style 2" : "Style 1";
+	std::array<std::string, 2> speedoStyles = { "Style 1", "Style 2" };
+	ImGui::PushItemWidth(200.f);
+	if (ImGui::BeginCombo("##Speedometer style", currentSpeedoStyle.c_str())) {
+		for (int n = 0; n < speedoStyles.size(); n++) {
+			bool isSelected = (currentSpeedoStyle == speedoStyles[n]);
+			if (ImGui::Selectable(speedoStyles[n].c_str(), isSelected)) {
+				currentSpeedoStyle = speedoStyles[n].c_str();
+				ImGui::SetItemDefaultFocus();
+				if (currentSpeedoStyle == "Style 2") {
+					sep_velo = true;
+				}
+				else {
+					sep_velo = false;
+				}
+
+				hud->save_configuration();
+			}
+		}
+		ImGui::EndCombo();
 	}
+	ImGui::PopItemWidth();
+
+
 	//Acceleration
 	if (ImGui::Checkbox("Show acceleration", &velo_show_acceleration)) {
 		hud->save_configuration();
@@ -280,6 +300,31 @@ void ui_menu::menu(Avengers* hud)
 
 		ImGui::EndPopup();
 
+		hud->save_configuration();
+	}
+
+	ImGui::SameLine();
+
+	std::array<std::string, 2> ahStyles = { "Style 1", "Style 2" };
+	ImGui::PushItemWidth(200.f);
+	if (ImGui::BeginCombo("##Anglehelper style", currentAhStyle.c_str())) {
+		for (int n = 0; n < ahStyles.size(); n++) {
+			bool isSelected = (currentAhStyle == ahStyles[n]);
+			if (ImGui::Selectable(ahStyles[n].c_str(), isSelected)) {
+				currentAhStyle = ahStyles[n];
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+
+				hud->save_configuration();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopItemWidth();
+
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Clamp to next zone", &clamp_to_next_zone)) {
 		hud->save_configuration();
 	}
 
@@ -457,7 +502,7 @@ void ui_menu::render()
 	}*/
 
 	//Render speedometer
-	if ((velo_meter || sep_velo) && hud->inst_game->is_connected())
+	if ((velo_meter) && hud->inst_game->is_connected())
 	{
 		hud->inst_ui_velocity->render(hud, lock_velo_pos, velo_pos, velo_scale, color);
 	}
@@ -562,6 +607,8 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("color_acceleration", &acceleration_color);
 	hud->registerConfig("color_deceleration", &deceleration_color);
 	hud->registerConfig("keep_velo_centered_toggle", &keep_velo_centered);
+	hud->registerConfig("ah_style", &currentAhStyle);
+	hud->registerConfig("clamp_to_next_zone", &clamp_to_next_zone);
 }
 
 ui_menu::ui_menu(Avengers* hud)

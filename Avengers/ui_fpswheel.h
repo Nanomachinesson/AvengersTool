@@ -10,7 +10,10 @@ public:
 	ui_fpswheel(class Avengers* hud);
 	~ui_fpswheel();
 	void render(class Avengers* hud);
+	vec2<float> getCurrentZoneBounds();
+
 private:
+	vec2<float> moveZone(const vec2<float>& zone);
 	std::multimap<int, vec2<float>> fpsZones
 	{
 		//CENTER 90

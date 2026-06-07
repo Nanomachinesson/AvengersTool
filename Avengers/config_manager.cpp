@@ -99,6 +99,14 @@ void ConfigManager::loadConfig()
 				*settingValue = loadedValue;
 				break;
 			}
+			case TYPE_STRING:
+			{
+				std::string value = line.substr(line.find(":") + 2, line.size() - line.find("TYPE"));
+
+				std::string* settingValue = reinterpret_cast<std::string*>(currentSetting->data);
+				*settingValue = value;
+				break;
+			}
 		}
 	}
 }
@@ -144,6 +152,12 @@ void ConfigManager::saveConfig()
 			{
 				ImVec4 value = *reinterpret_cast<ImVec4*>(setting.second.data);
 				configFile << value.x << " " << value.y << " " << value.z << " " << value.w;
+				break;
+			}
+			case TYPE_STRING:
+			{
+				std::string value = *reinterpret_cast<std::string*>(setting.second.data);
+				configFile << value;
 				break;
 			}
 		}

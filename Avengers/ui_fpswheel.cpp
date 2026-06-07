@@ -41,41 +41,9 @@ void ui_fpswheel::render(Avengers* hud)
 		float onePy;
 		float zonex = zone.x;
 		float zoney = zone.y;
-
-		Lmove lmove = hud->inst_game->get_lmove(true);
-
-		if (!lmove.isForward) {
-			if (lmove.isRight) {
-				zonex = mm::normalise(zonex + 45.f, 0.f, 360.f);
-				zoney = mm::normalise(zoney + 45.f, 0.f, 360.f);
-			}
-			else if (lmove.isLeft) {
-				zonex = mm::normalise(zonex - 45.f, 0.f, 360.f);
-				zoney = mm::normalise(zoney - 45.f, 0.f, 360.f);
-			}
-		}
-		if (lmove.isRight) {
-			zonex = mm::normalise(180 - zonex, 0, 360);
-			zoney = mm::normalise(180 - zoney, 0, 360);
-		}
-
-		if (!lmove.isRight && !lmove.isForward && !lmove.isLeft) {
-			if (lmove.isBack) {
-				if (!hud->inst_game->decideStechSide(lmove)) {
-					zonex = mm::normalise(180.f - zonex + 45.f, 0.f, 360.f);  //I don't really understand this anymore, and opted to bruteforce the values.
-					zoney = mm::normalise(180.f - zoney + 45.f, 0.f, 360.f);
-				}
-				else {
-					zonex = mm::normalise(zonex - 45.f, 0.f, 360.f);
-					zoney = mm::normalise(zoney - 45.f, 0.f, 360.f);
-				}
-			}
-			else {  //no keys => wd strafe
-				zonex = mm::normalise(zonex + 45.f, 0.f, 360.f);
-				zoney = mm::normalise(zoney + 45.f, 0.f, 360.f);
-			}
-		}
-
+		vec2<float> zones = moveZone(vec2<float>(zonex, zoney));
+		zonex = zones.x;
+		zoney = zones.y;
 
 		float differencex = 180.f - abs(abs(zonex - yaw) - 180.f);
 		float differencey = 180.f - abs(abs(zoney - yaw) - 180.f);
@@ -144,6 +112,70 @@ void ui_fpswheel::render(Avengers* hud)
 
 		ImGui::End();
 	}
+}
+
+vec2<float> ui_fpswheel::getCurrentZoneBounds()
+{
+	Avengers* hud = Avengers::get_instance();
+	float optAngle = hud->inst_game->get_optimal_angle();
+	Lmove lmove = hud->inst_game->get_lmove();
+
+	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
+
+	for (auto const& [fps, zone] : fpsZones) {
+		vec2<float> zoneCopy = zone;
+		zoneCopy = moveZone(zoneCopy);
+		if (!goingRight && mm::compare_angles(zoneCopy.x, optAngle) == 1 && mm::compare_angles(zoneCopy.y, optAngle) == -1) {
+			return zoneCopy;
+		}
+		else if (goingRight && mm::compare_angles(zoneCopy.x, optAngle) == -1 && mm::compare_angles(zoneCopy.y, optAngle) == 1) {
+			return zoneCopy;
+		}
+	}
+}
+
+vec2<float> ui_fpswheel::moveZone(const vec2<float>& zone)
+{
+	float zonex = zone.x;
+	float zoney = zone.y;
+
+	Avengers* hud = Avengers::get_instance();
+
+	Lmove lmove = hud->inst_game->get_lmove(true);
+
+	if (!lmove.isForward) {
+		if (lmove.isRight) {
+			zonex = mm::normalise(zonex + 45.f, 0.f, 360.f);
+			zoney = mm::normalise(zoney + 45.f, 0.f, 360.f);
+		}
+		else if (lmove.isLeft) {
+			zonex = mm::normalise(zonex - 45.f, 0.f, 360.f);
+			zoney = mm::normalise(zoney - 45.f, 0.f, 360.f);
+		}
+	}
+	if (lmove.isRight) {
+		zonex = mm::normalise(180 - zonex, 0, 360);
+		zoney = mm::normalise(180 - zoney, 0, 360);
+	}
+
+	if (!lmove.isRight && !lmove.isForward && !lmove.isLeft) {
+		if (lmove.isBack) {
+			if (!hud->inst_game->decideStechSide(lmove)) {
+				zonex = mm::normalise(180.f - zonex + 45.f, 0.f, 360.f);  //I don't really understand this anymore, and opted to bruteforce the values.
+				zoney = mm::normalise(180.f - zoney + 45.f, 0.f, 360.f);
+			}
+			else {
+				zonex = mm::normalise(zonex - 45.f, 0.f, 360.f);
+				zoney = mm::normalise(zoney - 45.f, 0.f, 360.f);
+			}
+		}
+		else {  //no keys => wd strafe
+			zonex = mm::normalise(zonex + 45.f, 0.f, 360.f);
+			zoney = mm::normalise(zoney + 45.f, 0.f, 360.f);
+		}
+	}
+
+	return vec2<float>(zonex, zoney);
 }
 
 ui_fpswheel::ui_fpswheel(Avengers* hud)

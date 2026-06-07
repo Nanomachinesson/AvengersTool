@@ -79,6 +79,7 @@ public:
 	void setView(const vec3<float>& angles);
 	void setVelocity(const vec3<float>& velocity);
 	vec3<float> toCodAngles(const vec3<float>& angles);
+	float get_deltamax_bogus();
 
 private:
     vec3<float> get_delta_angles();

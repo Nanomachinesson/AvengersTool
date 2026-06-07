@@ -22,7 +22,40 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 
 	screen.x = center.x + (ahOffset * pixelScale);
 
-	ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -30 + screen.y), ImVec2(width + screen.x, 30 + screen.y), ImColor(color));
+	if (hud->inst_ui_menu->currentAhStyle == "Style 1") {
+		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -30 + screen.y), ImVec2(width + screen.x, 30 + screen.y), ImColor(color));
+	}
+	else {
+		ImVec4 newColor = color;
+		newColor.w = 0.4;
+
+		Lmove lmove = hud->inst_game->get_lmove();
+		bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
+		float deltaMax = hud->inst_game->get_deltamax_bogus();
+		float ahWidth = deltaMax * hud->inst_ui_menu->ah_pixel_scale * 2.f;
+
+		if (hud->inst_ui_menu->clamp_to_next_zone) {
+			vec2<float> currentZoneBounds = hud->inst_ui_fpswheel->getCurrentZoneBounds();
+			float differencex = 180.f - abs(abs(currentZoneBounds.x - optAngle) - 180.f);
+			float differencey = 180.f - abs(abs(currentZoneBounds.y - optAngle) - 180.f);
+
+			if (differencey * pixelScale < ahWidth) {
+				ahWidth = differencey * pixelScale;
+			}
+			else if (differencex * pixelScale < ahWidth) {
+				ahWidth = differencex * pixelScale;
+			}
+		}
+
+		if (goingRight) {
+			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x + ahWidth, 10 + screen.y), ImColor(newColor));
+			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - 1.f, -15.f + screen.y), ImVec2(screen.x + 1.f, 15.f + screen.y), ImColor(1.f, 1.f, 1.f, 0.7f));
+		}
+		else {
+			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x - ahWidth, 10 + screen.y), ImColor(newColor));
+			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - 1.f, -15.f + screen.y), ImVec2(screen.x + 1.f, 15.f + screen.y), ImColor(1.f, 1.f, 1.f, 0.7f));
+		}
+	}
 }
 
 void ui_anglehelper::renderOnWheel(Avengers*& hud, ImVec4& color)  //TODO: refactor into 1 func w params
