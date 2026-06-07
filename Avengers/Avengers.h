@@ -23,6 +23,7 @@
 #include "ui_fpswheel.h"
 #include "ui_strafedowntime.h"
 #include "ui_bounceinfo.h"
+#include "config_manager.h"
 
 extern "C" {
 	bool __declspec(dllexport) __stdcall RIB_Main(int a, int b);
@@ -67,5 +68,15 @@ public:
 	bool bind_close(UINT key_state);
 	static Avengers* inst_Avengers;
 	static Avengers* get_instance();
+
+	template<typename T>
+	void registerConfig(const std::string& name, T* data)
+	{
+		configManager.registerConfig(name, data);
+	}
+
+private:
+	ConfigManager configManager;
+
 };
 

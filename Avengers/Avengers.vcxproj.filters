@@ -103,6 +103,9 @@
     <ClCompile Include="ui_bounceinfo.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="config_manager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Avengers.h">
@@ -214,6 +217,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="ui_strafedowntime.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="config_manager.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -74,6 +74,11 @@ public:
 	bool is_noclipping();
 	cvar_t* getCvar(const char* name);
 	bool decideStechSide(const Lmove& lMove);
+	bool isDevmap();
+	void setPosition(const vec3<float>& pos);
+	void setView(const vec3<float>& angles);
+	void setVelocity(const vec3<float>& velocity);
+	vec3<float> toCodAngles(const vec3<float>& angles);
 
 private:
     vec3<float> get_delta_angles();

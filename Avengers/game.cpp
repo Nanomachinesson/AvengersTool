@@ -348,6 +348,40 @@ bool game::decideStechSide(const Lmove& lMove)  //True = left, False = right
 	return deltaDiffOtherSide < deltaDiff;
 }
 
+bool game::isDevmap()
+{
+	return *reinterpret_cast<int*>(0x01288600);
+}
+
+void game::setPosition(const vec3<float>& pos)
+{
+	vec3<float>* position = reinterpret_cast<vec3<float>*>(addr_position_writeable);
+	*position = pos;
+}
+
+void game::setView(const vec3<float>& angles)
+{
+	vec3<float>* view = reinterpret_cast<vec3<float>*>(addr_writeableAngles);
+	*view = toCodAngles(angles);
+}
+
+void game::setVelocity(const vec3<float>& velocity)
+{
+	vec3<float>* gameVelocity = reinterpret_cast<vec3<float>*>(addr_velocity_writeable);
+	*gameVelocity = velocity;
+}
+
+vec3<float> game::toCodAngles(const vec3<float>& angles)
+{
+	vec3<float> delta = get_delta_angles();
+	vec3<float> view;
+	view.x = angles.x - delta.x;
+	view.y = angles.y - delta.y;
+	view.z = angles.z - delta.z;
+
+	return view;
+}
+
 void game::send_command_to_console(const char* command)
 {
 	DWORD buffer_cmd = 0x4f8d90;

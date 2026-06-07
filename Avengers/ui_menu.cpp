@@ -46,13 +46,15 @@ void ui_menu::menu(Avengers* hud)
 		vec3<float> pos = hud->inst_game->get_origin();
 		vec3<float> view = hud->inst_game->get_view();
 
-		std::stringstream ss;
-		ss << std::fixed << std::setprecision(6) << pos.x <<  " " << pos.y << " " << pos.z + 60 << " " << view.y << " " << view.x;
-
-		copied_position = ss.str();
+		copied_position_origin = pos;
+		copied_position_view = view;
 		hud->save_configuration();
 		
-		ImGui::SetClipboardText(copied_position.c_str());
+		pos.z += 60.f;
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(6) << pos.x <<  " " << pos.y << " " << pos.z << " " << view.y << " " << view.x;
+
+		ImGui::SetClipboardText(ss.str().c_str());
 	}
 	ImGui::SameLine(); if(ImGui::Checkbox("Show Coordinates", &show_position))
 	{
@@ -520,9 +522,52 @@ void ui_menu::render()
 	}
 }
 
+void ui_menu::registerConfigs(Avengers* hud)
+{
+	hud->registerConfig("Speedometer", &velo_meter);
+	hud->registerConfig("SepVelo", &sep_velo);
+	hud->registerConfig("Position", &velo_pos);
+	hud->registerConfig("Color_anglehelper", &anglehelper_color);
+	hud->registerConfig("Color_90_lines", &lines_color);
+	hud->registerConfig("Color", &color);
+	hud->registerConfig("Scale", &velo_scale);
+	hud->registerConfig("PosHud", &show_position);
+	hud->registerConfig("LastCopiedPositionOrigin", &copied_position_origin);
+	hud->registerConfig("LastCopiedPositionView", &copied_position_view);
+	hud->registerConfig("Anglehelper", &anglehelper_toggle);
+	hud->registerConfig("90_Lines", &lines_toggle);
+	hud->registerConfig("FPSWheel", &fpswheel_toggle);
+	hud->registerConfig("FPSWheelOffsetY", &fpswheel_offset_y);
+	hud->registerConfig("FPSWheelOffsetX", &fpswheel_offset_x);
+	hud->registerConfig("FPSWheelSize", &fpswheel_size);
+	hud->registerConfig("Anglehelper_pixel_scale", &ah_pixel_scale);
+	hud->registerConfig("Wheel_anglehelper_pixel_scale", &wheel_ah_pixel_scale);
+	hud->registerConfig("Wheel_pixel_scale", &wheel_pixel_scale);
+	hud->registerConfig("JumpoffSpeed", &draw_jumpoff_speed);
+	hud->registerConfig("JumpoffSpeed_bottom", &jumpoffspeed_display_bottom);
+	hud->registerConfig("Strafedowntime", &strafedowntime_toggle);
+	hud->registerConfig("rpgtimer", &rpgtimer_toggle);
+	hud->registerConfig("bouncevelocity", &bouncevelocity_toggle);
+	hud->registerConfig("drawfps", &drawfps_toggle);
+	hud->registerConfig("color_fps", &fpsColor);
+	hud->registerConfig("scale_fps", &fpsScale);
+	hud->registerConfig("drawfps_spectateonly", &drawfps_spectateonly);
+	hud->registerConfig("rpgangle", &rpgangle_toggle);
+	hud->registerConfig("centerline_toggle", &drawcenterline);
+	hud->registerConfig("color_centerline", &centerline_color);
+	hud->registerConfig("centerline_toggle_fpswheel", &drawfpswheelcenterline);
+	hud->registerConfig("color_fpswheelcenterline", &fpswheelcenterline_color);
+	hud->registerConfig("velo_acceleration_toggle", &velo_show_acceleration);
+	hud->registerConfig("velo_deceleration_toggle", &velo_show_deceleration);
+	hud->registerConfig("color_acceleration", &acceleration_color);
+	hud->registerConfig("color_deceleration", &deceleration_color);
+	hud->registerConfig("keep_velo_centered_toggle", &keep_velo_centered);
+}
+
 ui_menu::ui_menu(Avengers* hud)
 {
 	hud->inst_render->add_callback([this]() { this->render(); });
+	registerConfigs(hud);
 }
 ui_menu::~ui_menu()
 {

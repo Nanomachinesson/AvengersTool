@@ -1,9 +1,10 @@
 #pragma once
 #include "vectors.h"
+#include "config_manager.h"
 
 class ui_menu
 {
-	public:
+public:
 	ui_menu(class Avengers* hud);
 	~ui_menu();
 	void menu(Avengers* hud);
@@ -58,7 +59,8 @@ class ui_menu
 	ImVec4 marker3_color = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 	char* demo_name;
-	std::string copied_position;
+	vec3<float> copied_position_view;
+	vec3<float> copied_position_origin;
 	
 	vec2<float> pos1;
 	vec2<float> pos2;
@@ -72,5 +74,8 @@ class ui_menu
 	ImVec4 fpsColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 
 	bool should_focus_next_frame = false;
+
+private:
+	void registerConfigs(Avengers* hud);
 };
 

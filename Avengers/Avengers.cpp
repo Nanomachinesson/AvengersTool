@@ -24,329 +24,34 @@ bool Avengers::bind_toggle_input(UINT key_state)
 
 bool Avengers::bind_tp_to_saved_pos(UINT key_state)
 {
+	if (!inst_game->isDevmap()) {
+		return true;
+	}
+
 	if (key_state == WM_KEYDOWN) //return true on key down just so nothing else receives the key down stroke
 		return true; 
 	if (key_state == WM_KEYUP)
 	{
-		if(inst_ui_menu->copied_position != "" && inst_game->is_connected())
-			inst_game->send_command_to_console(("setviewpos " + inst_ui_menu->copied_position).c_str());
+		if (inst_game->is_connected()) {
+			inst_game->setPosition(inst_ui_menu->copied_position_origin);
+			inst_game->setView(inst_ui_menu->copied_position_view);
+			inst_game->setVelocity(vec3<float>(0, 0, 0));
+		}
+
 		return true;
 	}
 }
 
-// Function to load configuration from a file or set default values
 void Avengers::load_configuration() {
-	// Specify the file path
-	std::string filePath = "AvengersConfig.txt";
-
-	// Check if the file exists
-	if (std::ifstream config_file(filePath); config_file.is_open()) {
-		std::string line;
-		while (std::getline(config_file, line)) {
-			if (line.find("Speedometer:") != std::string::npos)
-			{
-				int value;
-				//Parse speedometer boolean
-				sscanf_s(line.c_str(), "Speedometer: %d", &value);
-
-				inst_ui_menu->velo_meter = value == 1;
-			}
-			else if(line.find("SepVelo:") != std::string::npos)
-			{
-				int value1;
-				//Parse sep speedometer boolean
-				sscanf_s(line.c_str(), "SepVelo: %d", &value1);
-
-				inst_ui_menu->sep_velo = value1 == 1;
-			}
-			else if (line.find("Position:") != std::string::npos
-						&& line.find("Last") == std::string::npos) {
-				// Parse position
-				sscanf_s(line.c_str(), "Position: %f %f", &inst_ui_menu->velo_pos.x, &inst_ui_menu->velo_pos.y);
-			}
-			else if (line.find("Color_anglehelper:") != std::string::npos) {
-				// Parse color
-				sscanf_s(line.c_str(), "Color_anglehelper: %f %f %f %f", &inst_ui_menu->anglehelper_color.x, &inst_ui_menu->anglehelper_color.y, &inst_ui_menu->anglehelper_color.z, &inst_ui_menu->anglehelper_color.w);
-			}
-			else if (line.find("Color_90_lines:") != std::string::npos
-				&& line.find("anglehelper") == std::string::npos) {
-				// Parse color
-				sscanf_s(line.c_str(), "Color_90_lines: %f %f %f %f", &inst_ui_menu->lines_color.x, &inst_ui_menu->lines_color.y, &inst_ui_menu->lines_color.z, &inst_ui_menu->lines_color.w);
-			}
-			else if (line.find("Color:") != std::string::npos) {
-				// Parse color
-				sscanf_s(line.c_str(), "Color: %f %f %f %f", &inst_ui_menu->color.x, &inst_ui_menu->color.y, &inst_ui_menu->color.z, &inst_ui_menu->color.w);
-			}
-			else if (line.find("Scale:") != std::string::npos) {
-				// Parse scale
-				sscanf_s(line.c_str(), "Scale: %f", &inst_ui_menu->velo_scale);
-			}
-			else if (line.find("PosHud:") != std::string::npos)
-			{
-				//Parse Position Hud boolean
-				int value;
-				sscanf_s(line.c_str(), "Speedometer: %d", &value);
-
-				inst_ui_menu->show_position = value == 1;
-			}
-			else if (line.find("LastCopiedPosition:") != std::string::npos)
-			{
-				//Parse last copied position
-				size_t pos = line.find_first_of("-0123456789");
-
-				std::string copied_position = line.substr(pos);
-				
-				inst_ui_menu->copied_position = copied_position;
-			}
-			else if (line.find("Anglehelper:") != std::string::npos)
-			{
-				int value1;
-				//Parse anglehelper boolean
-				sscanf_s(line.c_str(), "Anglehelper: %d", &value1);
-
-				inst_ui_menu->anglehelper_toggle = value1 == 1;
-			}
-			else if (line.find("90_Lines:") != std::string::npos)
-			{
-				int value1;
-				//Parse 90 lines boolean
-				sscanf_s(line.c_str(), "90_Lines: %d", &value1);
-
-				inst_ui_menu->lines_toggle = value1 == 1;
-			}
-			else if (line.find("FPSWheel:") != std::string::npos)
-			{
-				int value1;
-				//Parse fps wheel boolean
-				sscanf_s(line.c_str(), "FPSWheel: %d", &value1);
-
-				inst_ui_menu->fpswheel_toggle = value1 == 1;
-			}
-			else if (line.find("FPSWheelOffsetY:") != std::string::npos) {
-				float value1;
-				//Parse fps wheel float
-				sscanf_s(line.c_str(), "FPSWheelOffsetY: %f", &value1);
-
-				inst_ui_menu->fpswheel_offset_y = value1;
-			}
-			else if (line.find("FPSWheelOffsetX:") != std::string::npos) {
-				float value1;
-				//Parse fps wheel float
-				sscanf_s(line.c_str(), "FPSWheelOffsetX: %f", &value1);
-
-				inst_ui_menu->fpswheel_offset_x = value1;
-			}
-			else if (line.find("FPSWheelSize:") != std::string::npos) {
-				float value1;
-				//Parse fps wheel float
-				sscanf_s(line.c_str(), "FPSWheelSize: %f", &value1);
-
-				inst_ui_menu->fpswheel_size = value1;
-			}
-			else if (line.find("Anglehelper_pixel_scale:") != std::string::npos) {
-				float value1;
-				sscanf_s(line.c_str(), "Anglehelper_pixel_scale: %f", &value1);
-
-				inst_ui_menu->ah_pixel_scale = value1;
-			}
-			else if (line.find("Wheel_anglehelper_pixel_scale:") != std::string::npos) {
-				float value1;
-				sscanf_s(line.c_str(), "Wheel_anglehelper_pixel_scale: %f", &value1);
-
-				inst_ui_menu->wheel_ah_pixel_scale = value1;
-			}
-			else if (line.find("Wheel_pixel_scale:") != std::string::npos) {
-				float value1;
-				sscanf_s(line.c_str(), "Wheel_pixel_scale: %f", &value1);
-
-				inst_ui_menu->wheel_pixel_scale = value1;
-			}
-			else if (line.find("JumpoffSpeed:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "JumpoffSpeed: %d", &value1);
-
-				inst_ui_menu->draw_jumpoff_speed = value1 == 1;
-			}
-			else if (line.find("JumpoffSpeed_bottom:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "JumpoffSpeed_bottom: %d", &value1);
-
-				inst_ui_menu->jumpoffspeed_display_bottom = value1 == 1;
-			}
-			else if (line.find("Strafedowntime:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "Strafedowntime: %d", &value1);
-
-				inst_ui_menu->strafedowntime_toggle = value1 == 1;
-			}
-			else if (line.find("rpgtimer:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "rpgtimer: %d", &value1);
-
-				inst_ui_menu->rpgtimer_toggle = value1 == 1;
-			}
-			else if (line.find("bouncevelocity:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "bouncevelocity: %d", &value1);
-
-				inst_ui_menu->bouncevelocity_toggle = value1 == 1;
-			}
-			else if (line.find("drawfps:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "drawfps: %d", &value1);
-
-				inst_ui_menu->drawfps_toggle = value1 == 1;
-			}
-			else if (line.find("color_fps:") != std::string::npos) {
-				sscanf_s(line.c_str(), "color_fps: %f %f %f %f", &inst_ui_menu->fpsColor.x, &inst_ui_menu->fpsColor.y, &inst_ui_menu->fpsColor.z, &inst_ui_menu->fpsColor.w);
-			}
-			else if (line.find("scale_fps:") != std::string::npos) {
-				float value1;
-				sscanf_s(line.c_str(), "scale_fps: %f", &value1);
-
-				inst_ui_menu->fpsScale = value1;
-			}
-			else if (line.find("drawfps_spectateonly:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "drawfps_spectateonly: %d", &value1);
-
-				inst_ui_menu->drawfps_spectateonly = value1 == 1;
-			}
-			else if (line.find("rpgangle:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "rpgangle: %d", &value1);
-
-				inst_ui_menu->rpgangle_toggle = value1 == 1;
-			}
-			else if (line.find("centerline_toggle:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "centerline_toggle: %d", &value1);
-
-				inst_ui_menu->drawcenterline = value1 == 1;
-			}
-			else if (line.find("color_centerline:") != std::string::npos) {
-				sscanf_s(line.c_str(), "color_centerline: %f %f %f %f", &inst_ui_menu->centerline_color.x, &inst_ui_menu->centerline_color.y, &inst_ui_menu->centerline_color.z, &inst_ui_menu->centerline_color.w);
-			}
-			else if (line.find("centerline_toggle_fpswheel:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "centerline_toggle_fpswheel: %d", &value1);
-
-				inst_ui_menu->drawfpswheelcenterline = value1 == 1;
-			}
-			else if (line.find("color_fpswheelcenterline:") != std::string::npos) {
-				sscanf_s(line.c_str(), "color_fpswheelcenterline: %f %f %f %f", &inst_ui_menu->fpswheelcenterline_color.x, &inst_ui_menu->fpswheelcenterline_color.y, &inst_ui_menu->fpswheelcenterline_color.z, &inst_ui_menu->fpswheelcenterline_color.w);
-			}
-			else if (line.find("velo_acceleration_toggle:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "velo_acceleration_toggle: %d", &value1);
-
-				inst_ui_menu->velo_show_acceleration = value1 == 1;
-			}
-			else if (line.find("velo_deceleration_toggle:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "velo_deceleration_toggle: %d", &value1);
-
-				inst_ui_menu->velo_show_deceleration = value1 == 1;
-			}
-			else if (line.find("color_acceleration:") != std::string::npos) {
-				sscanf_s(line.c_str(), "color_acceleration: %f %f %f %f", &inst_ui_menu->acceleration_color.x, &inst_ui_menu->acceleration_color.y, &inst_ui_menu->acceleration_color.z, &inst_ui_menu->acceleration_color.w);
-			}
-			else if (line.find("color_deceleration:") != std::string::npos) {
-				sscanf_s(line.c_str(), "color_deceleration: %f %f %f %f", &inst_ui_menu->deceleration_color.x, &inst_ui_menu->deceleration_color.y, &inst_ui_menu->deceleration_color.z, &inst_ui_menu->deceleration_color.w);
-			}
-			else if (line.find("keep_velo_centered_toggle:") != std::string::npos) {
-				int value1;
-				sscanf_s(line.c_str(), "keep_velo_centered_toggle: %d", &value1);
-
-				inst_ui_menu->keep_velo_centered = value1 == 1;
-			}
-		}
-
-		config_file.close();
-	} else {
-		std::cout << "Config file not found. Using default values.\n";
-		save_configuration();
-	}
+	configManager.loadConfig();
 }
 
 void Avengers::save_configuration() {
-	
-	std::ofstream configFile("AvengersConfig.txt");  // Open a file for writing
-
-	if (configFile.is_open()) {
-		// Save Speedometer on
-		configFile << "Speedometer: " << inst_ui_menu->velo_meter << "\n";
-
-		// Save Sep Speedometer on
-		configFile << "SepVelo: " << inst_ui_menu->sep_velo << "\n";
-		
-		// Save position
-		configFile << "Position: " << inst_ui_menu->velo_pos.x << " " << inst_ui_menu->velo_pos.y << "\n";
-
-		// Save speedometer color
-		configFile << "Color: " << inst_ui_menu->color.x << " " << inst_ui_menu->color.y << " " << inst_ui_menu->color.z << " " << inst_ui_menu->color.w << "\n";
-
-		//Save scale
-		configFile << "Scale: " << inst_ui_menu->velo_scale << "\n";
-
-		//Save Position
-		configFile << "PosHud: " << inst_ui_menu->show_position << "\n";
-
-		//Anglehelper
-		configFile << "Anglehelper: " << inst_ui_menu->anglehelper_toggle << "\n";
-		configFile << "Anglehelper_pixel_scale: " << inst_ui_menu->ah_pixel_scale << "\n";
-		configFile << "Wheel_anglehelper_pixel_scale: " << inst_ui_menu->wheel_ah_pixel_scale << "\n";
-
-		// Save anglehelper color
-		configFile << "Color_anglehelper: " << inst_ui_menu->anglehelper_color.x << " " << inst_ui_menu->anglehelper_color.y << " " << inst_ui_menu->anglehelper_color.z << " " << inst_ui_menu->anglehelper_color.w << "\n";
-
-		// 90 lines
-		configFile << "90_Lines: " << inst_ui_menu->lines_toggle << "\n";
-
-		// Save anglehelper color
-		configFile << "Color_90_lines: " << inst_ui_menu->lines_color.x << " " << inst_ui_menu->lines_color.y << " " << inst_ui_menu->lines_color.z << " " << inst_ui_menu->lines_color.w << "\n";
-
-		// Save FPS Wheel settings
-		configFile << "FPSWheel: " << inst_ui_menu->fpswheel_toggle << "\n";
-		configFile << "FPSWheelOffsetY: " << inst_ui_menu->fpswheel_offset_y << "\n";
-		configFile << "FPSWheelOffsetX: " << inst_ui_menu->fpswheel_offset_x << "\n";
-		configFile << "FPSWheelSize: " << inst_ui_menu->fpswheel_size << "\n";
-		configFile << "Wheel_pixel_scale: " << inst_ui_menu->wheel_pixel_scale << "\n";
-		configFile << "JumpoffSpeed: " << inst_ui_menu->draw_jumpoff_speed << "\n";
-
-		//Save Last Copied Position
-		if (inst_ui_menu->copied_position != "")
-		{
-			configFile << "LastCopiedPosition: " << inst_ui_menu->copied_position << "\n";
-		}
-
-		//Misc
-		configFile << "Strafedowntime: " << inst_ui_menu->strafedowntime_toggle << "\n";
-		configFile << "JumpoffSpeed_bottom: " << inst_ui_menu->jumpoffspeed_display_bottom << "\n";
-		configFile << "rpgtimer: " << inst_ui_menu->rpgtimer_toggle << "\n";
-		configFile << "rpgangle: " << inst_ui_menu->rpgangle_toggle << "\n";
-		configFile << "bouncevelocity: " << inst_ui_menu->bouncevelocity_toggle << "\n";
-		configFile << "drawfps: " << inst_ui_menu->drawfps_toggle << "\n";
-		configFile << "color_fps: " << inst_ui_menu->fpsColor.x << " " << inst_ui_menu->fpsColor.y << " " << inst_ui_menu->fpsColor.z << " " << inst_ui_menu->fpsColor.w << "\n";
-		configFile << "scale_fps: " << inst_ui_menu->fpsScale << "\n";
-		configFile << "drawfps_spectateonly: " << inst_ui_menu->drawfps_spectateonly << "\n";
-		configFile << "centerline_toggle: " << inst_ui_menu->drawcenterline << "\n";
-		configFile << "color_centerline: " << inst_ui_menu->centerline_color.x << " " << inst_ui_menu->centerline_color.y << " " << inst_ui_menu->centerline_color.z << " " << inst_ui_menu->centerline_color.w << "\n";
-		configFile << "centerline_toggle_fpswheel: " << inst_ui_menu->drawfpswheelcenterline << "\n";
-		configFile << "color_fpswheelcenterline: " << inst_ui_menu->fpswheelcenterline_color.x << " " << inst_ui_menu->fpswheelcenterline_color.y << " " << inst_ui_menu->fpswheelcenterline_color.z << " " << inst_ui_menu->fpswheelcenterline_color.w << "\n";
-		configFile << "velo_acceleration_toggle: " << inst_ui_menu->velo_show_acceleration << "\n";
-		configFile << "velo_deceleration_toggle: " << inst_ui_menu->velo_show_deceleration << "\n";
-		configFile << "color_acceleration: " << inst_ui_menu->acceleration_color.x << " " << inst_ui_menu->acceleration_color.y << " " << inst_ui_menu->acceleration_color.z << " " << inst_ui_menu->acceleration_color.w << "\n";
-		configFile << "color_deceleration: " << inst_ui_menu->deceleration_color.x << " " << inst_ui_menu->deceleration_color.y << " " << inst_ui_menu->deceleration_color.z << " " << inst_ui_menu->deceleration_color.w << "\n";
-		configFile << "keep_velo_centered_toggle: " << inst_ui_menu->keep_velo_centered << "\n";
-
-		configFile.close();  // Close the file
-	} else {
-		std::cerr << "Error opening config file for writing\n";
-	}
+	configManager.saveConfig();
 }
 
-Avengers::Avengers()
+Avengers::Avengers() :
+	configManager("AvengersConfig.txt")
 {
 	exit = false;
 	inst_Avengers = this;
