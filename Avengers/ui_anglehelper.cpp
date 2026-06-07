@@ -53,8 +53,8 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 
 		ImColor zoneColor1 = color;
 		ImColor zoneColor2 = color;
-		zoneColor1.Value.w = 0.4f;
-		zoneColor2.Value.w = 0.4f;
+		zoneColor1.Value.w = 0.6f;
+		zoneColor2.Value.w = 0.6f;
 		zoneColor2.Value.x += fmodf(0.5f, 1.f);
 		zoneColor2.Value.y += fmodf(0.5f, 1.f);
 		zoneColor2.Value.z += fmodf(0.5f, 1.f);
@@ -62,7 +62,7 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 		static ImColor currentZoneColor = zoneColor1;
 		static ImColor nextZoneColor = zoneColor2;
 
-		if (prevZoneBounds != currentZoneBounds) {
+		if (hud->inst_ui_menu->clamp_to_next_zone && (prevZoneBounds != currentZoneBounds)) {
 			if (currentZoneColor == zoneColor1) {
 				currentZoneColor = zoneColor2;
 				nextZoneColor = zoneColor1;
@@ -71,6 +71,11 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 				currentZoneColor = zoneColor1;
 				nextZoneColor = zoneColor2;
 			}
+		}
+
+		if (!hud->inst_ui_menu->clamp_to_next_zone) {
+			currentZoneColor = color;
+			currentZoneColor.Value.w = 0.6f;
 		}
 
 		if (goingRight) {
