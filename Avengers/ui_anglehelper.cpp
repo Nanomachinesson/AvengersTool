@@ -26,18 +26,18 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -30 + screen.y), ImVec2(width + screen.x, 30 + screen.y), ImColor(color));
 	}
 	else {
-		ImVec4 newColor = color;
-		newColor.w = 0.4;
-
 		Lmove lmove = hud->inst_game->get_lmove();
 		bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
 		float deltaMax = hud->inst_game->get_deltamax_bogus();
-		float ahWidth = deltaMax * hud->inst_ui_menu->ah_pixel_scale * 2.f;
+		float ahWidth = deltaMax * hud->inst_ui_menu->ah_pixel_scale * 5.f;
 
 		bool clampLeft;
 		bool clampRight;
+
+		vec2<float> currentZoneBounds = hud->inst_ui_fpswheel->getCurrentZoneBounds();
+		static vec2<float> prevZoneBounds = currentZoneBounds;
+
 		if (hud->inst_ui_menu->clamp_to_next_zone) {
-			vec2<float> currentZoneBounds = hud->inst_ui_fpswheel->getCurrentZoneBounds();
 			float differencex = 180.f - abs(abs(currentZoneBounds.x - optAngle) - 180.f);
 			float differencey = 180.f - abs(abs(currentZoneBounds.y - optAngle) - 180.f);
 
@@ -51,24 +51,44 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 			}
 		}
 
+		ImColor zoneColor1 = color;
+		ImColor zoneColor2 = color;
+		zoneColor1.Value.w = 0.4f;
+		zoneColor2.Value.w = 0.4f;
+		zoneColor2.Value.x += fmodf(0.5f, 1.f);
+		zoneColor2.Value.y += fmodf(0.5f, 1.f);
+		zoneColor2.Value.z += fmodf(0.5f, 1.f);
+
+		static ImColor currentZoneColor = zoneColor1;
+		static ImColor nextZoneColor = zoneColor2;
+
+		if (prevZoneBounds != currentZoneBounds) {
+			if (currentZoneColor == zoneColor1) {
+				currentZoneColor = zoneColor2;
+				nextZoneColor = zoneColor1;
+			}
+			else {
+				currentZoneColor = zoneColor1;
+				nextZoneColor = zoneColor2;
+			}
+		}
+
 		if (goingRight) {
-			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x + ahWidth, 10 + screen.y), ImColor(newColor));
+			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x + ahWidth, 10 + screen.y), ImColor(currentZoneColor));
 			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - 1.f, -15.f + screen.y), ImVec2(screen.x + 1.f, 15.f + screen.y), ImColor(1.f, 1.f, 1.f, 0.7f));
 			if (hud->inst_ui_menu->clamp_to_next_zone) {
-				ImColor nextZoneColor = newColor;
-				nextZoneColor.Value.x = 50.f;
 				ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x + ahWidth, -10 + screen.y), ImVec2(screen.x + ahWidth + 5.f * pixelScale, 10 + screen.y), ImColor(nextZoneColor));
 			}
 		}
 		else {
-			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x - ahWidth, 10 + screen.y), ImColor(newColor));
+			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x - ahWidth, 10 + screen.y), ImColor(currentZoneColor));
 			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - 1.f, -15.f + screen.y), ImVec2(screen.x + 1.f, 15.f + screen.y), ImColor(1.f, 1.f, 1.f, 0.7f));
 			if (hud->inst_ui_menu->clamp_to_next_zone) {
-				ImColor nextZoneColor = newColor;
-				nextZoneColor.Value.x = 50.f;
 				ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - ahWidth, -10 + screen.y), ImVec2(screen.x - ahWidth - 5.f * pixelScale, 10 + screen.y), ImColor(nextZoneColor));
 			}
 		}
+
+		prevZoneBounds = currentZoneBounds;
 	}
 }
 
