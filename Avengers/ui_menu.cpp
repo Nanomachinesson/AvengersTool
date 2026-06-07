@@ -88,7 +88,47 @@ void ui_menu::menu(Avengers* hud)
 	{
 		hud->save_configuration();
 	}
+	//Acceleration
+	if (ImGui::Checkbox("Show acceleration", &velo_show_acceleration)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	ImGui::ColorButton("Acceleration Color Button", acceleration_color);
+
+	if (ImGui::IsItemClicked()) {
+		ImGui::OpenPopup("AccelerationColorPickerPopup");
+	}
+
+	if (ImGui::BeginPopup("AccelerationColorPickerPopup")) {
+		ImGui::ColorPicker4("Acceleration Color Picker", &acceleration_color.x);
+
+		ImGui::EndPopup();
+
+		hud->save_configuration();
+	}
+
+	ImGui::SameLine();
+
+	//Deceleration
+	if (ImGui::Checkbox("Show deceleration", &velo_show_deceleration)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	ImGui::ColorButton("Deceleration Color Button", deceleration_color);
+
+	if (ImGui::IsItemClicked()) {
+		ImGui::OpenPopup("DecelerationColorPickerPopup");
+	}
+
+	if (ImGui::BeginPopup("DecelerationColorPickerPopup")) {
+		ImGui::ColorPicker4("Deceleration Color Picker", &deceleration_color.x);
+
+		ImGui::EndPopup();
+
+		hud->save_configuration();
+	}
 	
+	/////////////
 	if(ImGui::SliderFloat("Speed Size", &velo_scale, 0.01f, 10.f))
 	{
 		hud->save_configuration();

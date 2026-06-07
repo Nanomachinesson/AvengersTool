@@ -14,6 +14,13 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	static int frames_to_decrease_velo_for = 0;  //Mark velocity as decreasing for Z frames.
 	static bool velocity_decreasing = false;
 
+	static int frames_to_wait_for_velo_increase = 0;
+	static int frames_checking_for_velo_increase = 0;
+	static int frames_to_increase_velo_for = 0;
+	static bool velocity_increasing = false;
+
+
+	//////////////////////////////////////////////////////////////////DECREASE LOGIC
 	if (velo < prev_velo && frames_to_decrease_velo_for > 0) {
 		frames_to_decrease_velo_for = 50;
 	}
@@ -54,7 +61,48 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 			velocity_decreasing = false;
 		}
 	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	if (velo > prev_velo && frames_to_increase_velo_for > 0) {
+		frames_to_increase_velo_for = 10;
+	}
 
+	if (velo > prev_velo
+		&& frames_to_wait_for_velo_increase == 0 && frames_checking_for_velo_increase == 0 && frames_to_increase_velo_for == 0
+		&& !hud->inst_game->isOnGround()) {
+		frames_to_wait_for_velo_increase = 10;
+		frames_checking_for_velo_increase = 0;
+		frames_to_increase_velo_for = 0;
+	}
+
+	if (velo < prev_velo) {
+		velocity_increasing = false;
+		frames_to_increase_velo_for = 0;
+		frames_to_wait_for_velo_increase = 0;
+		frames_checking_for_velo_increase = 0;
+	}
+
+	if (frames_to_wait_for_velo_increase > 0) {
+		frames_to_wait_for_velo_increase--;
+		if (frames_to_wait_for_velo_increase == 0) {
+			frames_checking_for_velo_increase = 10;
+		}
+	}
+
+	if (frames_checking_for_velo_increase > 0) {
+		frames_checking_for_velo_increase--;
+		if (velo > prev_velo) {
+			velocity_increasing = true;
+			frames_to_increase_velo_for = 10;
+		}
+	}
+
+	if (frames_to_increase_velo_for > 0) {
+		frames_to_increase_velo_for--;
+		if (frames_to_increase_velo_for == 0) {
+			velocity_increasing = false;
+		}
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	prev_velo = velo;
 
@@ -94,14 +142,16 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	
 	draw_list->AddText(outline_position, outlineColor, veloText.c_str());
 	
-	if(!velocity_decreasing)
-	{
-		draw_list->AddText(ImVec2(pos.x, pos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
+	if (hud->inst_ui_menu->velo_show_deceleration && velocity_decreasing) {
+		draw_list->AddText(ImVec2(pos.x, pos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->deceleration_color), veloText.c_str());
 	}
-	else
-	{
-		draw_list->AddText(ImVec2(pos.x, pos.y), IM_COL32(255, 0, 0, 255), veloText.c_str());
+	else if (hud->inst_ui_menu->velo_show_acceleration && velocity_increasing) {
+		draw_list->AddText(ImVec2(pos.x, pos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->acceleration_color), veloText.c_str());
 	}
+	else {
+		draw_list->AddText(ImVec2(pos.x, pos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->color), veloText.c_str());
+	}
+
 	ImGui::SetWindowFontScale(1.0f);
 
 	prev_velo = velo;

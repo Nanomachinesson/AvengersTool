@@ -236,6 +236,24 @@ void Avengers::load_configuration() {
 			else if (line.find("color_fpswheelcenterline:") != std::string::npos) {
 				sscanf_s(line.c_str(), "color_fpswheelcenterline: %f %f %f %f", &inst_ui_menu->fpswheelcenterline_color.x, &inst_ui_menu->fpswheelcenterline_color.y, &inst_ui_menu->fpswheelcenterline_color.z, &inst_ui_menu->fpswheelcenterline_color.w);
 			}
+			else if (line.find("velo_acceleration_toggle:") != std::string::npos) {
+				int value1;
+				sscanf_s(line.c_str(), "velo_acceleration_toggle: %d", &value1);
+
+				inst_ui_menu->velo_show_acceleration = value1 == 1;
+			}
+			else if (line.find("velo_deceleration_toggle:") != std::string::npos) {
+				int value1;
+				sscanf_s(line.c_str(), "velo_deceleration_toggle: %d", &value1);
+
+				inst_ui_menu->velo_show_deceleration = value1 == 1;
+			}
+			else if (line.find("color_acceleration:") != std::string::npos) {
+				sscanf_s(line.c_str(), "color_acceleration: %f %f %f %f", &inst_ui_menu->acceleration_color.x, &inst_ui_menu->acceleration_color.y, &inst_ui_menu->acceleration_color.z, &inst_ui_menu->acceleration_color.w);
+			}
+			else if (line.find("color_deceleration:") != std::string::npos) {
+				sscanf_s(line.c_str(), "color_deceleration: %f %f %f %f", &inst_ui_menu->deceleration_color.x, &inst_ui_menu->deceleration_color.y, &inst_ui_menu->deceleration_color.z, &inst_ui_menu->deceleration_color.w);
+			}
 		}
 
 		config_file.close();
@@ -310,6 +328,10 @@ void Avengers::save_configuration() {
 		configFile << "color_centerline: " << inst_ui_menu->centerline_color.x << " " << inst_ui_menu->centerline_color.y << " " << inst_ui_menu->centerline_color.z << " " << inst_ui_menu->centerline_color.w << "\n";
 		configFile << "centerline_toggle_fpswheel: " << inst_ui_menu->drawfpswheelcenterline << "\n";
 		configFile << "color_fpswheelcenterline: " << inst_ui_menu->fpswheelcenterline_color.x << " " << inst_ui_menu->fpswheelcenterline_color.y << " " << inst_ui_menu->fpswheelcenterline_color.z << " " << inst_ui_menu->fpswheelcenterline_color.w << "\n";
+		configFile << "velo_acceleration_toggle: " << inst_ui_menu->velo_show_acceleration << "\n";
+		configFile << "velo_deceleration_toggle: " << inst_ui_menu->velo_show_deceleration << "\n";
+		configFile << "color_acceleration: " << inst_ui_menu->acceleration_color.x << " " << inst_ui_menu->acceleration_color.y << " " << inst_ui_menu->acceleration_color.z << " " << inst_ui_menu->acceleration_color.w << "\n";
+		configFile << "color_deceleration: " << inst_ui_menu->deceleration_color.x << " " << inst_ui_menu->deceleration_color.y << " " << inst_ui_menu->deceleration_color.z << " " << inst_ui_menu->deceleration_color.w << "\n";
 
 		configFile.close();  // Close the file
 	} else {

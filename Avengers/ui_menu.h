@@ -12,10 +12,14 @@ class ui_menu
 	bool demoplayer_menu = false;
 	bool show_position = false;
 	bool velo_meter = false;
+	bool velo_show_acceleration = false;
+	bool velo_show_deceleration = false;
 	bool draw_jumpoff_speed = false;
 	bool jumpoffspeed_display_bottom = false;
 	bool sep_velo = false;
-	ImVec4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
+	ImVec4 color = { 0.0f, 0.0f, 1.0f, 1.0f };
+	ImVec4 acceleration_color = { 0.0f, 1.0f, 0.0f, 1.0f };
+	ImVec4 deceleration_color = { 1.0f, 0.0f, 0.0f, 1.0f };
 	ImVec4 lines_color = { 0.0f, 1.0f, 0.0f, 1.0f };
 	ImVec4 anglehelper_color = { 0.0f, 1.0f, 0.0f, 1.0f };
 	float velo_scale = 1.5;
