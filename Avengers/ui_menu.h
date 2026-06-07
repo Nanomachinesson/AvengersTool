@@ -12,6 +12,7 @@ class ui_menu
 	bool demoplayer_menu = false;
 	bool show_position = false;
 	bool velo_meter = false;
+	bool keep_velo_centered = false;
 	bool velo_show_acceleration = false;
 	bool velo_show_deceleration = false;
 	bool draw_jumpoff_speed = false;

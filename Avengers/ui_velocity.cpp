@@ -126,30 +126,37 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 		}
 	}
 
-	ImVec2 outline_position(pos.x + 1, pos.y + 1);
-		
 	ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
 	ImGui::SetWindowFontScale(scale);
-	if (hud->inst_ui_menu->sep_velo)
-	{
+	if (hud->inst_ui_menu->sep_velo) {
 		ImGui::PushFont(hud->sep_font);
 	}
-	else
-	{
+	else {
 		ImGui::PushFont(hud->toxic_font);
 	}
+
+	vec2<float> adjustedPos = pos;
+	/*https://stackoverflow.com/a/67855985*/
+	if (hud->inst_ui_menu->keep_velo_centered) {
+		float windowWidth = ImGui::GetWindowSize().x;
+		float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
+
+		adjustedPos.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
+	}
+
+	ImVec2 outline_position(adjustedPos.x + 1, adjustedPos.y + 1);
 	
 	draw_list->AddText(outline_position, outlineColor, veloText.c_str());
 	
 	if (hud->inst_ui_menu->velo_show_deceleration && velocity_decreasing) {
-		draw_list->AddText(ImVec2(pos.x, pos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->deceleration_color), veloText.c_str());
+		draw_list->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->deceleration_color), veloText.c_str());
 	}
 	else if (hud->inst_ui_menu->velo_show_acceleration && velocity_increasing) {
-		draw_list->AddText(ImVec2(pos.x, pos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->acceleration_color), veloText.c_str());
+		draw_list->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->acceleration_color), veloText.c_str());
 	}
 	else {
-		draw_list->AddText(ImVec2(pos.x, pos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->color), veloText.c_str());
+		draw_list->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->color), veloText.c_str());
 	}
 
 	ImGui::SetWindowFontScale(1.0f);
@@ -195,6 +202,13 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 		}
 
 		ImGui::SetWindowFontScale(scale);
+
+		if (hud->inst_ui_menu->keep_velo_centered) {
+			float windowWidth = ImGui::GetWindowSize().x;
+			float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
+
+			position.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
+		}
 
 		draw_list->AddText(position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
 

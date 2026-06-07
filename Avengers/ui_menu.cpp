@@ -69,6 +69,7 @@ void ui_menu::menu(Avengers* hud)
 	
 	ImGui::SameLine(); ImGui::ColorButton("Color Button", color);
 
+
 	if(ImGui::IsItemClicked())
 	{
 		ImGui::OpenPopup("ColorPickerPopup");
@@ -82,7 +83,32 @@ void ui_menu::menu(Avengers* hud)
 
 		hud->save_configuration();
 	}
+
 	ImGui::SameLine(); ImGui::Checkbox("Lock Speed Position", &lock_velo_pos);
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Keep Centered", &keep_velo_centered)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Center")) {
+		ImGui::SetWindowFontScale(velo_scale);
+		if (hud->inst_ui_menu->sep_velo) {
+			ImGui::PushFont(hud->sep_font);
+		}
+		else {
+			ImGui::PushFont(hud->toxic_font);
+		}
+
+		if (keep_velo_centered) {
+			velo_pos.x = hud->inst_game->get_screen_res().x / 2.f - ImGui::CalcTextSize("0").x / 2.f;
+		}
+		velo_pos.y = hud->inst_game->get_screen_res().y / 2.f;
+
+		ImGui::SetWindowFontScale(1.f);
+		ImGui::PopFont();
+
+		hud->save_configuration();
+	}
 
 	if(ImGui::Checkbox("Sep Speedometer", &sep_velo))
 	{

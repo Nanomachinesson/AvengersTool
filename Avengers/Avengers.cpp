@@ -254,6 +254,12 @@ void Avengers::load_configuration() {
 			else if (line.find("color_deceleration:") != std::string::npos) {
 				sscanf_s(line.c_str(), "color_deceleration: %f %f %f %f", &inst_ui_menu->deceleration_color.x, &inst_ui_menu->deceleration_color.y, &inst_ui_menu->deceleration_color.z, &inst_ui_menu->deceleration_color.w);
 			}
+			else if (line.find("keep_velo_centered_toggle:") != std::string::npos) {
+				int value1;
+				sscanf_s(line.c_str(), "keep_velo_centered_toggle: %d", &value1);
+
+				inst_ui_menu->keep_velo_centered = value1 == 1;
+			}
 		}
 
 		config_file.close();
@@ -332,6 +338,7 @@ void Avengers::save_configuration() {
 		configFile << "velo_deceleration_toggle: " << inst_ui_menu->velo_show_deceleration << "\n";
 		configFile << "color_acceleration: " << inst_ui_menu->acceleration_color.x << " " << inst_ui_menu->acceleration_color.y << " " << inst_ui_menu->acceleration_color.z << " " << inst_ui_menu->acceleration_color.w << "\n";
 		configFile << "color_deceleration: " << inst_ui_menu->deceleration_color.x << " " << inst_ui_menu->deceleration_color.y << " " << inst_ui_menu->deceleration_color.z << " " << inst_ui_menu->deceleration_color.w << "\n";
+		configFile << "keep_velo_centered_toggle: " << inst_ui_menu->keep_velo_centered << "\n";
 
 		configFile.close();  // Close the file
 	} else {
