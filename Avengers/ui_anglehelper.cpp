@@ -34,15 +34,19 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 		float deltaMax = hud->inst_game->get_deltamax_bogus();
 		float ahWidth = deltaMax * hud->inst_ui_menu->ah_pixel_scale * 2.f;
 
+		bool clampLeft;
+		bool clampRight;
 		if (hud->inst_ui_menu->clamp_to_next_zone) {
 			vec2<float> currentZoneBounds = hud->inst_ui_fpswheel->getCurrentZoneBounds();
 			float differencex = 180.f - abs(abs(currentZoneBounds.x - optAngle) - 180.f);
 			float differencey = 180.f - abs(abs(currentZoneBounds.y - optAngle) - 180.f);
 
-			if (differencey * pixelScale < ahWidth) {
+			clampLeft = differencey * pixelScale < ahWidth;
+			clampRight = differencex * pixelScale < ahWidth;
+			if (clampLeft) {
 				ahWidth = differencey * pixelScale;
 			}
-			else if (differencex * pixelScale < ahWidth) {
+			else if (clampRight) {
 				ahWidth = differencex * pixelScale;
 			}
 		}
@@ -50,10 +54,20 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 		if (goingRight) {
 			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x + ahWidth, 10 + screen.y), ImColor(newColor));
 			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - 1.f, -15.f + screen.y), ImVec2(screen.x + 1.f, 15.f + screen.y), ImColor(1.f, 1.f, 1.f, 0.7f));
+			if (hud->inst_ui_menu->clamp_to_next_zone) {
+				ImColor nextZoneColor = newColor;
+				nextZoneColor.Value.x = 50.f;
+				ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x + ahWidth, -10 + screen.y), ImVec2(screen.x + ahWidth + 5.f * pixelScale, 10 + screen.y), ImColor(nextZoneColor));
+			}
 		}
 		else {
 			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -10 + screen.y), ImVec2(screen.x - ahWidth, 10 + screen.y), ImColor(newColor));
 			ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - 1.f, -15.f + screen.y), ImVec2(screen.x + 1.f, 15.f + screen.y), ImColor(1.f, 1.f, 1.f, 0.7f));
+			if (hud->inst_ui_menu->clamp_to_next_zone) {
+				ImColor nextZoneColor = newColor;
+				nextZoneColor.Value.x = 50.f;
+				ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x - ahWidth, -10 + screen.y), ImVec2(screen.x - ahWidth - 5.f * pixelScale, 10 + screen.y), ImColor(nextZoneColor));
+			}
 		}
 	}
 }
