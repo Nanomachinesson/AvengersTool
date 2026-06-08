@@ -328,7 +328,9 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
-	ImGui::SliderFloat("Anglehelper y-offset", &anglehelper_y_offset, -1000.f, 1000.f);
+	if (ImGui::SliderFloat("Anglehelper y-offset", &anglehelper_y_offset, -1000.f, 1000.f)) {
+		hud->save_configuration();
+	}
 
 	if (ImGui::Checkbox("Draw centerline", &drawcenterline)) {
 		hud->save_configuration();
