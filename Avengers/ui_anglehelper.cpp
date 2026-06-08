@@ -13,7 +13,7 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 
 	float pixelScale = (hud->inst_game->get_screen_res().x / fov) * hud->inst_ui_menu->ah_pixel_scale;
 
-	screen.y = hud->inst_game->get_screen_res().y / 2;
+	screen.y = hud->inst_game->get_screen_res().y / 2 + hud->inst_ui_menu->anglehelper_y_offset;
 
 	float ahOffset = smallestAngleDiff(yaw, optAngle);
 	if (mm::compare_angles(yaw, optAngle) == 1) {

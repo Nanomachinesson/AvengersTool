@@ -28,6 +28,7 @@ public:
 	float velo_scale = 1.5;
 	bool lock_velo_pos = true;
 	bool anglehelper_toggle = false;
+	float anglehelper_y_offset = 0.0f;
 	bool clamp_to_next_zone = false;
 	bool drawcenterline = false;
 	ImVec4 centerline_color = { 1.0f, 1.0f, 1.0f, 1.0f };

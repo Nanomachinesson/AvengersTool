@@ -328,6 +328,8 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
+	ImGui::SliderFloat("Anglehelper y-offset", &anglehelper_y_offset, -1000.f, 1000.f);
+
 	if (ImGui::Checkbox("Draw centerline", &drawcenterline)) {
 		hud->save_configuration();
 	}
@@ -609,6 +611,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("keep_velo_centered_toggle", &keep_velo_centered);
 	hud->registerConfig("ah_style", &currentAhStyle);
 	hud->registerConfig("clamp_to_next_zone", &clamp_to_next_zone);
+	hud->registerConfig("anglehelper_y_offset", &anglehelper_y_offset);
 }
 
 ui_menu::ui_menu(Avengers* hud)
