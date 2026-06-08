@@ -8,5 +8,5 @@ public:
 	ui_velocity(class Avengers* hud);
 	~ui_velocity();
 	void render(Avengers*& hud, bool& is_locked, vec2<float>& pos, float& scale, ImVec4& color);
+	void render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& scale, ImVec4& color);
 };
-

@@ -21,6 +21,9 @@
 #include "ui_menu.h"
 #include "ui_position_marker.h"
 #include "ui_fpswheel.h"
+#include "ui_strafedowntime.h"
+#include "ui_bounceinfo.h"
+#include "config_manager.h"
 
 extern "C" {
 	bool __declspec(dllexport) __stdcall RIB_Main(int a, int b);
@@ -52,6 +55,8 @@ public:
 	std::shared_ptr<ui_jump_target> inst_ui_jump_target;
 	std::shared_ptr<ui_90_lines> inst_ui_90_lines;
 	std::shared_ptr<ui_fpswheel> inst_ui_fpswheel;
+	std::shared_ptr<ui_strafedowntime> inst_ui_strafedowntime;
+	std::shared_ptr<ui_bounceinfo> inst_ui_bounceinfo;
 
 	ImFont* toxic_font;
 	ImFont* sep_font;
@@ -63,5 +68,15 @@ public:
 	bool bind_close(UINT key_state);
 	static Avengers* inst_Avengers;
 	static Avengers* get_instance();
+
+	template<typename T>
+	void registerConfig(const std::string& name, T* data)
+	{
+		configManager.registerConfig(name, data);
+	}
+
+private:
+	ConfigManager configManager;
+
 };
 

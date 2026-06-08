@@ -13,4 +13,5 @@ namespace mm
 	float to_degrees(float radians);
 	void angle_vectors(vec3<float> angles, float* forward, float* right, float* up);
 	void angle_vectors(vec3<float> angles, vec3<float>* forward, vec3<float>* right, vec3<float>* up);
+	int compare_angles(float sourceAngle, float otherAngle);
 }

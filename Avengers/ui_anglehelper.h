@@ -11,5 +11,11 @@ public:
 	~ui_anglehelper();
 	void render(Avengers*& hud, ImVec4& color);
 	void renderOnWheel(Avengers*& hud, ImVec4& color);
+	void renderCenterLine(Avengers*& hud, ImVec4& color);
+	void renderCenterLineOnWheel(Avengers*& hud, ImVec4& color);
+
+private:
+	float smallestAngleDiff(float a, float b);
+
 };
 

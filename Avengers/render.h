@@ -15,9 +15,11 @@ public:
 	void create_objects(LPDIRECT3DDEVICE9 pDevice);
 	void init_imgui(LPDIRECT3DDEVICE9 dev);
 	void add_callback(RenderCallback);
+	void SetupImGuiStyle2();
 
 private:
 	bool imgui_initialized = false;
+	bool first_run_style = true;
 	std::vector<RenderCallback> callbacks_render{};
 };
 

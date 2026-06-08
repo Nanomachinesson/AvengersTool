@@ -24,209 +24,34 @@ bool Avengers::bind_toggle_input(UINT key_state)
 
 bool Avengers::bind_tp_to_saved_pos(UINT key_state)
 {
+	if (!inst_game->isDevmap()) {
+		return true;
+	}
+
 	if (key_state == WM_KEYDOWN) //return true on key down just so nothing else receives the key down stroke
 		return true; 
 	if (key_state == WM_KEYUP)
 	{
-		if(inst_ui_menu->copied_position != "" && inst_game->is_connected())
-			inst_game->send_command_to_console(("setviewpos " + inst_ui_menu->copied_position).c_str());
+		if (inst_game->is_connected()) {
+			inst_game->setPosition(inst_ui_menu->copied_position_origin);
+			inst_game->setView(inst_ui_menu->copied_position_view);
+			inst_game->setVelocity(vec3<float>(0, 0, 0));
+		}
+
 		return true;
 	}
 }
 
-// Function to load configuration from a file or set default values
 void Avengers::load_configuration() {
-	// Specify the file path
-	std::string filePath = "AvengersConfig.txt";
-
-	// Check if the file exists
-	if (std::ifstream config_file(filePath); config_file.is_open()) {
-		std::string line;
-		while (std::getline(config_file, line)) {
-			if (line.find("Speedometer:") != std::string::npos)
-			{
-				int value;
-				//Parse speedometer boolean
-				sscanf_s(line.c_str(), "Speedometer: %d", &value);
-
-				inst_ui_menu->velo_meter = value == 1;
-			}
-			else if(line.find("SepVelo:") != std::string::npos)
-			{
-				int value1;
-				//Parse sep speedometer boolean
-				sscanf_s(line.c_str(), "SepVelo: %d", &value1);
-
-				inst_ui_menu->sep_velo = value1 == 1;
-			}
-			else if (line.find("Position:") != std::string::npos
-						&& line.find("Last") == std::string::npos) {
-				// Parse position
-				sscanf_s(line.c_str(), "Position: %f %f", &inst_ui_menu->velo_pos.x, &inst_ui_menu->velo_pos.y);
-			}
-			else if (line.find("Color_anglehelper:") != std::string::npos) {
-				// Parse color
-				sscanf_s(line.c_str(), "Color_anglehelper: %f %f %f %f", &inst_ui_menu->anglehelper_color.x, &inst_ui_menu->anglehelper_color.y, &inst_ui_menu->anglehelper_color.z, &inst_ui_menu->anglehelper_color.w);
-			}
-			else if (line.find("Color_90_lines:") != std::string::npos
-				&& line.find("anglehelper") == std::string::npos) {
-				// Parse color
-				sscanf_s(line.c_str(), "Color_90_lines: %f %f %f %f", &inst_ui_menu->lines_color.x, &inst_ui_menu->lines_color.y, &inst_ui_menu->lines_color.z, &inst_ui_menu->lines_color.w);
-			}
-			else if (line.find("Color:") != std::string::npos) {
-				// Parse color
-				sscanf_s(line.c_str(), "Color: %f %f %f %f", &inst_ui_menu->color.x, &inst_ui_menu->color.y, &inst_ui_menu->color.z, &inst_ui_menu->color.w);
-			}
-			else if (line.find("Scale:") != std::string::npos) {
-				// Parse scale
-				sscanf_s(line.c_str(), "Scale: %f", &inst_ui_menu->velo_scale);
-			}
-			else if (line.find("PosHud:") != std::string::npos)
-			{
-				//Parse Position Hud boolean
-				int value;
-				sscanf_s(line.c_str(), "Speedometer: %d", &value);
-
-				inst_ui_menu->show_position = value == 1;
-			}
-			else if (line.find("LastCopiedPosition:") != std::string::npos)
-			{
-				//Parse last copied position
-				size_t pos = line.find_first_of("-0123456789");
-
-				std::string copied_position = line.substr(pos);
-				
-				inst_ui_menu->copied_position = copied_position;
-			}
-			else if (line.find("Anglehelper:") != std::string::npos)
-			{
-				int value1;
-				//Parse anglehelper boolean
-				sscanf_s(line.c_str(), "Anglehelper: %d", &value1);
-
-				inst_ui_menu->anglehelper_toggle = value1 == 1;
-			}
-			else if (line.find("90_Lines:") != std::string::npos)
-			{
-				int value1;
-				//Parse 90 lines boolean
-				sscanf_s(line.c_str(), "90_Lines: %d", &value1);
-
-				inst_ui_menu->lines_toggle = value1 == 1;
-			}
-			else if (line.find("FPSWheel:") != std::string::npos)
-			{
-				int value1;
-				//Parse fps wheel boolean
-				sscanf_s(line.c_str(), "FPSWheel: %d", &value1);
-
-				inst_ui_menu->fpswheel_toggle = value1 == 1;
-			}
-			else if (line.find("FPSWheelOffsetY:") != std::string::npos) {
-				float value1;
-				//Parse fps wheel float
-				sscanf_s(line.c_str(), "FPSWheelOffsetY: %f", &value1);
-
-				inst_ui_menu->fpswheel_offset_y = value1;
-			}
-			else if (line.find("FPSWheelOffsetX:") != std::string::npos) {
-				float value1;
-				//Parse fps wheel float
-				sscanf_s(line.c_str(), "FPSWheelOffsetX: %f", &value1);
-
-				inst_ui_menu->fpswheel_offset_x = value1;
-			}
-			else if (line.find("FPSWheelSize:") != std::string::npos) {
-				float value1;
-				//Parse fps wheel float
-				sscanf_s(line.c_str(), "FPSWheelSize: %f", &value1);
-
-				inst_ui_menu->fpswheel_size = value1;
-			}
-			else if (line.find("Anglehelper_pixel_scale:") != std::string::npos) {
-				float value1;
-				sscanf_s(line.c_str(), "Anglehelper_pixel_scale: %f", &value1);
-
-				inst_ui_menu->ah_pixel_scale = value1;
-			}
-			else if (line.find("Wheel_anglehelper_pixel_scale:") != std::string::npos) {
-				float value1;
-				sscanf_s(line.c_str(), "Wheel_anglehelper_pixel_scale: %f", &value1);
-
-				inst_ui_menu->wheel_ah_pixel_scale = value1;
-			}
-			else if (line.find("Wheel_pixel_scale:") != std::string::npos) {
-				float value1;
-				sscanf_s(line.c_str(), "Wheel_pixel_scale: %f", &value1);
-
-				inst_ui_menu->wheel_pixel_scale = value1;
-			}
-		}
-
-		config_file.close();
-	} else {
-		std::cout << "Config file not found. Using default values.\n";
-		save_configuration();
-	}
+	configManager.loadConfig();
 }
 
 void Avengers::save_configuration() {
-	
-	std::ofstream configFile("AvengersConfig.txt");  // Open a file for writing
-
-	if (configFile.is_open()) {
-		// Save Speedometer on
-		configFile << "Speedometer: " << inst_ui_menu->velo_meter << "\n";
-
-		// Save Sep Speedometer on
-		configFile << "SepVelo: " << inst_ui_menu->sep_velo << "\n";
-		
-		// Save position
-		configFile << "Position: " << inst_ui_menu->velo_pos.x << " " << inst_ui_menu->velo_pos.y << "\n";
-
-		// Save speedometer color
-		configFile << "Color: " << inst_ui_menu->color.x << " " << inst_ui_menu->color.y << " " << inst_ui_menu->color.z << " " << inst_ui_menu->color.w << "\n";
-
-		//Save scale
-		configFile << "Scale: " << inst_ui_menu->velo_scale << "\n";
-
-		//Save Position
-		configFile << "PosHud: " << inst_ui_menu->show_position << "\n";
-
-		//Anglehelper
-		configFile << "Anglehelper: " << inst_ui_menu->anglehelper_toggle << "\n";
-		configFile << "Anglehelper_pixel_scale: " << inst_ui_menu->ah_pixel_scale << "\n";
-		configFile << "Wheel_anglehelper_pixel_scale: " << inst_ui_menu->wheel_ah_pixel_scale << "\n";
-
-		// Save anglehelper color
-		configFile << "Color_anglehelper: " << inst_ui_menu->anglehelper_color.x << " " << inst_ui_menu->anglehelper_color.y << " " << inst_ui_menu->anglehelper_color.z << " " << inst_ui_menu->anglehelper_color.w << "\n";
-
-		// 90 lines
-		configFile << "90_Lines: " << inst_ui_menu->lines_toggle << "\n";
-
-		// Save anglehelper color
-		configFile << "Color_90_lines: " << inst_ui_menu->lines_color.x << " " << inst_ui_menu->lines_color.y << " " << inst_ui_menu->lines_color.z << " " << inst_ui_menu->lines_color.w << "\n";
-
-		// Save FPS Wheel settings
-		configFile << "FPSWheel: " << inst_ui_menu->fpswheel_toggle << "\n";
-		configFile << "FPSWheelOffsetY: " << inst_ui_menu->fpswheel_offset_y << "\n";
-		configFile << "FPSWheelOffsetX: " << inst_ui_menu->fpswheel_offset_x << "\n";
-		configFile << "FPSWheelSize: " << inst_ui_menu->fpswheel_size << "\n";
-		configFile << "Wheel_pixel_scale: " << inst_ui_menu->wheel_pixel_scale << "\n";
-
-		//Save Last Copied Position
-		if (inst_ui_menu->copied_position != "")
-		{
-			configFile << "LastCopiedPosition: " << inst_ui_menu->copied_position << "\n";
-		}
-
-		configFile.close();  // Close the file
-	} else {
-		std::cerr << "Error opening config file for writing\n";
-	}
+	configManager.saveConfig();
 }
 
-Avengers::Avengers()
+Avengers::Avengers() :
+	configManager("AvengersConfig.txt")
 {
 	exit = false;
 	inst_Avengers = this;
@@ -246,6 +71,8 @@ Avengers::Avengers()
 	inst_ui_jump_target = std::shared_ptr<ui_jump_target>(new ui_jump_target(this));
 	inst_ui_90_lines = std::shared_ptr<ui_90_lines>(new ui_90_lines(this));
 	inst_ui_fpswheel = std::shared_ptr<ui_fpswheel>(new ui_fpswheel(this));
+	inst_ui_strafedowntime = std::shared_ptr<ui_strafedowntime>(new ui_strafedowntime(this));
+	inst_ui_bounceinfo = std::shared_ptr<ui_bounceinfo>(new ui_bounceinfo(this));
 
 	//Added both INSERT and F6 to open the menu for people who have smaller keyboards and cant find that INSERT key ¬_¬
 	inst_input->add_callback(VK_INSERT, [this](UINT key_state) { return this->bind_toggle_input(key_state); });

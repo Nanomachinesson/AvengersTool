@@ -20,21 +20,6 @@ enum connection_state_ : int
     connection_state_connected
 };
 
-typedef struct cvar_s
-{
-	char* name;
-	char* string;
-	char* resetString;		// cvar_restart will reset to this value
-	char* latchedString;		// for CVAR_LATCH vars
-	int			flags;
-	bool	modified;			// set each time the cvar is changed
-	int			modificationCount;	// incremented each time the cvar is changed
-	float		value;				// atof( string )
-	int			integer;			// atoi( string )
-	struct cvar_s* next;
-	struct cvar_s* hashNext;
-} cvar_t;
-
 class game
 {
 public:
@@ -71,27 +56,41 @@ public:
     vec3<float> get_origin();
     vec3<float> get_velocity();
     float get_optimal_angle();
+    float get_optimal_angle(const Lmove& lMove);
 	bool isOnGround();
 	static void send_command_to_console(const char* command);
 	bool world_to_screen(vec3<float> world, float* screen_x, float* screen_y);
+    int get_fps(bool adjustForSpectator = false);
 	int get_fps_wtmod();
 	int get_fps_3_xp();
 	void add_obituary(const std::string& msg);
 	int getJumpTime();
     vec2<float> get_screen_res();
 	mem::function<void(int count, int width, GfxPointVertex* verts, bool depthTest)> polyline = 0x613040;
-    Lmove get_lmove();
+    Lmove get_lmove(bool adjustForSpectator = false);
 	float get_fov();
+	pmove_t* get_pmove_current();
+	bool is_spectating();
+	bool is_noclipping();
 	cvar_t* getCvar(const char* name);
+	bool decideStechSide(const Lmove& lMove);
+	bool isDevmap();
+	void setPosition(const vec3<float>& pos);
+	void setView(const vec3<float>& angles);
+	void setVelocity(const vec3<float>& velocity);
+	vec3<float> toCodAngles(const vec3<float>& angles);
+	float get_deltamax_bogus();
 
 private:
     vec3<float> get_delta_angles();
     float get_delta();
+    float get_delta(const Lmove& lMove);
     float get_delta_optimal();
+    float get_delta_optimal(const Lmove& lMove);
     float get_velocity_angle();
     float get_dir_diff();
+    float get_dir_diff(const Lmove& lMove);
     float get_accel();
-    int get_fps();
     constexpr static float g_speed = 190.f;
 
 };
