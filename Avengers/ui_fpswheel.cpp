@@ -118,7 +118,7 @@ vec2<float> ui_fpswheel::getCurrentZoneBounds()
 {
 	Avengers* hud = Avengers::get_instance();
 	float optAngle = hud->inst_game->get_optimal_angle();
-	Lmove lmove = hud->inst_game->get_lmove();
+	Lmove lmove = hud->inst_game->get_lmove(true);
 
 	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
 

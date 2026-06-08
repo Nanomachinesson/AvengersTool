@@ -26,7 +26,7 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -30 + screen.y), ImVec2(width + screen.x, 30 + screen.y), ImColor(color));
 	}
 	else {
-		Lmove lmove = hud->inst_game->get_lmove();
+		Lmove lmove = hud->inst_game->get_lmove(true);
 		bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
 		float deltaMax = hud->inst_game->get_deltamax_bogus();
 		float ahWidth = deltaMax * hud->inst_ui_menu->ah_pixel_scale * 5.f;
