@@ -13,7 +13,10 @@ public:
 	HWND window_handle;
 	void update_wndproc(HWND handle);
 	void add_callback(UINT key, InputCallback fn);
+	bool windowReady = true;
+
 private:
 	std::vector<std::pair<UINT,InputCallback>> callbacks_input{};
+
 };
 

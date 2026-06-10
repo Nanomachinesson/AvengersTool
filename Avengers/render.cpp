@@ -22,12 +22,15 @@ void __cdecl EngineDraw_Hook()
 HRESULT __stdcall EndScene_Hook(LPDIRECT3DDEVICE9 dev)
 {
 	Avengers* hud = Avengers::get_instance();
+	hud->inst_input->windowReady = true;
+
 	if (hud && hud->inst_hooks && hud->inst_render)
 	{
 		auto orig = hud->inst_hooks->hook_map["EndScene"]->original(EndScene_Hook)(dev);
 		hud->inst_render->endscene(dev);
 		return orig;
 	}
+
 	return 1;
 }
 
@@ -261,11 +264,6 @@ void render::init_graphics()
 	static LPDIRECT3DDEVICE9 current_device = nullptr;
 	if (current_device != hud->inst_game->get_device())
 	{
-		if (current_device)
-		{
-			D3DPRESENT_PARAMETERS p;
-			current_device->Reset(&p);
-		}
 		Avengers* hud = Avengers::get_instance();
 
 		if (hud && hud->inst_hooks) //remove the old hooks
