@@ -29,7 +29,7 @@ void Collision::render()
 	}
 	///////////////////////////////////////////////////////////////////////////////
 
-	constexpr float maxDist = 500.f;
+	constexpr float maxDist = 1500.f;
 	vec3<float> origin = avengers->inst_game->get_origin();
 
 	for (ProcessedBrush& processedBrush : processedBrushes) {
@@ -166,7 +166,7 @@ void Collision::drawCollision(ProcessedBrush& processedBrush)
 		vec3<float>* points = side.points.data();
 		avengers->inst_game->drawPoly(
 			/* numPts	*/ side.points.size(),
-			/* points	*/ (float(*)[3]) & points,
+			/* points	*/ (float(*)[3]) points,
 			/* pColor	*/ (const float*)&processedBrush.color,
 			/* pLit		*/ poly_lit,
 			/* pOutline */ poly_outlines,
