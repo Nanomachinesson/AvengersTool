@@ -29,12 +29,34 @@ void Collision::render()
 	}
 	///////////////////////////////////////////////////////////////////////////////
 
-	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
-	int brushCount = cm->numBrushes;
+	constexpr float maxDist = 500.f;
 	vec3<float> origin = avengers->inst_game->get_origin();
 
+	for (ProcessedBrush& processedBrush : processedBrushes) {
+		if (processedBrush.center.Dist(origin) <= maxDist) {
+			drawCollision(processedBrush);
+		}
+	}
+}
+
+void Collision::init()
+{
+	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
+	const char* mapents_ptr = cm->mapEnts->entityString;
+
+	parseEntities(std::string(mapents_ptr));
+	brushModels = get_brushmodels();
+	buildBrushes();
+}
+
+void Collision::buildBrushes()
+{
+
+	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
+	int brushCount = cm->numBrushes;
+
 	std::vector<cbrush_t*> brushes;
-	brushes.reserve(25);
+	brushes.reserve(25000);
 
 	for (int i = 0; i < brushCount; i++) {
 		brushes.push_back(&cm->brushes[i]);
@@ -46,11 +68,9 @@ void Collision::render()
 	const float maxDist = 1200.f;
 
 	for (cbrush_t* brush : brushes) {
+		ProcessedBrush processedBrush;
 		vec3<float> center = (brush->mins + brush->maxs) / 2.f;
-
-		if (center.Dist2D(origin) >= maxDist) {
-			continue;
-		}
+		processedBrush.center = center;
 
 		// if brush is part of a submodel, translate brushmodel bounds by the submodel origin [from iw3xo]
 		if (brush->isSubmodel) {
@@ -64,129 +84,95 @@ void Collision::render()
 		}
 
 		std::vector<ShowCollisionBrushPt> points = getPointsForBrush(brush);
+		processedBrush.points = points;
+
 		if (points.size() < 4) {
 			continue;
 		}
 
-		std::vector<vec3<float>> points2;
-
-		for (const auto& p : points) {
-			points2.push_back(p.xyz);
-		}
-
-		const auto poly_lit = false;
-		const auto poly_outlines = false;
-		const auto poly_depth = true;
-		const auto poly_face = false;
-
-		drawCollision(brush, points);
+		buildCollisionPoints(processedBrush, brush, points);
+		processedBrushes.push_back(processedBrush);
 	}
 }
 
-void Collision::init()
+void Collision::buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* brush, const std::vector<ShowCollisionBrushPt>& pts)
 {
-	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
-	const char* mapents_ptr = cm->mapEnts->entityString;
+	static int currentColorIndex = 0;
 
-	parseEntities(std::string(mapents_ptr));
-	brushModels = get_brushmodels();
-}
-
-void Collision::drawCollision(cbrush_t* brush, const std::vector<ShowCollisionBrushPt>& brush_pts)
-{
-	const auto poly_lit = false;
-	const auto poly_outlines = false;
-	const auto poly_linecolor = true;
-	const auto poly_depth = true;
-	const auto poly_face = false;
-
-	axialPlane_t axial_planes[6];
-	axial_planes[0].plane = vec3<float>(-1.0f, 0.0f, 0.0f);
-	axial_planes[0].dist = -brush->mins[0];
-
-	axial_planes[1].plane = vec3<float>(1.0f, 0.0f, 0.0f);
-	axial_planes[1].dist = brush->maxs[0];
-
-	axial_planes[2].plane = vec3<float>(0.0f, -1.0f, 0.0f);
-	axial_planes[2].dist = -brush->mins[1];
-
-	axial_planes[3].plane = vec3<float>(0.0f, 1.0f, 0.0f);
-	axial_planes[3].dist = brush->maxs[1];
-
-	axial_planes[4].plane = vec3<float>(0.0f, 0.0f, -1.0f);
-	axial_planes[4].dist = -brush->mins[2];
-
-	axial_planes[5].plane = vec3<float>(0.0f, 0.0f, 1.0f);
-	axial_planes[5].dist = brush->maxs[2];
-
-	int pt_count = brush_pts.size();
-
-	// -------------------------------
-	// brushside [0]-[5] (axialPlanes)
-
+	constexpr int COLOR_COUNT = 3;
 	const ImColor COLOR_RED = ImColor(1.f, 0.f, 0.f, 1.f);
 	const ImColor COLOR_GREEN = ImColor(0.f, 1.f, 0.f, 1.f);
 	const ImColor COLOR_BLUE = ImColor(0.f, 0.f, 1.f, 1.f);
 
+	ImColor currentColor;
+	switch (currentColorIndex) {
+	case 0:
+		currentColor = COLOR_RED;
+		break;
+	case 1:
+		currentColor = COLOR_GREEN;
+		break;
+	case 2:
+		currentColor = COLOR_BLUE;
+		break;
+	}
+	currentColorIndex = (currentColorIndex + 1) % COLOR_COUNT;
+	processedBrush.color = currentColor;
+
+	AxialPlane_t axial_planes[6] {};
+	get_axial_planes(axial_planes, brush);
+
+	int pt_count = pts.size();
+
+	// -------------------------------
+	// brushside [0]-[5] (axialPlanes)
 	for (auto side_index = 0u; side_index < 6; ++side_index) {
 		vec3<float> plane_normal;
 		plane_normal = axial_planes[side_index].plane;
 
-		// build winding for the current brushside and check if it is visible (culling)
-		if (build_brush_winding_for_side((winding_t*)&winding_pool, reinterpret_cast<const float*>(&plane_normal), side_index, brush_pts)) {
-			std::vector<game::GfxPointVertex> verts;
+		if (build_brush_winding_for_side((winding_t*)&winding_pool, reinterpret_cast<const float*>(&plane_normal), side_index, pts)) {
+			processedBrush.sides.push_back(BrushSide());
+			std::size_t sideIndex = processedBrush.sides.size() - 1;
 			for (int i = 0; i < winding_pool.numpoints; i++) {
-				game::GfxPointVertex p1(reinterpret_cast<vec3<float>*>(winding_pool.p)[i], ImColor(255, 0, 0, 255));
-				verts.push_back(p1);
+				vec3<float> p(reinterpret_cast<vec3<float>*>(winding_pool.p)[i]);
+				processedBrush.sides[sideIndex].points.push_back(p);
 			}
-
-			if (false) {
-				avengers->inst_game->polyline(winding_pool.numpoints, 1, reinterpret_cast<game::GfxPointVertex*>(verts.data()), true);
-			}
-			else {
-				avengers->inst_game->drawPoly(
-					/* numPts	*/ winding_pool.numpoints,
-					/* points	*/ (float(*)[3]) & winding_pool.p,
-					/* pColor	*/ (const float*)&COLOR_GREEN,
-					/* pLit		*/ poly_lit,
-					/* pOutline */ poly_outlines,
-					/* pLineCol	*/ (const float*)&COLOR_RED,
-					/* pDepth	*/ poly_depth,
-					/* pFace	*/ poly_face);
-			}
-
-			//glob::debug_collision_rendered_planes_counter++;
 		}
 	}
 
 	// ---------------------------------
 	// brushside [6] and up (additional)
-
 	for (auto side_index = 6u; side_index < brush->numsides + 6; ++side_index) {
-		if (build_brush_winding_for_side((winding_t*)&winding_pool, brush->sides[side_index - 6].plane->normal, side_index, brush_pts)) {
-			std::vector<game::GfxPointVertex> verts;
+		if (build_brush_winding_for_side((winding_t*)&winding_pool, brush->sides[side_index - 6].plane->normal, side_index, pts)) {
+			processedBrush.sides.push_back(BrushSide());
+			std::size_t sideIndex = processedBrush.sides.size() - 1;
 			for (int i = 0; i < winding_pool.numpoints; i++) {
-				game::GfxPointVertex p1(reinterpret_cast<vec3<float>*>(winding_pool.p)[i], ImColor(255, 0, 0, 255));
-				verts.push_back(p1);
+				vec3<float> p(reinterpret_cast<vec3<float>*>(winding_pool.p)[i]);
+				processedBrush.sides[sideIndex].points.push_back(p);
 			}
-
-			if (false) {
-				avengers->inst_game->polyline(winding_pool.numpoints, 1, reinterpret_cast<game::GfxPointVertex*>(verts.data()), true);
-			}
-			else {
-				avengers->inst_game->drawPoly(
-					/* numPts	*/ winding_pool.numpoints,
-					/* points	*/ (float(*)[3]) & winding_pool.p,
-					/* pColor	*/ (const float*)&COLOR_GREEN,
-					/* pLit		*/ poly_lit,
-					/* pOutline */ poly_outlines,
-					/* pLineCol	*/ (const float*)&COLOR_RED,
-					/* pDepth	*/ poly_depth,
-					/* pFace	*/ poly_face);
-			}
-
-			//glob::debug_collision_rendered_planes_counter++;
 		}
+	}
+}
+
+void Collision::drawCollision(ProcessedBrush& processedBrush)
+{
+	const auto poly_lit = false;
+	const auto poly_outlines = false;
+	const auto poly_linecolor = ImColor(255, 255, 255, 255);
+	const auto poly_depth = true;
+	const auto poly_face = false;
+
+	for (BrushSide& side : processedBrush.sides) {
+		vec3<float>* points = side.points.data();
+		avengers->inst_game->drawPoly(
+			/* numPts	*/ side.points.size(),
+			/* points	*/ (float(*)[3]) & points,
+			/* pColor	*/ (const float*)&processedBrush.color,
+			/* pLit		*/ poly_lit,
+			/* pOutline */ poly_outlines,
+			/* pLineCol	*/ (const float*)&poly_linecolor,
+			/* pDepth	*/ poly_depth,
+			/* pFace	*/ poly_face);
 	}
 }
 
@@ -209,7 +195,7 @@ std::vector<ShowCollisionBrushPt> Collision::getPointsForBrush(cbrush_t* brush)
 {
 	std::vector<ShowCollisionBrushPt> brush_pts(128);
 
-	axialPlane_t axial_planes[6];
+	AxialPlane_t axial_planes[6];
 	axial_planes[0].plane = vec3<float>(-1.0f, 0.0f, 0.0f);
 	axial_planes[0].dist = -brush->mins[0];
 
@@ -678,6 +664,27 @@ void Collision::reverse_winding(winding_t* w)
 	}
 }
 
+void Collision::get_axial_planes(AxialPlane_t* planes, const cbrush_t* brush)
+{
+	planes[0].plane = vec3<float>(-1.0f, 0.0f, 0.0f);
+	planes[0].dist = -brush->mins[0];
+
+	planes[1].plane = vec3<float>(1.0f, 0.0f, 0.0f);
+	planes[1].dist = brush->maxs[0];
+
+	planes[2].plane = vec3<float>(0.0f, -1.0f, 0.0f);
+	planes[2].dist = -brush->mins[1];
+
+	planes[3].plane = vec3<float>(0.0f, 1.0f, 0.0f);
+	planes[3].dist = brush->maxs[1];
+
+	planes[4].plane = vec3<float>(0.0f, 0.0f, -1.0f);
+	planes[4].dist = -brush->mins[2];
+
+	planes[5].plane = vec3<float>(0.0f, 0.0f, 1.0f);
+	planes[5].dist = brush->maxs[2];
+}
+
 bool Collision::build_brush_winding_for_side(winding_t* winding, const float* plane_normal, const int side_index, const std::vector<ShowCollisionBrushPt> pts)
 {
 	int i, i0, i1, i2, j;
@@ -745,7 +752,7 @@ bool Collision::build_brush_winding_for_side(winding_t* winding, const float* pl
 }
 
 // create plane for intersection (CM_GetPlaneVec4Form)
-void Collision::get_plane_vec4(const cbrushside_t* sides, const axialPlane_t* axial_planes, const int index, float* expanded_plane)
+void Collision::get_plane_vec4(const cbrushside_t* sides, const AxialPlane_t* axial_planes, const int index, float* expanded_plane)
 {
 	if (index >= 6) {
 		if (!sides) {
@@ -854,7 +861,7 @@ void Collision::snap_point_to_intersecting_planes(const float* plane0, const flo
 }
 
 // add valid vertices from 3 plane intersections (CM_AddSimpleBrushPoint)
-int Collision::add_simple_brush_point(const cbrush_t* brush, const axialPlane_t* axial_planes, const __int16* side_indices, const float* xyz, int pt_count, std::vector<ShowCollisionBrushPt>& brush_pts)
+int Collision::add_simple_brush_point(const cbrush_t* brush, const AxialPlane_t* axial_planes, const __int16* side_indices, const float* xyz, int pt_count, std::vector<ShowCollisionBrushPt>& brush_pts)
 {
 	constexpr int CM_MAX_BRUSHPOINTS_FROM_INTERSECTIONS = 128;
 	if (!brush) {

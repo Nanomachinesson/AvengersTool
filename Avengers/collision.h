@@ -1,10 +1,23 @@
 #pragma once
 #include <vector>
 
-struct axialPlane_t
+struct AxialPlane_t
 {
 	vec3<float> plane;
 	float dist;
+};
+
+struct BrushSide
+{
+	std::vector<vec3<float>> points;
+};
+
+struct ProcessedBrush
+{
+	std::vector<ShowCollisionBrushPt> points;
+	std::vector<BrushSide> sides;
+	vec3<float> center;
+	ImColor color;
 };
 
 class Collision
@@ -16,10 +29,13 @@ public:
 	void init();  //once per map
 
 private:
-	void drawCollision(cbrush_t* brush, const std::vector<ShowCollisionBrushPt>& brush_pts);
+	void buildBrushes();
+	void buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* brush, const std::vector<ShowCollisionBrushPt>& pts);
+	void drawCollision(ProcessedBrush& processedBrush);
 	void drawCircle(const vec3<float>& pos, ImColor color);
 
 	Avengers* avengers;
+	std::vector<ProcessedBrush> processedBrushes;
 
 private:
 	/* These are ported from iw3xo:
@@ -28,11 +44,11 @@ private:
 	*
 	///////////////////////////////////////////////////////*/
 	std::vector<ShowCollisionBrushPt> getPointsForBrush(cbrush_t* brush);
-	int add_simple_brush_point(const cbrush_t* brush, const axialPlane_t* axial_planes, const __int16* side_indices, const float* xyz, int pt_count, std::vector<ShowCollisionBrushPt>& brush_pts);
+	int add_simple_brush_point(const cbrush_t* brush, const AxialPlane_t* axial_planes, const __int16* side_indices, const float* xyz, int pt_count, std::vector<ShowCollisionBrushPt>& brush_pts);
 	void snap_point_to_intersecting_planes(const float* plane0, const float* plane1, const float* plane2, float* xyz, float snap_grid, const float snap_epsilon);
 	bool is_on_grid(const float* snapped, const float* xyz);
 	int intersect_planes(const float* plane0, const float* plane1, const float* plane2, float* xyz);
-	void get_plane_vec4(const cbrushside_t* sides, const axialPlane_t* axial_planes, const int index, float* expanded_plane);
+	void get_plane_vec4(const cbrushside_t* sides, const AxialPlane_t* axial_planes, const int index, float* expanded_plane);
 	std::vector<brushmodel_entity_s> get_brushmodels();
 	void parseEntities(const std::string& buffer);
 	std::string str_to_lower(std::string input);
@@ -50,6 +66,7 @@ private:
 	vec_t length_squared3(const vec3_t v);
 	vec_t dot3(const vec3_t v1, const vec3_t v2);
 	void reverse_winding(winding_t* w);
+	void get_axial_planes(AxialPlane_t* planes, const cbrush_t* brush);
 
 	struct windingpool_t
 	{
