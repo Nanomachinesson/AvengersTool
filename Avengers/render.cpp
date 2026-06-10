@@ -210,6 +210,8 @@ void __cdecl render::enginedraw()
 	{
 		hud->inst_ui_90_lines->render();
 	}
+
+	hud->collision->render();
 }
 
 void render::endscene(LPDIRECT3DDEVICE9 dev)

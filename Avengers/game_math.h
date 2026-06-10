@@ -14,4 +14,7 @@ namespace mm
 	void angle_vectors(vec3<float> angles, float* forward, float* right, float* up);
 	void angle_vectors(vec3<float> angles, vec3<float>* forward, vec3<float>* right, vec3<float>* up);
 	int compare_angles(float sourceAngle, float otherAngle);
+	void subtract3(const vec3_t v1, const vec3_t v2, vec3_t out);
+	void cross3(const vec3_t v1, const vec3_t v2, vec3_t cross);
+	vec_t dot3(const vec3_t v1, const vec3_t v2);
 }

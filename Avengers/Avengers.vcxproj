@@ -165,6 +165,7 @@
     <ClInclude Include="Avengers.h" />
     <ClInclude Include="cod4Structs.h" />
     <ClInclude Include="CodAddresses.h" />
+    <ClInclude Include="collision.h" />
     <ClInclude Include="config_manager.h" />
     <ClInclude Include="ui_bounceinfo.h" />
     <ClInclude Include="ui_fpswheel.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="Avengers.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
+    <ClCompile Include="collision.cpp" />
     <ClCompile Include="config_manager.cpp" />
     <ClCompile Include="dllmain.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>

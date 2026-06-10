@@ -73,6 +73,7 @@ Avengers::Avengers() :
 	inst_ui_fpswheel = std::shared_ptr<ui_fpswheel>(new ui_fpswheel(this));
 	inst_ui_strafedowntime = std::shared_ptr<ui_strafedowntime>(new ui_strafedowntime(this));
 	inst_ui_bounceinfo = std::shared_ptr<ui_bounceinfo>(new ui_bounceinfo(this));
+	collision = std::shared_ptr<Collision>(new Collision(this));
 
 	//Added both INSERT and F6 to open the menu for people who have smaller keyboards and cant find that INSERT key ¬_¬
 	inst_input->add_callback(VK_INSERT, [this](UINT key_state) { return this->bind_toggle_input(key_state); });

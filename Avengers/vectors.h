@@ -50,6 +50,7 @@ struct vec3
 	inline vec3 operator + (const vec3& v) { return vec3(x + v.x, y + v.y, z + v.z); }
 	inline vec3 operator - (const vec3& v) { return vec3(x - v.x, y - v.y, z - v.z); }
 	inline vec3 operator / (const vec3& v) { return vec3(x / v.x, y / v.y, z / v.z); }
+	inline vec3 operator / (T l) { return vec3(x / l, y / l, z / l); }
 	inline vec3 operator * (const vec3& v) { return vec3(x * v.x, y * v.y, z * v.z); }
 	inline bool operator == (const vec3& v) { return x == v.x && y == v.y && z == v.z; }
 	inline bool operator != (const vec3& v) { return x != v.x || y != v.y || z != v.z; }
@@ -59,6 +60,7 @@ struct vec3
 	inline vec3& operator -= (const vec3& v) { this->x -= v.x; this->y -= v.y; this->z -= v.z; return *this; }
 	inline vec3& operator *= (const vec3& v) { this->x *= v.x; this->y *= v.y; this->z *= v.z; return *this; }
 	inline vec3& operator /= (const vec3& v) { this->x /= v.x; this->y /= v.y; this->z /= v.z; return *this; }
+	inline vec3& operator /= (T l) { this->x /= l; this->y /= l; this->z /= l; return *this; }
 
 	inline std::string toString() { std::stringstream ss; std::setprecision(6); ss << std::fixed << x << " " << y << " " << z; return ss.str(); }
 	inline vec3 CrossProduct(const vec3 v) { return vec3(v.y * this.z - v.z * this.y, -(v.x * this.z - v.z * this.x), v.x * this.y - v.y * this.x); }

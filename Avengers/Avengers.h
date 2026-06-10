@@ -24,6 +24,7 @@
 #include "ui_strafedowntime.h"
 #include "ui_bounceinfo.h"
 #include "config_manager.h"
+#include "collision.h"
 
 extern "C" {
 	bool __declspec(dllexport) __stdcall RIB_Main(int a, int b);
@@ -57,6 +58,7 @@ public:
 	std::shared_ptr<ui_fpswheel> inst_ui_fpswheel;
 	std::shared_ptr<ui_strafedowntime> inst_ui_strafedowntime;
 	std::shared_ptr<ui_bounceinfo> inst_ui_bounceinfo;
+	std::shared_ptr<Collision> collision;
 
 	ImFont* toxic_font;
 	ImFont* sep_font;

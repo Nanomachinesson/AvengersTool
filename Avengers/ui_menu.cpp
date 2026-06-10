@@ -487,7 +487,6 @@ void ui_menu::render()
 		hud->save_configuration();
 	}
 
-
 	/* WIP
 	if (drawfps_toggle && hud->inst_game->is_connected()) {
 		if ((drawfps_spectateonly && hud->inst_game->is_spectating()) || !drawfps_spectateonly) {
