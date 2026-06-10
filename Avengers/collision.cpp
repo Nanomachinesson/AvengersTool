@@ -12,28 +12,23 @@ Collision::~Collision()
 
 void Collision::render()
 {
-	///////////////////////////////////////////////////////////////////////////////
-	static bool hasInitialized = false;
-	bool connected = avengers->inst_game->is_connected();
+	float maxDist = avengers->inst_ui_menu->draw_collision_distance;
+	if (maxDist == 0.f) {
+		maxDist = 99999999.f;
+	}
 
-	if (!hasInitialized && connected) {
-		init();
-		hasInitialized = true;
-	}
-	else if (!connected) {
-		hasInitialized = false;
-	}
+	vec3<float> origin = avengers->inst_game->get_origin();
+	bool drawOnlyClips = avengers->inst_ui_menu->draw_collision_only_clips;
+	bool noDrawSky = avengers->inst_ui_menu->draw_collision_no_sky;
 
 	if (!hasInitialized) {
 		return;
 	}
-	///////////////////////////////////////////////////////////////////////////////
-
-	constexpr float maxDist = 1500.f;
-	vec3<float> origin = avengers->inst_game->get_origin();
 
 	for (ProcessedBrush& processedBrush : processedBrushes) {
-		if (processedBrush.center.Dist(origin) <= maxDist) {
+		if ( ((drawOnlyClips && processedBrush.isClip) || !drawOnlyClips) 
+			&& (! (noDrawSky && processedBrush.isSky) || !noDrawSky)
+			&& processedBrush.center.Dist(origin) <= maxDist) {
 			drawCollision(processedBrush);
 		}
 	}
@@ -41,12 +36,38 @@ void Collision::render()
 
 void Collision::init()
 {
-	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
-	const char* mapents_ptr = cm->mapEnts->entityString;
+	///////////////////////////////////////////////////////////////////////////////
+	bool connected = avengers->inst_game->is_connected();
 
-	parseEntities(std::string(mapents_ptr));
-	brushModels = get_brushmodels();
-	buildBrushes();
+	if (!hasInitialized && connected) {
+		clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
+		const char* mapents_ptr = cm->mapEnts->entityString;
+
+		parseEntities(std::string(mapents_ptr));
+		brushModels = get_brushmodels();
+		createMaterials();
+		buildBrushes();
+
+		hasInitialized = true;
+	}
+	else if (!connected) {
+		hasInitialized = false;
+		processedBrushes.clear();
+		entities.clear();
+		brushModels.clear();
+		mapMaterials.clear();
+	}
+	///////////////////////////////////////////////////////////////////////////////
+}
+
+bool Collision::isClip(const std::string& materialName)
+{
+	return materialName.contains("clip");
+}
+
+bool Collision::isSky(const std::string& materialName)
+{
+	return materialName.contains("sky");
 }
 
 void Collision::buildBrushes()
@@ -69,8 +90,6 @@ void Collision::buildBrushes()
 
 	for (cbrush_t* brush : brushes) {
 		ProcessedBrush processedBrush;
-		vec3<float> center = (brush->mins + brush->maxs) / 2.f;
-		processedBrush.center = center;
 
 		// if brush is part of a submodel, translate brushmodel bounds by the submodel origin [from iw3xo]
 		if (brush->isSubmodel) {
@@ -83,6 +102,9 @@ void Collision::buildBrushes()
 			brush = &dupe;
 		}
 
+		vec3<float> center = (brush->mins + brush->maxs) / 2.f;
+		processedBrush.center = center;
+
 		std::vector<ShowCollisionBrushPt> points = getPointsForBrush(brush);
 		processedBrush.points = points;
 
@@ -91,6 +113,27 @@ void Collision::buildBrushes()
 		}
 
 		buildCollisionPoints(processedBrush, brush, points);
+
+		// check if we are within array bounds
+		if (static_cast<size_t>(brush->axialMaterialNum[0][0]) >= mapMaterials.size()) {
+			return;
+		}
+
+		for (int x = 0; x < 2; x++) {
+			for (int y = 0; y < 3; y++) {
+				std::string material = std::string(mapMaterials[brush->axialMaterialNum[x][y]]->material);
+				if (std::find(processedBrush.materials.begin(), processedBrush.materials.end(), material) == processedBrush.materials.end()) {
+					processedBrush.materials.push_back(material);
+					if (isClip(material)) {
+						processedBrush.isClip = true;
+					}
+					if (isSky(material)) {
+						processedBrush.isSky = true;
+					}
+				}
+			}
+		}
+
 		processedBrushes.push_back(processedBrush);
 	}
 }
@@ -99,10 +142,13 @@ void Collision::buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* b
 {
 	static int currentColorIndex = 0;
 
-	constexpr int COLOR_COUNT = 3;
-	const ImColor COLOR_RED = ImColor(1.f, 0.f, 0.f, 1.f);
-	const ImColor COLOR_GREEN = ImColor(0.f, 1.f, 0.f, 1.f);
-	const ImColor COLOR_BLUE = ImColor(0.f, 0.f, 1.f, 1.f);
+	constexpr int COLOR_COUNT = 6;
+	const ImColor COLOR_RED = ImColor(1.f, 0.f, 0.f, 0.4f);
+	const ImColor COLOR_GREEN = ImColor(0.f, 1.f, 0.f, 0.4f);
+	const ImColor COLOR_BLUE = ImColor(0.f, 0.f, 1.f, 0.4f);
+	const ImColor COLOR_RED2 = ImColor(0.5f, 0.5f, 0.f, 0.4f);
+	const ImColor COLOR_GREEN2 = ImColor(0.0f, 0.5f, 0.5f, 0.4f);
+	const ImColor COLOR_BLUE2 = ImColor(0.5f, 0.f, 0.5f, 0.4f);
 
 	ImColor currentColor;
 	switch (currentColorIndex) {
@@ -114,6 +160,15 @@ void Collision::buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* b
 		break;
 	case 2:
 		currentColor = COLOR_BLUE;
+		break;
+	case 3:
+		currentColor = COLOR_RED2;
+		break;
+	case 4:
+		currentColor = COLOR_GREEN2;
+		break;
+	case 5:
+		currentColor = COLOR_BLUE2;
 		break;
 	}
 	currentColorIndex = (currentColorIndex + 1) % COLOR_COUNT;
@@ -164,15 +219,8 @@ void Collision::drawCollision(ProcessedBrush& processedBrush)
 
 	for (BrushSide& side : processedBrush.sides) {
 		vec3<float>* points = side.points.data();
-		avengers->inst_game->drawPoly(
-			/* numPts	*/ side.points.size(),
-			/* points	*/ (float(*)[3]) points,
-			/* pColor	*/ (const float*)&processedBrush.color,
-			/* pLit		*/ poly_lit,
-			/* pOutline */ poly_outlines,
-			/* pLineCol	*/ (const float*)&poly_linecolor,
-			/* pDepth	*/ poly_depth,
-			/* pFace	*/ poly_face);
+		avengers->inst_game->drawPoly(side.points.size(), (float(*)[3]) points, (const float*)&processedBrush.color,
+			poly_lit, poly_outlines, (const float*)&poly_linecolor, poly_depth, poly_face);
 	}
 }
 
@@ -191,6 +239,21 @@ void Collision::drawCircle(const vec3<float>& pos, ImColor color)
 * https://github.com/xoxor4d/iw3xo-dev
 *
 ///////////////////////////////////////////////////////*/
+
+void Collision::createMaterials()
+{
+	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
+
+	const std::uint32_t clipmap_material_index = cm->numMaterials;
+	std::vector<dmaterial_t*> map_materials(clipmap_material_index);
+
+	for (auto num = 0u; num < clipmap_material_index; num++) {
+		map_materials[num] = &cm->materials[num];
+	}
+
+	mapMaterials = map_materials;
+}
+
 std::vector<ShowCollisionBrushPt> Collision::getPointsForBrush(cbrush_t* brush)
 {
 	std::vector<ShowCollisionBrushPt> brush_pts(128);

@@ -211,7 +211,9 @@ void __cdecl render::enginedraw()
 		hud->inst_ui_90_lines->render();
 	}
 
-	hud->collision->render();
+	if (hud->inst_game->is_connected() && hud->inst_ui_menu->draw_collision) {
+		hud->collision->render();
+	}
 }
 
 void render::endscene(LPDIRECT3DDEVICE9 dev)

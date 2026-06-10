@@ -467,7 +467,31 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 	//#######################################################
+
+	//################# Collision #######################
+
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_::ImGuiSeparatorFlags_Horizontal, 30.f);
+	ImGui::Text("Collision settings");
+	if (ImGui::Checkbox("Draw collision", &draw_collision)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	ImGui::PushItemWidth(800.f);
+	if (ImGui::SliderFloat("Distance", &draw_collision_distance, 0.f, 15000.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
 	
+	if (ImGui::Checkbox("Only clips", &draw_collision_only_clips)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Don't draw skies", &draw_collision_no_sky)) {
+		hud->save_configuration();
+	}
+
+	//#######################################################
+
 	ImGui::End();
 }
 
@@ -568,6 +592,10 @@ void ui_menu::render()
 	{
 		hud->inst_ui_position_marker->render(marker3, pos3, marker3_color, marker_size);
 	}
+
+	if (draw_collision) {
+		hud->collision->init();
+	}
 }
 
 void ui_menu::registerConfigs(Avengers* hud)
@@ -613,6 +641,10 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("ah_style", &currentAhStyle);
 	hud->registerConfig("clamp_to_next_zone", &clamp_to_next_zone);
 	hud->registerConfig("anglehelper_y_offset", &anglehelper_y_offset);
+	hud->registerConfig("draw_collision", &draw_collision);
+	hud->registerConfig("draw_collision_only_clips", &draw_collision_only_clips);
+	hud->registerConfig("draw_collision_distance", &draw_collision_distance);
+	hud->registerConfig("draw_collision_no_sky", &draw_collision_no_sky);
 }
 
 ui_menu::ui_menu(Avengers* hud)

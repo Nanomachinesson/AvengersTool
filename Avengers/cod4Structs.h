@@ -958,6 +958,13 @@ struct cLeafBrushNode_s
     cLeafBrushNodeData_t data;
 };
 
+struct dmaterial_t
+{
+    char material[64];
+    int surfaceFlags;
+    int contentFlags;
+};
+
 struct clipMap_t
 {
     const char* name;
@@ -967,7 +974,7 @@ struct clipMap_t
     unsigned int numStaticModels;
     byte* staticModelList;
     unsigned int numMaterials;
-    byte* materials;
+    dmaterial_t* materials;
     unsigned int numBrushSides;
     cbrushside_t* brushsides;
     unsigned int numBrushEdges;

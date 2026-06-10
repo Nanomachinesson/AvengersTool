@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <algorithm>
 
 struct AxialPlane_t
 {
@@ -16,8 +17,12 @@ struct ProcessedBrush
 {
 	std::vector<ShowCollisionBrushPt> points;
 	std::vector<BrushSide> sides;
+	std::vector<std::string> materials;
 	vec3<float> center;
 	ImColor color;
+
+	bool isClip = false;
+	bool isSky = false;
 };
 
 class Collision
@@ -29,10 +34,14 @@ public:
 	void init();  //once per map
 
 private:
+	bool isClip(const std::string& materialName);
+	bool isSky(const std::string& materialName);
 	void buildBrushes();
 	void buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* brush, const std::vector<ShowCollisionBrushPt>& pts);
 	void drawCollision(ProcessedBrush& processedBrush);
 	void drawCircle(const vec3<float>& pos, ImColor color);
+	void createMaterials();
+	bool hasInitialized = false;
 
 	Avengers* avengers;
 	std::vector<ProcessedBrush> processedBrushes;
@@ -84,5 +93,6 @@ private:
 
 	std::vector<std::unordered_map<std::string, std::string>> entities;
 	std::vector<brushmodel_entity_s> brushModels;
+	std::vector<dmaterial_t*> mapMaterials;
 	windingpool_t winding_pool;
 };
