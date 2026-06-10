@@ -21,13 +21,18 @@ void __cdecl EngineDraw_Hook()
 
 HRESULT __stdcall EndScene_Hook(LPDIRECT3DDEVICE9 dev)
 {
+	int ret = reinterpret_cast<int>(_ReturnAddress());
+	bool correctCaller = ret == 6379331;
+
 	Avengers* hud = Avengers::get_instance();
 	hud->inst_input->windowReady = true;
 
 	if (hud && hud->inst_hooks && hud->inst_render)
 	{
 		auto orig = hud->inst_hooks->hook_map["EndScene"]->original(EndScene_Hook)(dev);
-		hud->inst_render->endscene(dev);
+		if (correctCaller) {
+			hud->inst_render->endscene(dev);
+		}
 		return orig;
 	}
 
