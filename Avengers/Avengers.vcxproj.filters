@@ -109,6 +109,9 @@
     <ClCompile Include="collision.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="game_state.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Avengers.h">
@@ -226,6 +229,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="collision.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="game_state.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

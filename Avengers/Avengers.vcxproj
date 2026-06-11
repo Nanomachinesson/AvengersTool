@@ -167,6 +167,7 @@
     <ClInclude Include="CodAddresses.h" />
     <ClInclude Include="collision.h" />
     <ClInclude Include="config_manager.h" />
+    <ClInclude Include="game_state.h" />
     <ClInclude Include="ui_bounceinfo.h" />
     <ClInclude Include="ui_fpswheel.h" />
     <ClInclude Include="framework.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="dllmain.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
+    <ClCompile Include="game_state.cpp" />
     <ClCompile Include="ui_bounceinfo.cpp" />
     <ClCompile Include="ui_fpswheel.cpp" />
     <ClCompile Include="game.cpp">
