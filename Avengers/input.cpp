@@ -70,6 +70,11 @@ LRESULT __stdcall wndproc_hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 	}
 
+	if (Avengers::get_instance()->want_input && Avengers::get_instance()->inst_input->windowReady
+		&& (uMsg != WM_ACTIVATEAPP)) {  //block input unless its a window change msg
+		return 1;
+	}
+
 	return CallWindowProc(Avengers::get_instance()->inst_input->p_wndproc, hWnd, uMsg, wParam, lParam);
 }
 void input::add_callback(UINT key, InputCallback fn)
