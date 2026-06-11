@@ -353,9 +353,19 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
+	ImGui::PushItemWidth(200.f);
 	if (ImGui::SliderFloat("Anglehelper y-offset", &anglehelper_y_offset, -1000.f, 1000.f)) {
 		hud->save_configuration();
 	}
+	ImGui::SameLine();
+	if (ImGui::SliderFloat("Anglehelper height", &anglehelper_height, 1.f, 3.f)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	if (ImGui::SliderFloat("Anglehelper width", &anglehelper_width, 1.f, 10.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
 
 	if (ImGui::Checkbox("Draw centerline", &drawcenterline)) {
 		hud->save_configuration();
@@ -564,6 +574,10 @@ void ui_menu::render()
 		hud->inst_ui_velocity->render_jumpoff_speed(hud, velo_pos, velo_scale, color);
 	}
 
+	if (drawcenterline && hud->inst_game->is_connected()) {
+		hud->inst_ui_anglehelper->renderCenterLine(hud, centerline_color);
+	}
+
 	//Render anglehelper
 	if (anglehelper_toggle && hud->inst_game->is_connected())
 	{
@@ -573,10 +587,6 @@ void ui_menu::render()
 	if (fpswheel_toggle && hud->inst_game->is_connected())
 	{
 		hud->inst_ui_fpswheel->render(hud);
-	}
-
-	if (drawcenterline && hud->inst_game->is_connected()) {
-		hud->inst_ui_anglehelper->renderCenterLine(hud, centerline_color);
 	}
 
 	//Jump Target
@@ -671,6 +681,8 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("brush_mode", &brush_mode);
 	hud->registerConfig("draw_selected_brushes", &draw_selected_brushes);
 	hud->registerConfig("jump_target", &jump_target);
+	hud->registerConfig("anglehelper_height", &anglehelper_height);
+	hud->registerConfig("anglehelper_width", &anglehelper_width);
 }
 
 ui_menu::ui_menu(Avengers* hud)
