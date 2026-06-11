@@ -15,7 +15,7 @@ void predictPlayerState(int unk)
 	auto gameState = avengers->gameState;
 
 	gameState->onGround = game->isOnGround();
-	gameState->lMove = game->get_lmove();
+	gameState->lMove = game->get_lmove(true);
 	gameState->origin = game->get_origin();
 	gameState->velocity = game->get_velocity();
 	gameState->weaponDelay = pm->ps->weaponDelay;
