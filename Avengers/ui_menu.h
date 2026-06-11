@@ -74,7 +74,9 @@ public:
 	vec2<float> pos3;
 
 	bool jump_target = false;
-	vec3<float> jump_target_origin;
+	bool brush_mode = false;
+	bool draw_selected_brushes = false;
+	vec3<float> jump_target_origin {};
 	bool drawfps_toggle = false;
 	bool drawfps_spectateonly = false;
 	float fpsScale = 1.f;

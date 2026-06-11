@@ -39,7 +39,7 @@ void Collision::init()
 	///////////////////////////////////////////////////////////////////////////////
 	bool connected = avengers->inst_game->is_connected();
 
-	if (!hasInitialized && connected) {
+	if (avengers->inst_ui_menu->draw_collision && !hasInitialized && connected) {
 		clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
 		const char* mapents_ptr = cm->mapEnts->entityString;
 
@@ -56,6 +56,7 @@ void Collision::init()
 		entities.clear();
 		brushModels.clear();
 		mapMaterials.clear();
+		avengers->inst_ui_jump_target->resetBrushes();
 	}
 	///////////////////////////////////////////////////////////////////////////////
 }
@@ -187,11 +188,16 @@ void Collision::buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* b
 
 		if (build_brush_winding_for_side((winding_t*)&winding_pool, reinterpret_cast<const float*>(&plane_normal), side_index, pts)) {
 			processedBrush.sides.push_back(BrushSide());
+			vec3<float> sideCenter(0.f, 0.f, 0.f);
 			std::size_t sideIndex = processedBrush.sides.size() - 1;
 			for (int i = 0; i < winding_pool.numpoints; i++) {
 				vec3<float> p(reinterpret_cast<vec3<float>*>(winding_pool.p)[i]);
+				sideCenter += p;
 				processedBrush.sides[sideIndex].points.push_back(p);
 			}
+
+			sideCenter /= winding_pool.numpoints;
+			processedBrush.sides[sideIndex].center = sideCenter;
 		}
 	}
 

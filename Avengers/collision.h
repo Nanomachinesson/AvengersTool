@@ -10,6 +10,7 @@ struct AxialPlane_t
 
 struct BrushSide
 {
+	vec3<float> center;
 	std::vector<vec3<float>> points;
 };
 
@@ -32,6 +33,8 @@ public:
 	~Collision();
 	void render();
 	void init();  //once per map
+	std::vector<ProcessedBrush> processedBrushes;
+	bool hasInitialized = false;
 
 private:
 	bool isClip(const std::string& materialName);
@@ -41,10 +44,8 @@ private:
 	void drawCollision(ProcessedBrush& processedBrush);
 	void drawCircle(const vec3<float>& pos, ImColor color);
 	void createMaterials();
-	bool hasInitialized = false;
 
 	Avengers* avengers;
-	std::vector<ProcessedBrush> processedBrushes;
 
 private:
 	/* These are ported from iw3xo:

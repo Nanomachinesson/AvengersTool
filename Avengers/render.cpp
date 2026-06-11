@@ -222,6 +222,21 @@ void __cdecl render::enginedraw()
 	if (hud->inst_game->is_connected() && hud->inst_ui_menu->draw_collision) {
 		hud->collision->render();
 	}
+
+	if (hud->inst_ui_jump_target->selectedBrushes.size() > 0 && hud->inst_ui_menu->brush_mode && hud->inst_ui_menu->draw_selected_brushes) {
+		const auto poly_lit = false;
+		const auto poly_outlines = false;
+		const auto poly_linecolor = ImColor(255, 255, 255, 255);
+		const auto poly_depth = true;
+		const auto poly_face = false;
+		ImColor color(0.3f, 1.f, 0.f, 0.4f);
+
+		for (BrushSide* face : hud->inst_ui_jump_target->selectedBrushes) {
+			vec3<float>* points = face->points.data();
+			hud->inst_game->drawPoly(face->points.size(), (float(*)[3]) points, (const float*)&color,
+				poly_lit, poly_outlines, (const float*)&poly_linecolor, poly_depth, poly_face);
+		}
+	}
 }
 
 void render::endscene(LPDIRECT3DDEVICE9 dev)

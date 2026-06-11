@@ -200,11 +200,36 @@ void ui_menu::menu(Avengers* hud)
 	ImGui::Checkbox("Enable Jump Target", &jump_target);
 	
 	ImGui::SameLine();
-	if(ImGui::Button("Set Jump target"))
+
+	if (ImGui::Checkbox("Brush Mode", &brush_mode)) {
+		hud->save_configuration();
+	}
+
+	if ( !hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized) {
+		ImGui::SetTooltip("To use this feature, brushes must be processed by activating \"Draw collision\" under collision settings (once par map).");
+	}
+
+	if ((!brush_mode || !hud->collision->hasInitialized) && ImGui::Button("Set Jump target"))
 	{
 		jump_target_origin = hud->inst_game->get_origin();
 	}
-
+	else if (brush_mode && hud->collision->hasInitialized) {
+		if (ImGui::Button("Add brush")) {
+			hud->inst_ui_jump_target->addBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Remove brush")) {
+			hud->inst_ui_jump_target->removeBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reset")) {
+			hud->inst_ui_jump_target->resetBrushes();
+		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Draw selected brushes", &draw_selected_brushes)) {
+			hud->save_configuration();
+		}
+	}
 	//#######################################################
 
 	//################# POSITION MARKERS ########################
@@ -593,9 +618,7 @@ void ui_menu::render()
 		hud->inst_ui_position_marker->render(marker3, pos3, marker3_color, marker_size);
 	}
 
-	if (draw_collision) {
-		hud->collision->init();
-	}
+	hud->collision->init();
 }
 
 void ui_menu::registerConfigs(Avengers* hud)
@@ -645,6 +668,9 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("draw_collision_only_clips", &draw_collision_only_clips);
 	hud->registerConfig("draw_collision_distance", &draw_collision_distance);
 	hud->registerConfig("draw_collision_no_sky", &draw_collision_no_sky);
+	hud->registerConfig("brush_mode", &brush_mode);
+	hud->registerConfig("draw_selected_brushes", &draw_selected_brushes);
+	hud->registerConfig("jump_target", &jump_target);
 }
 
 ui_menu::ui_menu(Avengers* hud)
