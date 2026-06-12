@@ -21,6 +21,8 @@ void ui_jump_target::render()
 	static float minDistZ = 99999999.f;
 	static float globalMinZ = 9999999.f;
 	static bool onGroundLastFrame = true;
+	static std::chrono::time_point measureStartPoint = std::chrono::system_clock::now();
+	constexpr int minimumAirtimeMs = 500;
 
 	bool onGround = hud->gameState->onGround;
 	vec3<float> jumpTargetOrigin = hud->inst_ui_menu->jump_target_origin;
@@ -59,21 +61,28 @@ void ui_jump_target::render()
 		minDistZ = distZ;
 	}
 
+	std::chrono::time_point now = std::chrono::system_clock::now();
+
 	if (!onGroundLastFrame && onGround) {
-		std::stringstream ss;
-		ss << globalMinZ << " too low" << std::endl;
-		ss << minDist << " units off" << std::endl;
-		ss << minDistZ << " too low at closest position";
-		hud->inst_game->add_obituary(ss.str());
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - measureStartPoint).count() >= minimumAirtimeMs) {
+			std::stringstream ss;
+			ss << globalMinZ << " too low" << std::endl;
+			ss << minDist << " units off" << std::endl;
+			ss << minDistZ << " too low at closest position";
+			hud->inst_game->add_obituary(ss.str());
+		}
 
 		minDist = 99999999.f;
 		minDistZ = 99999999.f;
 		globalMinZ = 9999999.f;
 	}
 
+	if (onGround) {
+		measureStartPoint = now;
+	}
+
 	onGroundLastFrame = onGround;
 }
-
 
 void ui_jump_target::addBrush()
 {

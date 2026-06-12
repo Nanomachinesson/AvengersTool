@@ -21,5 +21,5 @@ private:
 	float PolygonDist(const std::vector<vec3<float>>& polygon, const vec3<float>& point);
 	bool isInPolygon(const std::vector<vec2<float>>& polygon, const vec2<float>& point);
 	void extendPolygon(std::vector<vec2<float>>& polygon, float offset);
-};
 
+};
