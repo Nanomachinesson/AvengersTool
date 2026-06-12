@@ -5,6 +5,7 @@
 #include "game_math.h"
 #include "Lmove.h"
 #include "memory.h"
+#include "cod4Structs.h"
 
 enum connection_state_ : int
 {
@@ -80,6 +81,11 @@ public:
 	void setVelocity(const vec3<float>& velocity);
 	vec3<float> toCodAngles(const vec3<float>& angles);
 	float get_deltamax_bogus();
+	//TAKEN FROM IW3XO
+	void drawPoly(const int num_points, float(*points)[3], const float* brush_color, bool brush_lit, bool outlines, const float* outline_color, bool depth_check, bool two_sides_poly);
+	mem::function<void __fastcall (const float* colorFloat, char* colorBytes)> R_ConvertColorToBytes = 0x493530;
+	mem::function<Material* (const char* fontName, int fontSize)> Material_RegisterHandle = 0x5F2A80;
+	//
 
 private:
     vec3<float> get_delta_angles();
@@ -92,6 +98,16 @@ private:
     float get_dir_diff(const Lmove& lMove);
     float get_accel();
     constexpr static float g_speed = 190.f;
+
+	//TAKEN FROM IW3XO
+private:
+	typedef void(*RB_EndTessSurface_t)();
+	void set_poly_vert_with_normal(const float* xyz, const float* normal, GfxColor color, int vert_count, int vertNum);
+	void set_poly_vert(const float* xyz, GfxColor color, int vertCount, int vertNum);
+	void check_tess_overflow(int vertex_count);
+	MaterialTechnique* RB_BeginSurface(MaterialTechniqueType techType, Material* material);
+	MaterialTechnique* RB_BeginSurface_CustomMaterial(MaterialTechniqueType techType, Material* material);
+	PackedUnitVec Vec3PackUnitVec(const float*);
 
 };
 

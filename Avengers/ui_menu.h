@@ -15,6 +15,7 @@ public:
 	bool show_position = false;
 	bool velo_meter = false;
 	bool keep_velo_centered = false;
+	bool use_static_positioning = false;
 	bool velo_show_acceleration = false;
 	bool velo_show_deceleration = false;
 	bool draw_jumpoff_speed = false;
@@ -29,6 +30,8 @@ public:
 	bool lock_velo_pos = true;
 	bool anglehelper_toggle = false;
 	float anglehelper_y_offset = 0.0f;
+	float anglehelper_width = 1.f;
+	float anglehelper_height = 1.f;
 	bool clamp_to_next_zone = false;
 	bool drawcenterline = false;
 	ImVec4 centerline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -46,6 +49,10 @@ public:
 	bool rpgtimer_toggle = false;
 	bool rpgangle_toggle = false;
 	bool bouncevelocity_toggle = false;
+	bool draw_collision = false;
+	bool draw_collision_only_clips = false;
+	bool draw_collision_no_sky = false;
+	float draw_collision_distance = 5000.f;
 	// Default the position to the center of the screen if there is no position in the config file
 	vec2<float> velo_pos = vec2<float>(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);
 	
@@ -70,7 +77,9 @@ public:
 	vec2<float> pos3;
 
 	bool jump_target = false;
-	vec3<float> jump_target_origin;
+	bool brush_mode = false;
+	bool draw_selected_brushes = false;
+	vec3<float> jump_target_origin {};
 	bool drawfps_toggle = false;
 	bool drawfps_spectateonly = false;
 	float fpsScale = 1.f;

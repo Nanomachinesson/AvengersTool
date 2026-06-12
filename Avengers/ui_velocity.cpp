@@ -4,10 +4,11 @@
 
 void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, float &scale, ImVec4 &color)
 {
-	ImGui::Begin("Velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);	
+	ImGui::Begin("Velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
+	auto gameState = hud->gameState;
 
-	float velo = hud->inst_game->get_velocity().Length2D();
-	static float prev_velo = hud->inst_game->get_velocity().Length2D();
+	float velo = gameState->velocity.Length2D();
+	static float prev_velo = gameState->velocity.Length2D();
 
 	static int frames_to_wait_for_velo_decrease = 0;  //Velo drops. Wait X frames for velo to drop again.
 	static int frames_checking_for_velo_decrease = 0;  // After having waited X frames, wait Y frames and check if it decreased again.
@@ -27,7 +28,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 	if (velo < prev_velo
 		&& frames_to_wait_for_velo_decrease == 0 && frames_checking_for_velo_decrease == 0 && frames_to_decrease_velo_for == 0
-		&& !hud->inst_game->isOnGround()) {
+		&& !gameState->onGround) {
 		frames_to_wait_for_velo_decrease = 10;
 		frames_checking_for_velo_decrease = 0;
 		frames_to_decrease_velo_for = 0;
@@ -68,7 +69,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 	if (velo > prev_velo
 		&& frames_to_wait_for_velo_increase == 0 && frames_checking_for_velo_increase == 0 && frames_to_increase_velo_for == 0
-		&& !hud->inst_game->isOnGround()) {
+		&& !gameState->onGround) {
 		frames_to_wait_for_velo_increase = 10;
 		frames_checking_for_velo_increase = 0;
 		frames_to_increase_velo_for = 0;
@@ -141,6 +142,10 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	if (hud->inst_ui_menu->keep_velo_centered) {
 		float windowWidth = ImGui::GetWindowSize().x;
 		float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
+		if (hud->inst_ui_menu->use_static_positioning) {
+			std::string widthHelper(veloText.length(), '5');  //Different digits may have different sizes
+			textWidth = ImGui::CalcTextSize(widthHelper.c_str()).x;
+		}
 
 		adjustedPos.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 	}
@@ -170,14 +175,15 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& scale, ImVec4& color)
 {
+	auto gameState = hud->gameState;
 	static bool onGroundLastFrame = true;
 	static float jumpOffVelo = 0.0f;
-	bool onGround = hud->inst_game->isOnGround();
+	bool onGround = gameState->onGround;
 	float offset = 50.f;
 	ImVec2 position(pos.x, pos.y + offset);
 	float VELO_CUTOFF = 5.f;
 
-	float velo = hud->inst_game->get_velocity().Length2D();
+	float velo = gameState->velocity.Length2D();
 	std::string veloText;
 
 	if (onGroundLastFrame && !onGround && velo >= VELO_CUTOFF) {
@@ -206,7 +212,10 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 		if (hud->inst_ui_menu->keep_velo_centered) {
 			float windowWidth = ImGui::GetWindowSize().x;
 			float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
-
+			if (hud->inst_ui_menu->use_static_positioning) {
+				std::string widthHelper(veloText.length(), '5');  //Different digits may have different sizes
+				textWidth = ImGui::CalcTextSize(widthHelper.c_str()).x;
+			}
 			position.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 		}
 

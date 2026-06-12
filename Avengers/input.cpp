@@ -7,8 +7,16 @@ HWND WINAPI get_foreground_window()
 {
 	Avengers* openhud = Avengers::get_instance();
 	HWND orig = openhud->inst_hooks->hook_map["GetForegroundWindow"]->original(get_foreground_window)();
-	if (openhud->want_input)
+	HWND currentWindow = openhud->inst_game->get_window();
+
+	if (currentWindow != orig) {
+		openhud->inst_input->windowReady = false;
+	}
+
+	if (openhud->want_input && openhud->inst_input->windowReady) {
 		return 0; //tell the game that it isn't the foreground window
+	}
+
 	return orig;
 }
 
@@ -49,22 +57,23 @@ LRESULT __stdcall wndproc_hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	if (!Avengers::get_instance())
 		return 1;
 	
-	if (Avengers::get_instance()->want_input) //only give input information to imgui if we want input so it doesn't get clicked and dragged or typed in while just playing
-		ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-
+	if (Avengers::get_instance()->want_input && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+		return true;
+	}
 
 	if (Avengers::get_instance()->inst_game->is_focused())
 	{
 		if (uMsg == WM_KEYUP || uMsg == WM_KEYDOWN)
 		{
-			
 			if (Avengers::get_instance()->inst_input->handle_key(wParam, uMsg))
 				return 1; //the key was handled and blocked by the handle key function
 		}
 	}
 
-	if (Avengers::get_instance()->want_input)
+	if (Avengers::get_instance()->want_input && Avengers::get_instance()->inst_input->windowReady
+		&& (uMsg != WM_ACTIVATEAPP)) {  //block input unless its a window change msg
 		return 1;
+	}
 
 	return CallWindowProc(Avengers::get_instance()->inst_input->p_wndproc, hWnd, uMsg, wParam, lParam);
 }

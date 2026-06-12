@@ -3,10 +3,16 @@
 
 void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 {
+	Lmove lmove = hud->inst_game->get_lmove(true);
+	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
 	float width = 2.5f;
+	width *= hud->inst_ui_menu->anglehelper_width;
+	if (goingRight) {
+		width *= -1.f;
+	}
 
 	vec2<float> screen;
-	vec2<float> center(hud->inst_game->get_screen_res().x / 2 - width / 2, hud->inst_game->get_screen_res().y / 2);
+	vec2<float> center(hud->inst_game->get_screen_res().x / 2, hud->inst_game->get_screen_res().y / 2);
 	float yaw = hud->inst_game->get_view().y;
 	float optAngle = hud->inst_game->get_optimal_angle();
 	float fov = hud->inst_game->get_fov();
@@ -23,11 +29,10 @@ void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 	screen.x = center.x + (ahOffset * pixelScale);
 
 	if (hud->inst_ui_menu->currentAhStyle == "Style 1") {
-		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, -30 + screen.y), ImVec2(width + screen.x, 30 + screen.y), ImColor(color));
+		float ahHeightScalar = hud->inst_ui_menu->anglehelper_height;
+		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(screen.x, (-30 * ahHeightScalar) + screen.y), ImVec2(width + screen.x, (30 * ahHeightScalar) + screen.y), ImColor(color));
 	}
 	else {
-		Lmove lmove = hud->inst_game->get_lmove(true);
-		bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
 		float deltaMax = hud->inst_game->get_deltamax_bogus();
 		float ahWidth = deltaMax * hud->inst_ui_menu->ah_pixel_scale * 5.f;
 

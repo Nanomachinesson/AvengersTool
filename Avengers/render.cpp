@@ -21,13 +21,21 @@ void __cdecl EngineDraw_Hook()
 
 HRESULT __stdcall EndScene_Hook(LPDIRECT3DDEVICE9 dev)
 {
+	int ret = reinterpret_cast<int>(_ReturnAddress());
+	bool correctCaller = ret == 6379331;
+
 	Avengers* hud = Avengers::get_instance();
+	hud->inst_input->windowReady = true;
+
 	if (hud && hud->inst_hooks && hud->inst_render)
 	{
 		auto orig = hud->inst_hooks->hook_map["EndScene"]->original(EndScene_Hook)(dev);
-		hud->inst_render->endscene(dev);
+		if (correctCaller) {
+			hud->inst_render->endscene(dev);
+		}
 		return orig;
 	}
+
 	return 1;
 }
 
@@ -210,6 +218,25 @@ void __cdecl render::enginedraw()
 	{
 		hud->inst_ui_90_lines->render();
 	}
+
+	if (hud->inst_game->is_connected() && hud->inst_ui_menu->draw_collision) {
+		hud->collision->render();
+	}
+
+	if (hud->inst_ui_jump_target->selectedBrushes.size() > 0 && hud->inst_ui_menu->brush_mode && hud->inst_ui_menu->draw_selected_brushes) {
+		const auto poly_lit = false;
+		const auto poly_outlines = false;
+		const auto poly_linecolor = ImColor(255, 255, 255, 255);
+		const auto poly_depth = true;
+		const auto poly_face = false;
+		ImColor color(0.3f, 1.f, 0.f, 0.4f);
+
+		for (BrushSide* face : hud->inst_ui_jump_target->selectedBrushes) {
+			vec3<float>* points = face->points.data();
+			hud->inst_game->drawPoly(face->points.size(), (float(*)[3]) points, (const float*)&color,
+				poly_lit, poly_outlines, (const float*)&poly_linecolor, poly_depth, poly_face);
+		}
+	}
 }
 
 void render::endscene(LPDIRECT3DDEVICE9 dev)
@@ -257,11 +284,6 @@ void render::init_graphics()
 	static LPDIRECT3DDEVICE9 current_device = nullptr;
 	if (current_device != hud->inst_game->get_device())
 	{
-		if (current_device)
-		{
-			D3DPRESENT_PARAMETERS p;
-			current_device->Reset(&p);
-		}
 		Avengers* hud = Avengers::get_instance();
 
 		if (hud && hud->inst_hooks) //remove the old hooks

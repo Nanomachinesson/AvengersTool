@@ -24,5 +24,13 @@ constexpr int addr_pMove_current = 0x008C9C90;
 constexpr int addr_stepslidemove = 0x004155c0;
 constexpr int addr_projectvelocity = 0x0040e330;
 constexpr int addr_projectvelocity_in_stepslidemove = 0x004159bc;
+constexpr int addr_clipmap_t = 0x14098C0;
+constexpr int addr_material_commands = 0xD085EE0;
+constexpr int addr_gfxcmdbufstate = 0xD5404F0;
+constexpr int addr_gfxcmdbufsourcestate = 0xD53F5F0;
+constexpr int addr_gfxworld = 0xD0701E0;
+constexpr int addr_rb_endtesssurface = 0x61A2F0;
+constexpr int addr_r_global_permanent_t = 0xCC98280;
+constexpr int addr_cg_predictPlayerState = 0x00447260;
 
 #endif

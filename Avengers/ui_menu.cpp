@@ -91,6 +91,10 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 	ImGui::SameLine();
+	if (ImGui::Checkbox("Use Static Positioning", &use_static_positioning)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
 	if (ImGui::Button("Center")) {
 		ImGui::SetWindowFontScale(velo_scale);
 		if (hud->inst_ui_menu->sep_velo) {
@@ -200,11 +204,36 @@ void ui_menu::menu(Avengers* hud)
 	ImGui::Checkbox("Enable Jump Target", &jump_target);
 	
 	ImGui::SameLine();
-	if(ImGui::Button("Set Jump target"))
+
+	if (ImGui::Checkbox("Brush Mode", &brush_mode)) {
+		hud->save_configuration();
+	}
+
+	if ( !hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized) {
+		ImGui::SetTooltip("To use this feature, brushes must be processed by activating \"Draw collision\" under collision settings (once par map).");
+	}
+
+	if ((!brush_mode || !hud->collision->hasInitialized) && ImGui::Button("Set Jump target"))
 	{
 		jump_target_origin = hud->inst_game->get_origin();
 	}
-
+	else if (brush_mode && hud->collision->hasInitialized) {
+		if (ImGui::Button("Add brush")) {
+			hud->inst_ui_jump_target->addBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Remove brush")) {
+			hud->inst_ui_jump_target->removeBrush();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reset")) {
+			hud->inst_ui_jump_target->resetBrushes();
+		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Draw selected brushes", &draw_selected_brushes)) {
+			hud->save_configuration();
+		}
+	}
 	//#######################################################
 
 	//################# POSITION MARKERS ########################
@@ -328,9 +357,19 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
+	ImGui::PushItemWidth(200.f);
 	if (ImGui::SliderFloat("Anglehelper y-offset", &anglehelper_y_offset, -1000.f, 1000.f)) {
 		hud->save_configuration();
 	}
+	ImGui::SameLine();
+	if (ImGui::SliderFloat("Anglehelper height", &anglehelper_height, 1.f, 3.f)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	if (ImGui::SliderFloat("Anglehelper width", &anglehelper_width, 1.f, 10.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
 
 	if (ImGui::Checkbox("Draw centerline", &drawcenterline)) {
 		hud->save_configuration();
@@ -467,7 +506,31 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 	//#######################################################
+
+	//################# Collision #######################
+
+	ImGui::SeparatorEx(ImGuiSeparatorFlags_::ImGuiSeparatorFlags_Horizontal, 30.f);
+	ImGui::Text("Collision settings");
+	if (ImGui::Checkbox("Draw collision", &draw_collision)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	ImGui::PushItemWidth(800.f);
+	if (ImGui::SliderFloat("Distance", &draw_collision_distance, 0.f, 15000.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
 	
+	if (ImGui::Checkbox("Only clips", &draw_collision_only_clips)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Don't draw skies", &draw_collision_no_sky)) {
+		hud->save_configuration();
+	}
+
+	//#######################################################
+
 	ImGui::End();
 }
 
@@ -486,7 +549,6 @@ void ui_menu::render()
 
 		hud->save_configuration();
 	}
-
 
 	/* WIP
 	if (drawfps_toggle && hud->inst_game->is_connected()) {
@@ -516,6 +578,10 @@ void ui_menu::render()
 		hud->inst_ui_velocity->render_jumpoff_speed(hud, velo_pos, velo_scale, color);
 	}
 
+	if (drawcenterline && hud->inst_game->is_connected()) {
+		hud->inst_ui_anglehelper->renderCenterLine(hud, centerline_color);
+	}
+
 	//Render anglehelper
 	if (anglehelper_toggle && hud->inst_game->is_connected())
 	{
@@ -525,10 +591,6 @@ void ui_menu::render()
 	if (fpswheel_toggle && hud->inst_game->is_connected())
 	{
 		hud->inst_ui_fpswheel->render(hud);
-	}
-
-	if (drawcenterline && hud->inst_game->is_connected()) {
-		hud->inst_ui_anglehelper->renderCenterLine(hud, centerline_color);
 	}
 
 	//Jump Target
@@ -569,6 +631,8 @@ void ui_menu::render()
 	{
 		hud->inst_ui_position_marker->render(marker3, pos3, marker3_color, marker_size);
 	}
+
+	hud->collision->init();
 }
 
 void ui_menu::registerConfigs(Avengers* hud)
@@ -614,6 +678,16 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("ah_style", &currentAhStyle);
 	hud->registerConfig("clamp_to_next_zone", &clamp_to_next_zone);
 	hud->registerConfig("anglehelper_y_offset", &anglehelper_y_offset);
+	hud->registerConfig("draw_collision", &draw_collision);
+	hud->registerConfig("draw_collision_only_clips", &draw_collision_only_clips);
+	hud->registerConfig("draw_collision_distance", &draw_collision_distance);
+	hud->registerConfig("draw_collision_no_sky", &draw_collision_no_sky);
+	hud->registerConfig("brush_mode", &brush_mode);
+	hud->registerConfig("draw_selected_brushes", &draw_selected_brushes);
+	hud->registerConfig("jump_target", &jump_target);
+	hud->registerConfig("anglehelper_height", &anglehelper_height);
+	hud->registerConfig("anglehelper_width", &anglehelper_width);
+	hud->registerConfig("use_static_positioning", &use_static_positioning);
 }
 
 ui_menu::ui_menu(Avengers* hud)

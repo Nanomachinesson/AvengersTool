@@ -141,4 +141,23 @@ namespace mm
 
 		return 0;
 	}
+
+	void subtract3(const vec3_t v1, const vec3_t v2, vec3_t out)
+	{
+		out[0] = v1[0] - v2[0];
+		out[1] = v1[1] - v2[1];
+		out[2] = v1[2] - v2[2];
+	}
+
+	void cross3(const vec3_t v1, const vec3_t v2, vec3_t cross)
+	{
+		cross[0] = v1[1] * v2[2] - v1[2] * v2[1];
+		cross[1] = v1[2] * v2[0] - v1[0] * v2[2];
+		cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
+	}
+
+	vec_t dot3(const vec3_t v1, const vec3_t v2)
+	{
+		return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+	}
 }

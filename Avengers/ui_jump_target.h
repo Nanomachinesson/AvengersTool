@@ -1,16 +1,25 @@
 #pragma once
 #include <chrono>
+#include "collision.h"
 
 class ui_jump_target
 {
-	std::unique_ptr<float> jump_target_closest_height_ = nullptr;
-	std::unique_ptr<float> jump_target_closest_dist_ = nullptr;
-	vec3<float> jump_target_closest_ = vec3<float>(0,0,0);
-	std::chrono::time_point<std::chrono::steady_clock> prevent_spam_;
-	
 public:
 	ui_jump_target(class Avengers* hud);
 	~ui_jump_target();
 	void render();
-};
+	void selectFacePlayerIsStandingOn();
+	void addBrush();
+	void removeBrush();
+	void resetBrushes();
+	vec2<float> getBrushDistance();  //Return: distance, Z-distance
 
+	std::vector<BrushSide*> selectedBrushes;
+
+private:
+	float PolygonSideDist(const std::vector<vec3<float>>& polygon, const vec3<float>& point);
+	float PolygonDist(const std::vector<vec3<float>>& polygon, const vec3<float>& point);
+	bool isInPolygon(const std::vector<vec2<float>>& polygon, const vec2<float>& point);
+	void extendPolygon(std::vector<vec2<float>>& polygon, float offset);
+
+};
