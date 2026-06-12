@@ -42,3 +42,8 @@ Demoplayer takes the inputs provided and executes all the demos one after anothe
 
 MORE INFO ON DEMOPLAYER TO COME...
 </pre>
+
+## Credits
+<pre>
+This tool uses code from iw3xo by xoxor4d to draw collisions / extract brushes: https://github.com/xoxor4d/iw3xo-dev
+</pre>
