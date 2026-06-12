@@ -141,7 +141,8 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	/*https://stackoverflow.com/a/67855985*/
 	if (hud->inst_ui_menu->keep_velo_centered) {
 		float windowWidth = ImGui::GetWindowSize().x;
-		float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
+		std::string widthHelper(veloText.length(), '5');  //Different digits may have different sizes
+		float textWidth = ImGui::CalcTextSize(widthHelper.c_str()).x;
 
 		adjustedPos.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 	}
@@ -207,7 +208,8 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 
 		if (hud->inst_ui_menu->keep_velo_centered) {
 			float windowWidth = ImGui::GetWindowSize().x;
-			float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
+			std::string widthHelper(veloText.length(), '5');  //Different digits may have different sizes
+			float textWidth = ImGui::CalcTextSize(widthHelper.c_str()).x;
 
 			position.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 		}
