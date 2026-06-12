@@ -15,6 +15,7 @@ public:
 	bool show_position = false;
 	bool velo_meter = false;
 	bool keep_velo_centered = false;
+	bool use_static_positioning = false;
 	bool velo_show_acceleration = false;
 	bool velo_show_deceleration = false;
 	bool draw_jumpoff_speed = false;

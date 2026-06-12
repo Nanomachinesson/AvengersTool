@@ -91,6 +91,10 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 	ImGui::SameLine();
+	if (ImGui::Checkbox("Use Static Positioning", &use_static_positioning)) {
+		hud->save_configuration();
+	}
+	ImGui::SameLine();
 	if (ImGui::Button("Center")) {
 		ImGui::SetWindowFontScale(velo_scale);
 		if (hud->inst_ui_menu->sep_velo) {
@@ -683,6 +687,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("jump_target", &jump_target);
 	hud->registerConfig("anglehelper_height", &anglehelper_height);
 	hud->registerConfig("anglehelper_width", &anglehelper_width);
+	hud->registerConfig("use_static_positioning", &use_static_positioning);
 }
 
 ui_menu::ui_menu(Avengers* hud)
