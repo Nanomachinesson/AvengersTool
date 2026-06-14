@@ -32,5 +32,6 @@ constexpr int addr_gfxworld = 0xD0701E0;
 constexpr int addr_rb_endtesssurface = 0x61A2F0;
 constexpr int addr_r_global_permanent_t = 0xCC98280;
 constexpr int addr_cg_predictPlayerState = 0x00447260;
+constexpr int addr_rb_callexecuterendercommands_callafter = 0x00615741;
 
 #endif
