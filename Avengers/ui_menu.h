@@ -12,6 +12,7 @@ public:
 	void render();
 
 	bool demoplayer_menu = false;
+	bool marker_menu = false;
 	bool show_position = false;
 	bool velo_meter = false;
 	bool keep_velo_centered = false;
@@ -53,20 +54,14 @@ public:
 	bool draw_collision_only_clips = false;
 	bool draw_collision_no_sky = false;
 	float draw_collision_distance = 5000.f;
+	bool render_markers = false;
+	bool positioning_helper = false;
+	bool positioning_helper_onlyonground = false;
+	float marker_render_distance = 500.f;
+	float widget_render_distance = 50.f;
+	bool use_marker_binds = false;
 	// Default the position to the center of the screen if there is no position in the config file
 	vec2<float> velo_pos = vec2<float>(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);
-	
-	bool draw_marker1 = false;
-	bool draw_marker2 = false;
-	bool draw_marker3 = false;
-	vec3<float> marker1;
-	vec3<float> marker2;
-	vec3<float> marker3;
-
-	float marker_size = 20.0f;
-	ImVec4 marker1_color = { 1.0f, 0.0f, 0.0f, 1.0f };
-	ImVec4 marker2_color = { 0.0f, 1.0f, 0.0f, 1.0f };
-	ImVec4 marker3_color = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 	char* demo_name;
 	vec3<float> copied_position_view;
@@ -88,8 +83,7 @@ public:
 	bool should_focus_next_frame = false;
 
 	std::string currentAhStyle = "Style 1";
-
-private:
 	void registerConfigs(Avengers* hud);
+
 };
 

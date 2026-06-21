@@ -18,6 +18,13 @@ void ui_menu::menu(Avengers* hud)
 	}
 	//#######################################################
 
+	//################ Marker menu toggle ###################
+	ImGui::SameLine();
+	if (ImGui::Button("Marker Menu")) {
+		marker_menu = !marker_menu;
+	}
+	//#######################################################
+
 	//################ Bind demo to load key ###############
 	static char demoName[128] = "";
 	ImGui::InputText("Demo Name", demoName, 128);
@@ -234,80 +241,6 @@ void ui_menu::menu(Avengers* hud)
 			hud->save_configuration();
 		}
 	}
-	//#######################################################
-
-	//################# POSITION MARKERS ########################
-	if (ImGui::Button("Mark Position 1"))
-	{
-		draw_marker1 = true;
-		marker1 = hud->inst_game->get_origin();
-	}
-	ImGui::SameLine(); ImGui::ColorButton("Marker 1 Colour Button", marker1_color);
-
-	if(ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("Marker1ColorPickerPopup");
-	}
-
-	if(ImGui::BeginPopup("Marker1ColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Color Picker", &marker1_color.x);
-
-		ImGui::EndPopup();
-	}
-	ImGui::SameLine(); if (ImGui::Button("Remove Marker 1"))
-	{
-		draw_marker1 = false;
-	}
-	
-	if (ImGui::Button("Mark Position 2"))
-	{
-		draw_marker2 = true;
-		marker2 = hud->inst_game->get_origin();
-	}
-	ImGui::SameLine(); ImGui::ColorButton("Marker 2 Colour Button", marker2_color);
-
-	if(ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("Marker2ColorPickerPopup");
-	}
-
-	if(ImGui::BeginPopup("Marker2ColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Color Picker", &marker2_color.x);
-
-		ImGui::EndPopup();
-	}
-	ImGui::SameLine(); if (ImGui::Button("Remove Marker 2"))
-	{
-		draw_marker2 = false;
-	}
-	
-	if (ImGui::Button("Mark Position 3"))
-	{
-		draw_marker3 = true;
-		marker3 = hud->inst_game->get_origin();
-	}
-	ImGui::SameLine(); ImGui::ColorButton("Marker 3 Colour Button", marker3_color);
-
-	if(ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("Marker3ColorPickerPopup");
-	}
-
-	if(ImGui::BeginPopup("Marker3ColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Color Picker", &marker3_color.x);
-
-		ImGui::EndPopup();
-	}
-	ImGui::SameLine(); if (ImGui::Button("Remove Marker 3"))
-	{
-		draw_marker3 = false;
-	}
-
-	ImGui::SliderFloat("Marker Size", &marker_size, 5.0f, 100.0f);
-	
 	//#######################################################
 
 	//################# ANGLE HELPER ########################
@@ -617,19 +550,8 @@ void ui_menu::render()
 		hud->inst_ui_bounceinfo->renderRpgAngle();
 	}
 
-	//Draw markers
-	//This can probably be made much better using an array to draw as many markers as needed if they shared the same color values
-	if (draw_marker1 && hud->inst_game->is_connected())
-	{
-		hud->inst_ui_position_marker->render(marker1, pos1, marker1_color, marker_size);
-	}
-	if (draw_marker2 && hud->inst_game->is_connected())
-	{
-		hud->inst_ui_position_marker->render(marker2, pos2, marker2_color, marker_size);
-	}
-	if (draw_marker3 && hud->inst_game->is_connected())
-	{
-		hud->inst_ui_position_marker->render(marker3, pos3, marker3_color, marker_size);
+	if (hud->inst_ui_menu->render_markers) {
+		hud->inst_ui_position_marker->render();
 	}
 
 	hud->collision->init();
@@ -688,12 +610,18 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("anglehelper_height", &anglehelper_height);
 	hud->registerConfig("anglehelper_width", &anglehelper_width);
 	hud->registerConfig("use_static_positioning", &use_static_positioning);
+	hud->registerConfig("marker_color", &hud->inst_ui_position_marker->selectedColor);
+	hud->registerConfig("render_markers", &render_markers);
+	hud->registerConfig("use_binds", &use_marker_binds);
+	hud->registerConfig("marker_render_distance", &marker_render_distance);
+	hud->registerConfig("widget_render_distance", &widget_render_distance);
+	hud->registerConfig("positioning_helper", &positioning_helper);
+	hud->registerConfig("positioning_helper_onlyonground", &positioning_helper_onlyonground);
 }
 
 ui_menu::ui_menu(Avengers* hud)
 {
 	hud->inst_render->add_callback([this]() { this->render(); });
-	registerConfigs(hud);
 }
 ui_menu::~ui_menu()
 {

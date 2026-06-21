@@ -43,7 +43,7 @@ void ui_demoplayer::render()
 
 void ui_demoplayer::menu(Avengers* hud)
 {
-	ImGui::Begin("Demo Player");
+	ImGui::Begin("Demo Player", &hud->inst_ui_menu->demoplayer_menu);
 	
 	if (ImGui::Button("Play Demos")) {
 		hud->want_input = false;

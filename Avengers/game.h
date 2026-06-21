@@ -81,6 +81,7 @@ public:
 	void setVelocity(const vec3<float>& velocity);
 	vec3<float> toCodAngles(const vec3<float>& angles);
 	float get_deltamax_bogus();
+	std::string getMapName();
 	//TAKEN FROM IW3XO
 	void drawPoly(const int num_points, float(*points)[3], const float* brush_color, bool brush_lit, bool outlines, const float* outline_color, bool depth_check, bool two_sides_poly);
 	mem::function<void __fastcall (const float* colorFloat, char* colorBytes)> R_ConvertColorToBytes = 0x493530;

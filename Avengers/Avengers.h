@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <filesystem>
 #include "Input.h"
 #include "Render.h"
 #include "ui_anglehelper.h"
@@ -36,6 +37,8 @@ class Avengers
 public:
 	void load_configuration();
 	void save_configuration();
+	void save_markers();
+	void load_markers();
 	Avengers();
 	~Avengers();
 
@@ -72,6 +75,8 @@ public:
 	bool bind_close(UINT key_state);
 	static Avengers* inst_Avengers;
 	static Avengers* get_instance();
+
+	std::string markerDirectory = "AvengersMarkers";
 
 	template<typename T>
 	void registerConfig(const std::string& name, T* data)
