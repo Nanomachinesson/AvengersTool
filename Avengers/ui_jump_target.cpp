@@ -108,11 +108,20 @@ void ui_jump_target::selectFacePlayerIsStandingOn()
 
 	vec3<float> origin = gameState->origin;
 	BrushSide* face = nullptr;
+	BrushSide* closestFace = nullptr;
 
+	float closest = 99999999.f;
 	for (auto& brush : avengers->collision->processedBrushes) {
 		for (auto& brushSide : brush.sides) {
 			constexpr float LEEWAY = 0.01f;
 			constexpr float EXTEND_WIDTH = 15.f;
+			float dist = brushSide.center.Dist(origin);
+
+			if (dist < closest) {
+				closest = dist;
+				closestFace = &brushSide;
+			}
+
 			if (fabsf(fabsf(brushSide.center.z + 0.125f) - fabsf(origin.z)) <= LEEWAY) {
 				vec2<float> origin2D = vec2<float>(origin.x, origin.y);
 				std::vector<vec2<float>> points2D;
@@ -129,8 +138,12 @@ void ui_jump_target::selectFacePlayerIsStandingOn()
 		}
 	}
 	
+	bool selectClosest = avengers->inst_ui_menu->jump_target_select_closest;
 	if (face && std::find(selectedBrushes.begin(), selectedBrushes.end(), face) == selectedBrushes.end()) {
 		selectedBrushes.push_back(face);
+	}
+	else if (selectClosest && !face && closestFace && std::find(selectedBrushes.begin(), selectedBrushes.end(), closestFace) == selectedBrushes.end()) {
+		selectedBrushes.push_back(closestFace);
 	}
 }
 
@@ -357,9 +370,18 @@ float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const
 	const float point2dy = rpx * vx + rpy * vy + rpz * vz;
 	const vec2<float> p2{ point2dx, point2dy };
 
+	bool abovePolygon = true;
 	// If projected point lies within polygon, perpendicular distance is the answer
 	if (isInPolygon(poly2d, p2)) {
-		return fabsf(polygon[0].z - point.z);
+		for (int i = 0; i < polygon.size(); i++) {
+			if (polygon[i].z > point.z) {
+				abovePolygon = false;
+			}
+		}
+		if (abovePolygon) {
+			return -1.f * PolygonSideDist(polygon, point);
+		}
+		//return fabsf(polygon[0].z - point.z);
 	}
 
 	// Otherwise distance is to polygon sides/vertices

@@ -74,6 +74,7 @@ public:
 	bool jump_target = false;
 	bool brush_mode = false;
 	bool draw_selected_brushes = false;
+	bool jump_target_select_closest = false;
 	vec3<float> jump_target_origin {};
 	bool drawfps_toggle = false;
 	bool drawfps_spectateonly = false;

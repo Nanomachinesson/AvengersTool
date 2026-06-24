@@ -26,6 +26,10 @@ public:
     ~ui_position_marker();
     void menu();
     void render();
+    void addMarker();
+    bool bindSetMarker(UINT keyState);
+    bool bindToggleWidget(UINT keyState);
+    bool bindToggleRenderMarkers(UINT keyState);
 
 public:
     static ImU32 im_vec4_to_im_col32(const ImVec4& color);

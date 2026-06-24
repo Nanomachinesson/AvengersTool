@@ -19,6 +19,9 @@ ui_position_marker::ui_position_marker(Avengers* avengers) :
     avengers(avengers)
 {
     avengers->inst_render->add_callback([this]() { this->menu(); });
+    avengers->inst_input->add_callback(VK_NUMPAD2, [this](UINT key_state) { return this->bindToggleWidget(key_state); });
+    avengers->inst_input->add_callback(VK_NUMPAD1, [this](UINT key_state) { return this->bindSetMarker(key_state); });
+    avengers->inst_input->add_callback(VK_NUMPAD3, [this](UINT key_state) { return this->bindToggleRenderMarkers(key_state); });
 }
 
 ui_position_marker::~ui_position_marker()
@@ -121,7 +124,7 @@ void ui_position_marker::render()
             ImGui::GetWindowDrawList()->AddLine(markerPos, ImVec2(rotated.x, rotated.y), im_vec4_to_im_col32(invertColor(marker.color)), 1.f);
 
             if (!centerDrawn) {
-                ImGui::GetWindowDrawList()->AddCircleFilled(centerPos, HELPER_CIRCLE_RADIUS, ImColor(0.5f, 0.5f, 0.5f, 0.7f));
+                ImGui::GetWindowDrawList()->AddCircleFilled(centerPos, HELPER_CIRCLE_RADIUS, ImColor(0.5f, 0.5f, 0.5f, 0.8f));
                 vec2<float> rotatedCenter = mm::rotate_point(vec2<float>(centerPos.x + HELPER_CIRCLE_RADIUS + 20.f, centerPos.y), vec2<float>(centerPos.x, centerPos.y), mm::normalise(-1.f * avengers->inst_game->get_view().y, 0.f, 360.f));
                 
                 ImGui::GetWindowDrawList()->AddLine(centerPos, ImVec2(rotatedCenter.x, rotatedCenter.y), ImColor(1.f, 1.f, 1.f, 1.f), 1.f);
@@ -131,6 +134,46 @@ void ui_position_marker::render()
             ImGui::PopStyleVar();
         }
     }
+}
+
+void ui_position_marker::addMarker()
+{
+    Marker marker(avengers->gameState->origin, avengers->inst_game->get_view(), selectedColor);
+    markers.push_back(marker);
+    avengers->save_markers();
+}
+
+bool ui_position_marker::bindSetMarker(UINT keyState)
+{
+    if (keyState == WM_KEYUP) {
+        if (avengers->inst_ui_menu->use_marker_binds) {
+            avengers->inst_game->add_obituary("Marker set");
+            addMarker();
+        }
+    }
+    return false;
+}
+
+bool ui_position_marker::bindToggleWidget(UINT keyState)
+{
+    if (keyState == WM_KEYUP) {
+        if (avengers->inst_ui_menu->use_marker_binds) {
+            avengers->inst_game->add_obituary("Positioning widget toggled");
+            avengers->inst_ui_menu->positioning_helper = !avengers->inst_ui_menu->positioning_helper;
+        }
+    }
+    return false;
+}
+
+bool ui_position_marker::bindToggleRenderMarkers(UINT keyState)
+{
+    if (keyState == WM_KEYUP) {
+        if (avengers->inst_ui_menu->use_marker_binds) {
+            avengers->inst_game->add_obituary("Marker rendering toggled");
+            avengers->inst_ui_menu->render_markers = !avengers->inst_ui_menu->render_markers;
+        }
+    }
+    return false;
 }
 
 void ui_position_marker::menu()
@@ -146,9 +189,7 @@ void ui_position_marker::menu()
         ImGui::PushItemFlag(ImGuiItemFlags_::ImGuiItemFlags_Disabled, true);
     }
     if (ImGui::Button("Add Marker")) {
-        Marker marker(avengers->gameState->origin, avengers->inst_game->get_view(), selectedColor);
-        markers.push_back(marker);
-        avengers->save_markers();
+        addMarker();
     }
 
     if (!isConnected) {

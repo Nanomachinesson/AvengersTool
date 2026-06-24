@@ -216,8 +216,14 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
-	if ( !hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized) {
+	if (!hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized) {
 		ImGui::SetTooltip("To use this feature, brushes must be processed by activating \"Draw collision\" under collision settings (once par map).");
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Checkbox("Select closest", &jump_target_select_closest)) {
+		hud->save_configuration();
 	}
 
 	if ((!brush_mode || !hud->collision->hasInitialized) && ImGui::Button("Set Jump target"))
@@ -550,9 +556,7 @@ void ui_menu::render()
 		hud->inst_ui_bounceinfo->renderRpgAngle();
 	}
 
-	if (hud->inst_ui_menu->render_markers) {
-		hud->inst_ui_position_marker->render();
-	}
+	hud->inst_ui_position_marker->render();
 
 	hud->collision->init();
 }
@@ -617,6 +621,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("widget_render_distance", &widget_render_distance);
 	hud->registerConfig("positioning_helper", &positioning_helper);
 	hud->registerConfig("positioning_helper_onlyonground", &positioning_helper_onlyonground);
+	hud->registerConfig("jump_target_select_closest", &jump_target_select_closest);
 }
 
 ui_menu::ui_menu(Avengers* hud)
