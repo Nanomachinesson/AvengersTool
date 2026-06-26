@@ -19,8 +19,8 @@ private:
 		//CENTER 90
 		{125, vec2<float>(103.31f, 115.72f)},
 		{200, vec2<float>(93.88f, 103.31f)},
-		{250, vec2<float>(73.6f, 86.5f)},
-		{251, vec2<float>(86.5f, 93.88f)},
+		{250, vec2<float>(73.6f, 86.15f)},
+		{251, vec2<float>(86.15f, 93.88f)},
 		{333, vec2<float>(25.72f, 73.6f)},
 	};;
 };
