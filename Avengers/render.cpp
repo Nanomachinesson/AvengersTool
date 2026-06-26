@@ -21,18 +21,17 @@ void __cdecl EngineDraw_Hook()
 
 HRESULT __stdcall EndScene_Hook(LPDIRECT3DDEVICE9 dev)
 {
-	int ret = reinterpret_cast<int>(_ReturnAddress());
-	bool correctCaller = ret == 6379331;
-
 	Avengers* hud = Avengers::get_instance();
+
+	typedef HRESULT __stdcall EndsceneFunc(LPDIRECT3DDEVICE9 dev);
+	EndsceneFunc* endsceneFunc = (EndsceneFunc*)hud->inst_render->endsceneAddress;
+;
 	hud->inst_input->windowReady = true;
 
 	if (hud && hud->inst_hooks && hud->inst_render)
 	{
-		auto orig = hud->inst_hooks->hook_map["EndScene"]->original(EndScene_Hook)(dev);
-		if (correctCaller) {
-			hud->inst_render->endscene(dev);
-		}
+		auto orig = endsceneFunc(dev);
+		hud->inst_render->endscene(dev);
 		return orig;
 	}
 
@@ -272,10 +271,12 @@ void render::invalidate_objects(LPDIRECT3DDEVICE9 pDevice)
 {
 	ImGui_ImplDX9_InvalidateDeviceObjects();
 }
+
 void render::create_objects(LPDIRECT3DDEVICE9 pDevice)
 {
 	ImGui_ImplDX9_CreateDeviceObjects();
 }
+
 void render::init_graphics()
 {
 	Avengers* hud = Avengers::get_instance();
@@ -302,12 +303,28 @@ void render::init_graphics()
 		{
 			imgui_initialized = false;
 			::memcpy(g_methodsTable, *(uint32_t**)(hud->inst_game->get_device()), 119 * sizeof(uint32_t));
-			hud->inst_hooks->Add("EndScene", g_methodsTable[42], EndScene_Hook, hook_type_detour);
+			endsceneAddress = g_methodsTable[42];
 			hud->inst_hooks->Add("Reset", g_methodsTable[16], Reset_Hook, hook_type_detour);
 			mem::mem_set(0x6496d8, 0x90, 3); //disable check for developer to engine draw
 			hud->inst_hooks->Add("EngineDraw", addr_engine_draw, EngineDraw_Hook, hook_type_detour);
 			//update the wndproc hook on init
 			hud->inst_input->update_wndproc(hud->inst_game->get_window());
+
+			//Hook endscene call in RB_CallExecuteRenderCommands
+
+			DWORD dwOldProtect;
+			_MEMORY_BASIC_INFORMATION mbi = { 0,0,0,0,0,0,0 };
+			VirtualQuery((LPVOID)addr_rb_callexecuterendercommands_callafter, &mbi, sizeof(mbi));
+			VirtualProtect(mbi.BaseAddress, mbi.RegionSize, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+
+			BYTE* callInstruction = (BYTE*)addr_rb_callexecuterendercommands_callafter;
+			*callInstruction = 0xE8;
+			DWORD relativeAddress = (DWORD)EndScene_Hook - (DWORD)addr_rb_callexecuterendercommands_callafter - 5;
+			*(DWORD*)((DWORD)addr_rb_callexecuterendercommands_callafter + 1) = relativeAddress;
+
+			VirtualProtect((LPVOID)addr_rb_callexecuterendercommands_callafter, 1000, dwOldProtect, &dwOldProtect);
+
+			///////////////////////////////////////////////////////////////////////////////////////////////////
 		}
 	}
 }
@@ -327,8 +344,6 @@ render::~render() //hooks are removed when the hook wrapper is destroyed
 	{
 		if (hud->inst_hooks->hook_map.count("InitGraphics") > 0)
 			hud->inst_hooks->hook_map["InitGraphics"]->remove(); //remove hook here in case of a race condition on destructors
-		if (hud->inst_hooks->hook_map.count("EndScene") > 0)
-			hud->inst_hooks->hook_map["EndScene"]->remove(); //remove hook here in case of a race condition on destructors
 		if (hud->inst_hooks->hook_map.count("Reset") > 0)
 			hud->inst_hooks->hook_map["Reset"]->remove(); //remove hook here in case of a race condition on destructors
 		if (hud->inst_hooks->hook_map.count("EngineDraw") > 0)

@@ -144,7 +144,7 @@ void ui_anglehelper::renderCenterLineOnWheel(Avengers*& hud, ImVec4& color)
 	float fpsWheelPos = hud->inst_game->get_screen_res().y / 2 + hud->inst_ui_menu->fpswheel_offset_y;
 
 	screen.y = fpsWheelPos;
-	screen.x = center.x - width / 2.f;
+	screen.x = center.x;
 
 	ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(screen.x, screen.y), ImVec2(width + screen.x, hud->inst_ui_menu->fpswheel_size + screen.y), ImColor(color));
 }

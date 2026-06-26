@@ -50,6 +50,62 @@ void Avengers::save_configuration() {
 	configManager.saveConfig();
 }
 
+void Avengers::save_markers()
+{
+	if (!std::filesystem::exists(markerDirectory)) {
+		std::filesystem::create_directory(markerDirectory);
+	}
+
+	std::string mapName = inst_game->getMapName();
+	std::string filePath = markerDirectory + "/" + mapName + "_markers";
+
+	std::ofstream markerFile(filePath);
+	if (!markerFile.is_open()) {
+		return;
+	}
+
+	for (Marker& marker : inst_ui_position_marker->markers) {
+		markerFile << "POS: " << marker.position.x << "," << marker.position.y << "," << marker.position.z << ","
+				   << "ANGLES: " << marker.angles.x << "," << marker.angles.y << "," << marker.angles.z << ","
+				   << "COL: " << marker.color.x << "," << marker.color.y << "," << marker.color.z << "," << marker.color.w << "\n";
+	}
+}
+
+void Avengers::load_markers()
+{
+	std::string mapName = inst_game->getMapName();
+	std::string filePath = markerDirectory + "/" + mapName + "_markers";
+	inst_ui_position_marker->markers.clear();
+
+	std::ifstream configFile(filePath);
+	if (!configFile.is_open()) {
+		return;
+	}
+
+	std::string line;
+	while (std::getline(configFile, line)) {
+		if (line.empty())
+			continue;
+
+		vec3<float> position;
+		vec3<float> angles;
+		ImVec4 color;
+
+		int scanned = sscanf_s(line.c_str(), "POS: %f,%f,%f,ANGLES: %f,%f,%f,COL: %f,%f,%f,%f",
+			&position.x, &position.y, &position.z,
+			&angles.x, &angles.y, &angles.z,
+			&color.x, &color.y, &color.z, &color.w);
+
+		if (scanned == 10) {
+			Marker marker;
+			marker.position = position;
+			marker.angles = angles;
+			marker.color = color;
+			inst_ui_position_marker->markers.push_back(marker);
+		}
+	}
+}
+
 Avengers::Avengers() :
 	configManager("AvengersConfig.txt")
 {
@@ -83,6 +139,7 @@ Avengers::Avengers() :
 	//Keybind to tp to the last saved postion
 	inst_input->add_callback(VK_F3, [this](UINT key_state) { return this->bind_tp_to_saved_pos(key_state); });
 
+	inst_ui_menu->registerConfigs(this);
 	load_configuration();
 }
 

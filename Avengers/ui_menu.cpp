@@ -18,6 +18,13 @@ void ui_menu::menu(Avengers* hud)
 	}
 	//#######################################################
 
+	//################ Marker menu toggle ###################
+	ImGui::SameLine();
+	if (ImGui::Button("Marker Menu")) {
+		marker_menu = !marker_menu;
+	}
+	//#######################################################
+
 	//################ Bind demo to load key ###############
 	static char demoName[128] = "";
 	ImGui::InputText("Demo Name", demoName, 128);
@@ -179,7 +186,31 @@ void ui_menu::menu(Avengers* hud)
 
 		hud->save_configuration();
 	}
-	
+
+	ImGui::PushItemWidth(300.f);
+	if (ImGui::SliderFloat("Frames to keep acceleration for", &velo_keep_accel_for, 0.f, 100.f)) {
+		hud->save_configuration();
+	}
+	if (ImGui::SliderFloat("Acceleration threshold", &velo_acceleration_threshold, 1.f, 100.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
+	if (ImGui::Checkbox("Enable acceleration on ground", &enable_acceleration_on_ground)) {
+		hud->save_configuration();
+	}
+
+	ImGui::PushItemWidth(300.f);
+	if (ImGui::SliderFloat("Frames to keep deceleration for", &velo_keep_decel_for, 0.f, 100.f)) {
+		hud->save_configuration();
+	}
+	if (ImGui::SliderFloat("Deceleration threshold", &velo_deceleration_threshold, 1.f, 100.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
+	if (ImGui::Checkbox("Enable deceleration on ground", &enable_deceleration_on_ground)) {
+		hud->save_configuration();
+	}
+
 	/////////////
 	if(ImGui::SliderFloat("Speed Size", &velo_scale, 0.01f, 10.f))
 	{
@@ -209,8 +240,14 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 
-	if ( !hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized) {
+	if (!hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized) {
 		ImGui::SetTooltip("To use this feature, brushes must be processed by activating \"Draw collision\" under collision settings (once par map).");
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Checkbox("Select closest", &jump_target_select_closest)) {
+		hud->save_configuration();
 	}
 
 	if ((!brush_mode || !hud->collision->hasInitialized) && ImGui::Button("Set Jump target"))
@@ -234,80 +271,6 @@ void ui_menu::menu(Avengers* hud)
 			hud->save_configuration();
 		}
 	}
-	//#######################################################
-
-	//################# POSITION MARKERS ########################
-	if (ImGui::Button("Mark Position 1"))
-	{
-		draw_marker1 = true;
-		marker1 = hud->inst_game->get_origin();
-	}
-	ImGui::SameLine(); ImGui::ColorButton("Marker 1 Colour Button", marker1_color);
-
-	if(ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("Marker1ColorPickerPopup");
-	}
-
-	if(ImGui::BeginPopup("Marker1ColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Color Picker", &marker1_color.x);
-
-		ImGui::EndPopup();
-	}
-	ImGui::SameLine(); if (ImGui::Button("Remove Marker 1"))
-	{
-		draw_marker1 = false;
-	}
-	
-	if (ImGui::Button("Mark Position 2"))
-	{
-		draw_marker2 = true;
-		marker2 = hud->inst_game->get_origin();
-	}
-	ImGui::SameLine(); ImGui::ColorButton("Marker 2 Colour Button", marker2_color);
-
-	if(ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("Marker2ColorPickerPopup");
-	}
-
-	if(ImGui::BeginPopup("Marker2ColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Color Picker", &marker2_color.x);
-
-		ImGui::EndPopup();
-	}
-	ImGui::SameLine(); if (ImGui::Button("Remove Marker 2"))
-	{
-		draw_marker2 = false;
-	}
-	
-	if (ImGui::Button("Mark Position 3"))
-	{
-		draw_marker3 = true;
-		marker3 = hud->inst_game->get_origin();
-	}
-	ImGui::SameLine(); ImGui::ColorButton("Marker 3 Colour Button", marker3_color);
-
-	if(ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("Marker3ColorPickerPopup");
-	}
-
-	if(ImGui::BeginPopup("Marker3ColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Color Picker", &marker3_color.x);
-
-		ImGui::EndPopup();
-	}
-	ImGui::SameLine(); if (ImGui::Button("Remove Marker 3"))
-	{
-		draw_marker3 = false;
-	}
-
-	ImGui::SliderFloat("Marker Size", &marker_size, 5.0f, 100.0f);
-	
 	//#######################################################
 
 	//################# ANGLE HELPER ########################
@@ -528,6 +491,14 @@ void ui_menu::menu(Avengers* hud)
 	if (ImGui::Checkbox("Don't draw skies", &draw_collision_no_sky)) {
 		hud->save_configuration();
 	}
+	ImGui::Separator();
+
+	if (ImGui::Checkbox("Allow impure map IWDs", &allow_impure_map_iwds)) {
+		hud->save_configuration();
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("Modifying IWDs in your usermaps folder will not cause the server to force a redownload.");
+	}
 
 	//#######################################################
 
@@ -617,20 +588,7 @@ void ui_menu::render()
 		hud->inst_ui_bounceinfo->renderRpgAngle();
 	}
 
-	//Draw markers
-	//This can probably be made much better using an array to draw as many markers as needed if they shared the same color values
-	if (draw_marker1 && hud->inst_game->is_connected())
-	{
-		hud->inst_ui_position_marker->render(marker1, pos1, marker1_color, marker_size);
-	}
-	if (draw_marker2 && hud->inst_game->is_connected())
-	{
-		hud->inst_ui_position_marker->render(marker2, pos2, marker2_color, marker_size);
-	}
-	if (draw_marker3 && hud->inst_game->is_connected())
-	{
-		hud->inst_ui_position_marker->render(marker3, pos3, marker3_color, marker_size);
-	}
+	hud->inst_ui_position_marker->render();
 
 	hud->collision->init();
 }
@@ -688,12 +646,27 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("anglehelper_height", &anglehelper_height);
 	hud->registerConfig("anglehelper_width", &anglehelper_width);
 	hud->registerConfig("use_static_positioning", &use_static_positioning);
+	hud->registerConfig("marker_color", &hud->inst_ui_position_marker->selectedColor);
+	hud->registerConfig("render_markers", &render_markers);
+	hud->registerConfig("use_binds", &use_marker_binds);
+	hud->registerConfig("marker_render_distance", &marker_render_distance);
+	hud->registerConfig("widget_render_distance", &widget_render_distance);
+	hud->registerConfig("positioning_helper", &positioning_helper);
+	hud->registerConfig("positioning_helper_onlyonground", &positioning_helper_onlyonground);
+	hud->registerConfig("jump_target_select_closest", &jump_target_select_closest);
+	hud->registerConfig("allow_impure_map_iwds", &allow_impure_map_iwds);
+	hud->registerConfig("use_legacy_markers", &use_legacy_markers);
+	hud->registerConfig("velo_acceleration_threshold", &velo_acceleration_threshold);
+	hud->registerConfig("velo_deceleration_threshold", &velo_deceleration_threshold);
+	hud->registerConfig("velo_keep_accel_for", &velo_keep_accel_for);
+	hud->registerConfig("velo_keep_decel_for", &velo_keep_decel_for);
+	hud->registerConfig("enable_acceleration_on_ground", &enable_acceleration_on_ground);
+	hud->registerConfig("enable_deceleration_on_ground", &enable_deceleration_on_ground);
 }
 
 ui_menu::ui_menu(Avengers* hud)
 {
 	hud->inst_render->add_callback([this]() { this->render(); });
-	registerConfigs(hud);
 }
 ui_menu::~ui_menu()
 {

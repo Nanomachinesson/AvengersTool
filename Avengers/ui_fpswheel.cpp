@@ -68,9 +68,11 @@ void ui_fpswheel::render(Avengers* hud)
 			std::swap(onePx, onePy);
 		}
 
-		if ((onePx < 0 && onePy > hud->inst_game->get_screen_res().x)
-			|| ( (onePx > hud->inst_game->get_screen_res().x) && (onePy > hud->inst_game->get_screen_res().x) )
-			|| ( (onePx < 0) && (onePy < 0)) )
+		bool screenCullEnabled = hud->inst_ui_menu->wheel_pixel_scale <= 1.f;  //Some psychopaths use large enough pixelscales for a single zone to cover the whole screen
+
+		if ( (screenCullEnabled && (onePx < 0 && onePy > hud->inst_game->get_screen_res().x) )
+			||  ( (onePx > hud->inst_game->get_screen_res().x) && (onePy > hud->inst_game->get_screen_res().x) )
+			||  ( (onePx < 0) && (onePy < 0)) )
 				{  //Shouldnt draw stuff outside the screen
 			continue;
 		}

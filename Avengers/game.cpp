@@ -252,6 +252,11 @@ float game::get_deltamax_bogus()
 	return deltaMax;
 }
 
+std::string game::getMapName()
+{
+	return std::string(getCvar("mapname")->current.string);
+}
+
 MaterialTechnique* game::RB_BeginSurface(MaterialTechniqueType techType, Material* material)
 {
 	const static uint32_t RB_BeginSurface_func = 0x61A220;
@@ -605,7 +610,7 @@ bool game::is_spectating()
 {
 	pmove_t* pm = get_pmove_current();
 	bool spectating = false;
-	if (pm->ps) {
+	if (pm && pm->ps) {
 		spectating = pm->ps->otherFlags & PMF_FOLLOW;
 	}
 	return spectating;
@@ -697,7 +702,7 @@ bool game::world_to_screen(vec3<float> world, float* screen_x, float* screen_y)
 	transform.y = position.DotProduct(ref->Refdef.ViewAxis[2]);
 	transform.z = position.DotProduct(ref->Refdef.ViewAxis[0]);
 	
-	if (transform.z < 0.1f)
+	if (transform.z < 0.0f)
 		return false;
 
 	vec2 center = { ref->Refdef.ScreenWidth * 0.5f, ref->Refdef.ScreenHeight * 0.5f };

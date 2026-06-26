@@ -22,14 +22,19 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 
 	//////////////////////////////////////////////////////////////////DECREASE LOGIC
+	bool onGround = gameState->onGround;
+	if (hud->inst_ui_menu->enable_deceleration_on_ground) {
+		onGround = false;
+	}
+
 	if (velo < prev_velo && frames_to_decrease_velo_for > 0) {
-		frames_to_decrease_velo_for = 50;
+		frames_to_decrease_velo_for = hud->inst_ui_menu->velo_keep_decel_for;
 	}
 
 	if (velo < prev_velo
 		&& frames_to_wait_for_velo_decrease == 0 && frames_checking_for_velo_decrease == 0 && frames_to_decrease_velo_for == 0
-		&& !gameState->onGround) {
-		frames_to_wait_for_velo_decrease = 10;
+		&& !onGround) {
+		frames_to_wait_for_velo_decrease = hud->inst_ui_menu->velo_deceleration_threshold;
 		frames_checking_for_velo_decrease = 0;
 		frames_to_decrease_velo_for = 0;
 	}
@@ -44,7 +49,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	if (frames_to_wait_for_velo_decrease > 0) {
 		frames_to_wait_for_velo_decrease--;
 		if (frames_to_wait_for_velo_decrease == 0) {
-			frames_checking_for_velo_decrease = 10;
+			frames_checking_for_velo_decrease = hud->inst_ui_menu->velo_deceleration_threshold;
 		}
 	}
 
@@ -52,7 +57,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 		frames_checking_for_velo_decrease--;
 		if (velo < prev_velo) {
 			velocity_decreasing = true;
-			frames_to_decrease_velo_for = 50;
+			frames_to_decrease_velo_for = hud->inst_ui_menu->velo_keep_decel_for;
 		}
 	}
 
@@ -63,14 +68,19 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 		}
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	onGround = gameState->onGround;
+	if (hud->inst_ui_menu->enable_acceleration_on_ground) {
+		onGround = false;
+	}
+
 	if (velo > prev_velo && frames_to_increase_velo_for > 0) {
-		frames_to_increase_velo_for = 10;
+		frames_to_increase_velo_for = hud->inst_ui_menu->velo_keep_accel_for;
 	}
 
 	if (velo > prev_velo
 		&& frames_to_wait_for_velo_increase == 0 && frames_checking_for_velo_increase == 0 && frames_to_increase_velo_for == 0
-		&& !gameState->onGround) {
-		frames_to_wait_for_velo_increase = 10;
+		&& !onGround) {
+		frames_to_wait_for_velo_increase = hud->inst_ui_menu->velo_acceleration_threshold;
 		frames_checking_for_velo_increase = 0;
 		frames_to_increase_velo_for = 0;
 	}
@@ -85,7 +95,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	if (frames_to_wait_for_velo_increase > 0) {
 		frames_to_wait_for_velo_increase--;
 		if (frames_to_wait_for_velo_increase == 0) {
-			frames_checking_for_velo_increase = 10;
+			frames_checking_for_velo_increase = hud->inst_ui_menu->velo_acceleration_threshold;
 		}
 	}
 
@@ -93,7 +103,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 		frames_checking_for_velo_increase--;
 		if (velo > prev_velo) {
 			velocity_increasing = true;
-			frames_to_increase_velo_for = 10;
+			frames_to_increase_velo_for = hud->inst_ui_menu->velo_keep_accel_for;
 		}
 	}
 

@@ -16,6 +16,7 @@ public:
 	void init_imgui(LPDIRECT3DDEVICE9 dev);
 	void add_callback(RenderCallback);
 	void SetupImGuiStyle2();
+	int endsceneAddress = 0;
 
 private:
 	bool imgui_initialized = false;

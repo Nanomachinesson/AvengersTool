@@ -2115,6 +2115,22 @@ struct __declspec(align(128)) r_global_permanent_t
 };
 #pragma warning( pop )
 
+struct Iwd
+{
+    char iwdFilename[256];
+    char iwdBasename[256];
+    char iwdGamename[256];
+    byte* handle;
+    int checksum;
+    int pure_checksum;
+};
+
+struct Searchpath_s
+{
+    Searchpath_s* next;
+    Iwd* Iwd;
+};
+
 ///////////////////////
 
 #endif

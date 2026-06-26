@@ -207,10 +207,15 @@ void Collision::buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* b
 		if (build_brush_winding_for_side((winding_t*)&winding_pool, brush->sides[side_index - 6].plane->normal, side_index, pts)) {
 			processedBrush.sides.push_back(BrushSide());
 			std::size_t sideIndex = processedBrush.sides.size() - 1;
+			vec3<float> sideCenter(0.f, 0.f, 0.f);
 			for (int i = 0; i < winding_pool.numpoints; i++) {
 				vec3<float> p(reinterpret_cast<vec3<float>*>(winding_pool.p)[i]);
+				sideCenter += p;
 				processedBrush.sides[sideIndex].points.push_back(p);
 			}
+
+			sideCenter /= winding_pool.numpoints;
+			processedBrush.sides[sideIndex].center = sideCenter;
 		}
 	}
 }
