@@ -19,6 +19,12 @@ public:
 	bool use_static_positioning = false;
 	bool velo_show_acceleration = false;
 	bool velo_show_deceleration = false;
+	float velo_acceleration_threshold = 10.f;
+	float velo_deceleration_threshold = 10.f;
+	float velo_keep_accel_for = 10.f;
+	float velo_keep_decel_for = 50.f;
+	bool enable_acceleration_on_ground = false;
+	bool enable_deceleration_on_ground = false;
 	bool draw_jumpoff_speed = false;
 	bool jumpoffspeed_display_bottom = false;
 	bool sep_velo = false;

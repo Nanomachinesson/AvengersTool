@@ -186,7 +186,31 @@ void ui_menu::menu(Avengers* hud)
 
 		hud->save_configuration();
 	}
-	
+
+	ImGui::PushItemWidth(300.f);
+	if (ImGui::SliderFloat("Frames to keep acceleration for", &velo_keep_accel_for, 0.f, 100.f)) {
+		hud->save_configuration();
+	}
+	if (ImGui::SliderFloat("Acceleration threshold", &velo_acceleration_threshold, 1.f, 100.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
+	if (ImGui::Checkbox("Enable acceleration on ground", &enable_acceleration_on_ground)) {
+		hud->save_configuration();
+	}
+
+	ImGui::PushItemWidth(300.f);
+	if (ImGui::SliderFloat("Frames to keep deceleration for", &velo_keep_decel_for, 0.f, 100.f)) {
+		hud->save_configuration();
+	}
+	if (ImGui::SliderFloat("Deceleration threshold", &velo_deceleration_threshold, 1.f, 100.f)) {
+		hud->save_configuration();
+	}
+	ImGui::PopItemWidth();
+	if (ImGui::Checkbox("Enable deceleration on ground", &enable_deceleration_on_ground)) {
+		hud->save_configuration();
+	}
+
 	/////////////
 	if(ImGui::SliderFloat("Speed Size", &velo_scale, 0.01f, 10.f))
 	{
@@ -628,6 +652,12 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("jump_target_select_closest", &jump_target_select_closest);
 	hud->registerConfig("allow_impure_map_iwds", &allow_impure_map_iwds);
 	hud->registerConfig("use_legacy_markers", &use_legacy_markers);
+	hud->registerConfig("velo_acceleration_threshold", &velo_acceleration_threshold);
+	hud->registerConfig("velo_deceleration_threshold", &velo_deceleration_threshold);
+	hud->registerConfig("velo_keep_accel_for", &velo_keep_accel_for);
+	hud->registerConfig("velo_keep_decel_for", &velo_keep_decel_for);
+	hud->registerConfig("enable_acceleration_on_ground", &enable_acceleration_on_ground);
+	hud->registerConfig("enable_deceleration_on_ground", &enable_deceleration_on_ground);
 }
 
 ui_menu::ui_menu(Avengers* hud)
