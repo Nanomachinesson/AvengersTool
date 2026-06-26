@@ -33,5 +33,11 @@ constexpr int addr_rb_endtesssurface = 0x61A2F0;
 constexpr int addr_r_global_permanent_t = 0xCC98280;
 constexpr int addr_cg_predictPlayerState = 0x00447260;
 constexpr int addr_rb_callexecuterendercommands_callafter = 0x00615741;
+constexpr int addr_FS_CompareIwds = 0x005035f0;
+constexpr int addr_FS_AddUserMapDirIwd = 0x0055dd30;
+constexpr int addr_serveriwdsums = 0x0cb1aac0;
+constexpr int addr_serveriwdnames = 0x0cb1ccc0;
+constexpr int addr_servernumiwds = 0x0cb1988c;
+constexpr int addr_searchpathbase = 0x0d5ec4dc;
 
 #endif

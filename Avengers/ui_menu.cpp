@@ -467,6 +467,10 @@ void ui_menu::menu(Avengers* hud)
 	if (ImGui::Checkbox("Don't draw skies", &draw_collision_no_sky)) {
 		hud->save_configuration();
 	}
+	ImGui::Separator();
+	if (ImGui::Checkbox("Allow impure map IWDs", &allow_impure_map_iwds)) {
+		hud->save_configuration();
+	}
 
 	//#######################################################
 
@@ -622,6 +626,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("positioning_helper", &positioning_helper);
 	hud->registerConfig("positioning_helper_onlyonground", &positioning_helper_onlyonground);
 	hud->registerConfig("jump_target_select_closest", &jump_target_select_closest);
+	hud->registerConfig("allow_impure_map_iwds", &allow_impure_map_iwds);
 }
 
 ui_menu::ui_menu(Avengers* hud)
