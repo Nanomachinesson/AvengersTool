@@ -627,6 +627,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("positioning_helper_onlyonground", &positioning_helper_onlyonground);
 	hud->registerConfig("jump_target_select_closest", &jump_target_select_closest);
 	hud->registerConfig("allow_impure_map_iwds", &allow_impure_map_iwds);
+	hud->registerConfig("use_legacy_markers", &use_legacy_markers);
 }
 
 ui_menu::ui_menu(Avengers* hud)

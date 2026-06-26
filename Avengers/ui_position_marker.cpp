@@ -72,11 +72,6 @@ void ui_position_marker::render()
         vec3<float> pos1 = marker.position;
         vec3<float> pos2 = pos1;
         pos2.z += LINE_HEIGHT;
-        
-        ImVec2 screen1;
-        ImVec2 screen2;
-        ImVec2 screenAngle1;
-        ImVec2 screenAngle2;
 
         vec3<float> anglingHelper1(pos1.x, pos1.y, pos1.z + LINE_HEIGHT);
         vec3<float> anglingHelper2(pos1.x + ANGLE_WIDTH, pos1.y, pos1.z + LINE_HEIGHT);
@@ -86,19 +81,47 @@ void ui_position_marker::render()
         anglingHelper2.x = rotated.x;
         anglingHelper2.y = rotated.y;
 
-        bool v1 = avengers->inst_game->world_to_screen(pos1, &screen1.x, &screen1.y);
-        bool v2 = avengers->inst_game->world_to_screen(pos2, &screen2.x, &screen2.y);
+        ImDrawList* backgroundDrawList = ImGui::GetBackgroundDrawList();
 
-        bool sa1 = avengers->inst_game->world_to_screen(anglingHelper1, &screenAngle1.x, &screenAngle1.y);
-        bool sa2 = avengers->inst_game->world_to_screen(anglingHelper2, &screenAngle2.x, &screenAngle2.y);
+        if (!avengers->inst_ui_menu->use_legacy_markers) {
+            ImVec2 screen1;
+            ImVec2 screen2;
+            ImVec2 screenAngle1;
+            ImVec2 screenAngle2;
 
-        if (v1 && v2) {
-            ImGui::GetBackgroundDrawList()->AddLine(screen1, screen2, im_vec4_to_im_col32(color), lineWidth);
-            ImGui::GetBackgroundDrawList()->AddCircleFilled(screen1, CIRCLE_RADIUS, im_vec4_to_im_col32(invertColor(color)), 36.f);
+            bool v1 = avengers->inst_game->world_to_screen(pos1, &screen1.x, &screen1.y);
+            bool v2 = avengers->inst_game->world_to_screen(pos2, &screen2.x, &screen2.y);
+
+            bool sa1 = avengers->inst_game->world_to_screen(anglingHelper1, &screenAngle1.x, &screenAngle1.y);
+            bool sa2 = avengers->inst_game->world_to_screen(anglingHelper2, &screenAngle2.x, &screenAngle2.y);
+
+            if (v1 && v2) {
+                backgroundDrawList->AddLine(screen1, screen2, im_vec4_to_im_col32(color), lineWidth);
+                backgroundDrawList->AddCircleFilled(screen1, CIRCLE_RADIUS, im_vec4_to_im_col32(invertColor(color)), 36.f);
+            }
+
+            if (sa1 && sa2) {
+                backgroundDrawList->AddLine(screenAngle1, screenAngle2, im_vec4_to_im_col32(invertColor(color)), lineWidth);
+            }
         }
+        else {
+            ImVec2 screen;
+            ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
-        if (sa1 && sa2) {
-            ImGui::GetBackgroundDrawList()->AddLine(screenAngle1, screenAngle2, im_vec4_to_im_col32(invertColor(color)), lineWidth);
+            avengers->inst_game->world_to_screen(marker.position, &screen.x, &screen.y);
+
+            ImU32 outlineColor = im_vec4_to_im_col32(color);
+            int numSegments = 8;
+
+            float distance = avengers->gameState->origin.Dist(marker.position);
+
+            const float min_radius = 1.0f;
+            const float max_radius = CIRCLE_RADIUS * 5;
+
+            //make the circle get smaller and disappear if the player is over 512 units from the centre
+            unsigned int new_radius = min_radius + (max_radius - min_radius) * (min_radius - distance / 512.0f);
+
+            drawList->AddCircle(screen, new_radius, outlineColor, numSegments, 2);
         }
 
         constexpr float HELPER_CIRCLE_RADIUS = 30.f;
@@ -225,6 +248,10 @@ void ui_position_marker::menu()
     }
     ImGui::SameLine();
     if (ImGui::Checkbox("Only on ground", &avengers->inst_ui_menu->positioning_helper_onlyonground)) {
+        avengers->save_configuration();
+    }
+    ImGui::SameLine();
+    if (ImGui::Checkbox("Use legacy markers", &avengers->inst_ui_menu->use_legacy_markers)) {
         avengers->save_configuration();
     }
     if (ImGui::SliderFloat("Widget Render Distance", &avengers->inst_ui_menu->widget_render_distance, 0.f, 500.f)) {
