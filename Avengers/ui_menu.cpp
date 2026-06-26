@@ -492,8 +492,12 @@ void ui_menu::menu(Avengers* hud)
 		hud->save_configuration();
 	}
 	ImGui::Separator();
+
 	if (ImGui::Checkbox("Allow impure map IWDs", &allow_impure_map_iwds)) {
 		hud->save_configuration();
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("Modifying IWDs in your usermaps folder will not cause the server to force a redownload.");
 	}
 
 	//#######################################################
