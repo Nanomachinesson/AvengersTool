@@ -213,11 +213,6 @@ void __cdecl render::enginedraw()
 {
 	Avengers* hud = Avengers::get_instance();
 
-	if(hud->inst_game->is_connected() && hud->inst_ui_menu->lines_toggle)
-	{
-		hud->inst_ui_90_lines->render();
-	}
-
 	if (hud->inst_game->is_connected() && hud->inst_ui_menu->draw_collision) {
 		hud->collision->render();
 	}
@@ -235,6 +230,10 @@ void __cdecl render::enginedraw()
 			hud->inst_game->drawPoly(face->points.size(), (float(*)[3]) points, (const float*)&color,
 				poly_lit, poly_outlines, (const float*)&poly_linecolor, poly_depth, poly_face);
 		}
+	}
+
+	if (hud->inst_game->is_connected() && hud->inst_ui_menu->lines_toggle) {
+		hud->inst_ui_90_lines->render();
 	}
 }
 
