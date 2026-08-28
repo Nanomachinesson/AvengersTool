@@ -417,6 +417,12 @@ void ui_menu::menu(Avengers* hud)
 			hud->save_configuration();
 		}
 		ImGui::SameLine();
+		ImGui::PushItemWidth(250.f);
+		if (ImGui::SliderFloat("Centerline width", &centerline_width, 1.f, 10.f)) {
+			hud->save_configuration();
+		}
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
 		ImGui::ColorButton("Centerline color", centerline_color);
 
 		if (ImGui::IsItemClicked()) {
@@ -667,6 +673,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("drawfps_spectateonly", &drawfps_spectateonly);
 	hud->registerConfig("rpgangle", &rpgangle_toggle);
 	hud->registerConfig("centerline_toggle", &drawcenterline);
+	hud->registerConfig("centerline_width", &centerline_width);
 	hud->registerConfig("color_centerline", &centerline_color);
 	hud->registerConfig("centerline_toggle_fpswheel", &drawfpswheelcenterline);
 	hud->registerConfig("color_fpswheelcenterline", &fpswheelcenterline_color);

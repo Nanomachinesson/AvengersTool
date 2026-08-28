@@ -128,7 +128,7 @@ void ui_anglehelper::renderOnWheel(Avengers*& hud, ImVec4& color)  //TODO: refac
 
 void ui_anglehelper::renderCenterLine(Avengers*& hud, ImVec4& color)
 {
-	float width = 2.5f;
+	float width = hud->inst_ui_menu->centerline_width;
 
 	vec2<float> center(hud->inst_game->get_screen_res().x / 2 - width/2, hud->inst_game->get_screen_res().y / 2);
 

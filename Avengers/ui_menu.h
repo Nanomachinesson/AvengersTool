@@ -52,6 +52,7 @@ public:
 	float anglehelper_height = 1.f;
 	bool clamp_to_next_zone = false;
 	bool drawcenterline = false;
+	float centerline_width = 2.5f;
 	ImVec4 centerline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bool drawfpswheelcenterline = false;
 	ImVec4 fpswheelcenterline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
