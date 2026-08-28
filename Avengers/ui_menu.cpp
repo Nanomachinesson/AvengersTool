@@ -98,6 +98,9 @@ void ui_menu::menu(Avengers* hud)
 				}
 				ImGui::EndCombo();
 			}
+			if (ImGui::IsItemHovered() && shouldDisplayTooltips()) {
+				ImGui::SetTooltip("You can load custom fonts by putting your .ttf files in CoD4/AvengersFonts");
+			}
 			ImGui::PopItemWidth();
 		}
 		break;
