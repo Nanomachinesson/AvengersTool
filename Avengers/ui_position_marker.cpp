@@ -258,7 +258,7 @@ void ui_position_marker::menu()
         avengers->save_configuration();
     }
     if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
-        ImGui::SetTooltip("Displays a positioning helper for the selected marker");
+        ImGui::SetTooltip("Displays a positioning helper for nearby markers");
     }
     ImGui::SameLine();
     if (ImGui::Checkbox("Only on ground", &avengers->inst_ui_menu->positioning_helper_onlyonground)) {
@@ -272,7 +272,7 @@ void ui_position_marker::menu()
         avengers->save_configuration();
     }
     if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
-        ImGui::SetTooltip("Uses the legacy marker rendering style");
+        ImGui::SetTooltip("Renders a red circle instead of a vertical line");
     }
     if (ImGui::SliderFloat("Widget Render Distance", &avengers->inst_ui_menu->widget_render_distance, 0.f, 500.f)) {
         avengers->save_configuration();

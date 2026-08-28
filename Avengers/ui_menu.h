@@ -10,7 +10,7 @@ enum class MenuTab
 	Velocity,
 	JumpTarget,
 	AngleHelper,
-	HudAndTimers,
+	Misc,
 	Collision,
 	Markers,
 	DemoPlayer

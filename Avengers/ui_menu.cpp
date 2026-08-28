@@ -14,7 +14,7 @@ void ui_menu::menu(Avengers* hud)
 		should_focus_next_frame = false;
 	}
 
-	const std::array<std::string, 8> tab_names = { "General", "Velocity", "Jump Target", "Anglehelper", "HUD & Timers", "Collision", "Markers", "Demo Player" };
+	const std::array<std::string, 8> tab_names = { "General", "Velocity", "Jump Target", "Anglehelper", "Misc", "Collision", "Markers", "Demo Player" };
 	ImGui::BeginChild("##AvengersHelperTabSelector", ImVec2(220.f, 0.f), true);
 	for (int tab = 0; tab < static_cast<int>(tab_names.size()); ++tab) {
 		const MenuTab menu_tab = static_cast<MenuTab>(tab);
@@ -29,43 +29,6 @@ void ui_menu::menu(Avengers* hud)
 	switch (active_tab) {
 	case MenuTab::General:
 	{
-		static char demoName[128] = "";
-		ImGui::InputText("Demo Name", demoName, 128);
-		ImGui::SameLine(); if (ImGui::Button("Bind demo to load key"))
-		{
-			if (std::string(demoName) != "")
-			{
-				std::stringstream ss;
-				ss << "bind f \"openscriptmenu cj load;stoprecord;record " << demoName << "\"";
-
-				hud->inst_game->send_command_to_console(ss.str().c_str());
-			}
-			else
-			{
-				std::string cmd = "bind f \"openscriptmenu cj load;stoprecord;record\"";
-
-				hud->inst_game->send_command_to_console(cmd.c_str());
-			}
-		}
-		if (ImGui::Button("Copy position"))
-		{
-			vec3<float> pos = hud->inst_game->get_origin();
-			vec3<float> view = hud->inst_game->get_view();
-
-			copied_position_origin = pos;
-			copied_position_view = view;
-			hud->save_configuration();
-		
-			pos.z += 60.f;
-			std::stringstream ss;
-			ss << std::fixed << std::setprecision(6) << pos.x <<  " " << pos.y << " " << pos.z << " " << view.y << " " << view.x;
-
-			ImGui::SetClipboardText(ss.str().c_str());
-		}
-		ImGui::SameLine(); if(ImGui::Checkbox("Show Coordinates", &show_position))
-		{
-			hud->save_configuration();
-		}
 		if (ImGui::Checkbox("Display tooltips only while shift is held", &display_tooltips_only_while_shift_held))
 		{
 			hud->save_configuration();
@@ -382,8 +345,28 @@ void ui_menu::menu(Avengers* hud)
 		break;
 	}
 
-	case MenuTab::HudAndTimers:
+	case MenuTab::Misc:
 	{
+		if (ImGui::Button("Copy position"))
+		{
+			vec3<float> pos = hud->inst_game->get_origin();
+			vec3<float> view = hud->inst_game->get_view();
+
+			copied_position_origin = pos;
+			copied_position_view = view;
+			hud->save_configuration();
+
+			pos.z += 60.f;
+			std::stringstream ss;
+			ss << std::fixed << std::setprecision(6) << pos.x <<  " " << pos.y << " " << pos.z << " " << view.y << " " << view.x;
+
+			ImGui::SetClipboardText(ss.str().c_str());
+		}
+		ImGui::SameLine(); if(ImGui::Checkbox("Show Coordinates", &show_position))
+		{
+			hud->save_configuration();
+		}
+
 		if (ImGui::Checkbox("90 lines", &lines_toggle))
 		{
 			hud->save_configuration();
@@ -547,6 +530,24 @@ void ui_menu::menu(Avengers* hud)
 	}
 	case MenuTab::DemoPlayer:
 	{
+		static char demoName[128] = "";
+		ImGui::InputText("Demo Name", demoName, 128);
+		ImGui::SameLine(); if (ImGui::Button("Bind demo to load key"))
+		{
+			if (std::string(demoName) != "")
+			{
+				std::stringstream ss;
+				ss << "bind f \"openscriptmenu cj load;stoprecord;record " << demoName << "\"";
+
+				hud->inst_game->send_command_to_console(ss.str().c_str());
+			}
+			else
+			{
+				std::string cmd = "bind f \"openscriptmenu cj load;stoprecord;record\"";
+
+				hud->inst_game->send_command_to_console(cmd.c_str());
+			}
+		}
 		hud->inst_ui_demoplayer->menu(hud);
 		break;
 	}
