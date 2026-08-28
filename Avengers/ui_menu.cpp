@@ -14,7 +14,7 @@ void ui_menu::menu(Avengers* hud)
 		should_focus_next_frame = false;
 	}
 
-	const std::array<std::string, 6> tab_names = { "General", "Velocity", "Jump Target", "Anglehelper", "HUD & Timers", "Collision" };
+	const std::array<std::string, 8> tab_names = { "General", "Velocity", "Jump Target", "Anglehelper", "HUD & Timers", "Collision", "Markers", "Demo Player" };
 	ImGui::BeginChild("##AvengersHelperTabSelector", ImVec2(220.f, 0.f), true);
 	for (int tab = 0; tab < static_cast<int>(tab_names.size()); ++tab) {
 		const MenuTab menu_tab = static_cast<MenuTab>(tab);
@@ -29,14 +29,6 @@ void ui_menu::menu(Avengers* hud)
 	switch (active_tab) {
 	case MenuTab::General:
 	{
-		if(ImGui::Button("Demo Player"))
-		{
-			demoplayer_menu = !demoplayer_menu;
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Marker Menu")) {
-			marker_menu = !marker_menu;
-		}
 		static char demoName[128] = "";
 		ImGui::InputText("Demo Name", demoName, 128);
 		ImGui::SameLine(); if (ImGui::Button("Bind demo to load key"))
@@ -546,6 +538,16 @@ void ui_menu::menu(Avengers* hud)
 		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
 			ImGui::SetTooltip("Modifying IWDs in your usermaps folder will not cause the server to force a redownload");
 		}
+		break;
+	}
+	case MenuTab::Markers:
+	{
+		hud->inst_ui_position_marker->menu();
+		break;
+	}
+	case MenuTab::DemoPlayer:
+	{
+		hud->inst_ui_demoplayer->menu(hud);
 		break;
 	}
 	}

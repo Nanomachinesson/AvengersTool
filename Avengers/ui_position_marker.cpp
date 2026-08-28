@@ -18,7 +18,6 @@ ImVec4 ui_position_marker::invertColor(const ImVec4& color)
 ui_position_marker::ui_position_marker(Avengers* avengers) :
     avengers(avengers)
 {
-    avengers->inst_render->add_callback([this]() { this->menu(); });
     avengers->inst_input->add_callback(VK_NUMPAD2, [this](UINT key_state) { return this->bindToggleWidget(key_state); });
     avengers->inst_input->add_callback(VK_NUMPAD1, [this](UINT key_state) { return this->bindSetMarker(key_state); });
     avengers->inst_input->add_callback(VK_NUMPAD3, [this](UINT key_state) { return this->bindToggleRenderMarkers(key_state); });
@@ -201,10 +200,6 @@ bool ui_position_marker::bindToggleRenderMarkers(UINT keyState)
 
 void ui_position_marker::menu()
 {
-    if (!(avengers->want_input && avengers->inst_ui_menu->marker_menu)) {
-        return;
-    }
-
     int closestMarkerIndex = -1;
     if (avengers->inst_game->is_connected() && !markers.empty()) {
         vec3<float> playerPos = avengers->inst_game->get_origin();
@@ -220,8 +215,6 @@ void ui_position_marker::menu()
     }
 
     bool isConnected = avengers->inst_game->is_connected();
-
-    ImGui::Begin("Marker Menu", &avengers->inst_ui_menu->marker_menu);
 
     if (!isConnected) {
         ImGui::PushItemFlag(ImGuiItemFlags_::ImGuiItemFlags_Disabled, true);
@@ -338,5 +331,4 @@ void ui_position_marker::menu()
         ImGui::PopID();
     }
 
-    ImGui::End();
 }

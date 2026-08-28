@@ -7,11 +7,6 @@
 void ui_demoplayer::render()
 {
 	Avengers* hud = Avengers::get_instance();
-	if(hud->want_input && hud->inst_ui_menu->demoplayer_menu)
-	{
-		menu(hud);
-	}
-
 	if (playing_demos && !hud->want_input)
 	{
 		play_all_demos();
@@ -43,8 +38,6 @@ void ui_demoplayer::render()
 
 void ui_demoplayer::menu(Avengers* hud)
 {
-	ImGui::Begin("Demo Player", &hud->inst_ui_menu->demoplayer_menu);
-	
 	if (ImGui::Button("Play Demos")) {
 		hud->want_input = false;
 		playing_demos = true;
@@ -84,7 +77,6 @@ void ui_demoplayer::menu(Avengers* hud)
 		threexp = false;
 	}
 
-	ImGui::End();
 }
 
 void ui_demoplayer::play_all_demos()

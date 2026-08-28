@@ -11,7 +11,9 @@ enum class MenuTab
 	JumpTarget,
 	AngleHelper,
 	HudAndTimers,
-	Collision
+	Collision,
+	Markers,
+	DemoPlayer
 };
 
 class ui_menu
@@ -23,8 +25,6 @@ public:
 	void render();
 
 	MenuTab active_tab = MenuTab::General;
-	bool demoplayer_menu = false;
-	bool marker_menu = false;
 	bool show_position = false;
 	bool velo_meter = false;
 	bool keep_velo_centered = false;
