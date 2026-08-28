@@ -204,6 +204,21 @@ void ui_position_marker::menu()
     if (!(avengers->want_input && avengers->inst_ui_menu->marker_menu)) {
         return;
     }
+
+    int closestMarkerIndex = -1;
+    if (avengers->inst_game->is_connected() && !markers.empty()) {
+        vec3<float> playerPos = avengers->inst_game->get_origin();
+        float closestDistance = 0.f;
+
+        for (int i = 0; i < static_cast<int>(markers.size()); ++i) {
+            float markerDistance = markers[i].position.Dist(playerPos);
+            if (closestMarkerIndex == -1 || markerDistance < closestDistance) {
+                closestDistance = markerDistance;
+                closestMarkerIndex = i;
+            }
+        }
+    }
+
     bool isConnected = avengers->inst_game->is_connected();
 
     ImGui::Begin("Marker Menu", &avengers->inst_ui_menu->marker_menu);
@@ -276,6 +291,10 @@ void ui_position_marker::menu()
         Marker& m = markers[i];
 
         ImGui::PushID(i);
+        bool isClosestMarker = i == closestMarkerIndex;
+        if (isClosestMarker) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.45f, 0.8f, 1.f));
+        }
 
         ImGui::ColorButton("##MarkerColor", m.color);
         std::string popupName = std::string("MarkerColorPickerPopup_") + std::to_string(i);
@@ -287,9 +306,16 @@ void ui_position_marker::menu()
         ImGui::Text("%.4f %.4f %.4f", m.position[0], m.position[1], m.position[2]);
         ImGui::SameLine();
 
+        if (isClosestMarker) {
+            ImGui::PopStyleColor();
+        }
+
         if (ImGui::Button("Delete")) {
             markers.erase(markers.begin() + i);
             avengers->save_markers();
+            if (isClosestMarker) {
+                closestMarkerIndex = -1;
+            }
             ImGui::PopID();
             --i;
             continue;
