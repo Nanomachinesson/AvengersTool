@@ -67,6 +67,7 @@ public:
 	bool strafedowntime_toggle = false;
 	bool rpgtimer_toggle = false;
 	bool rpgangle_toggle = false;
+	bool timing5_toggle = false;
 	bool bouncevelocity_toggle = false;
 	bool draw_collision = false;
 	bool draw_collision_only_clips = false;

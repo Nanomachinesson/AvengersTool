@@ -428,6 +428,9 @@ void ui_menu::menu(Avengers* hud)
 		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
 			ImGui::SetTooltip("Displays RPG angle on bounce");
 		}
+		if (ImGui::Checkbox("5 Timing", &timing5_toggle)) {
+			hud->save_configuration();
+		}
 		if (ImGui::Checkbox("Show velocity on bounce", &bouncevelocity_toggle)) {
 			hud->save_configuration();
 		}
@@ -638,6 +641,10 @@ void ui_menu::render()
 		hud->inst_ui_bounceinfo->renderRpgAngle();
 	}
 
+	if (timing5_toggle && hud->inst_game->is_connected()) {
+		hud->inst_ui_bounceinfo->render5Timing();
+	}
+
 	hud->inst_ui_position_marker->render();
 
 	hud->collision->init();
@@ -675,6 +682,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("scale_fps", &fpsScale);
 	hud->registerConfig("drawfps_spectateonly", &drawfps_spectateonly);
 	hud->registerConfig("rpgangle", &rpgangle_toggle);
+	hud->registerConfig("5timing", &timing5_toggle);
 	hud->registerConfig("centerline_toggle", &drawcenterline);
 	hud->registerConfig("centerline_width", &centerline_width);
 	hud->registerConfig("color_centerline", &centerline_color);

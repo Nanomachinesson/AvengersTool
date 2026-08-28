@@ -1,8 +1,6 @@
 #pragma once
 
 #include <sstream>
-#include "imgui.h"
-#include "vectors.h"
 
 class ui_bounceinfo
 {
@@ -11,6 +9,7 @@ public:
 	~ui_bounceinfo();
 	void renderRpgTimer();
 	void renderRpgAngle();
+	void render5Timing();
 	void renderBounceVelocity();
 
 private:
