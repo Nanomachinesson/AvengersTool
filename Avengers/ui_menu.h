@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <unordered_map>
 #include "vectors.h"
 #include "config_manager.h"
 
@@ -38,7 +39,6 @@ public:
 	bool enable_deceleration_on_ground = false;
 	bool draw_jumpoff_speed = false;
 	bool jumpoffspeed_display_bottom = false;
-	bool sep_velo = false;
 	ImVec4 color = { 0.0f, 0.0f, 1.0f, 1.0f };
 	ImVec4 acceleration_color = { 0.0f, 1.0f, 0.0f, 1.0f };
 	ImVec4 deceleration_color = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -105,6 +105,11 @@ public:
 
 	bool should_focus_next_frame = false;
 	std::string currentAhStyle = "Style 1";
+	std::string selected_speedometer_font = "Bahnschrift";
+	std::string selected_imgui_font = "Bahnschrift";
+	std::unordered_map<std::string, ImFont*> loadedFonts;
+	ImFont* getImguiFont();
+	ImFont* getSpeedometerFont();
 	void registerConfigs(Avengers* hud);
 
 };

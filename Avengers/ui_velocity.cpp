@@ -140,12 +140,8 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
 	ImGui::SetWindowFontScale(scale);
-	if (hud->inst_ui_menu->sep_velo) {
-		ImGui::PushFont(hud->sep_font);
-	}
-	else {
-		ImGui::PushFont(hud->toxic_font);
-	}
+	ImFont* speedometer_font = hud->inst_ui_menu->getSpeedometerFont();
+	if (speedometer_font) ImGui::PushFont(speedometer_font);
 
 	vec2<float> adjustedPos = pos;
 	/*https://stackoverflow.com/a/67855985*/
@@ -178,7 +174,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 	prev_velo = velo;
 
-	ImGui::PopFont();
+	if (speedometer_font) ImGui::PopFont();
 
 	ImGui::End();
 }
@@ -210,12 +206,8 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 		ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
 		ImGui::SetWindowFontScale(scale);
-		if (hud->inst_ui_menu->sep_velo) {
-			ImGui::PushFont(hud->sep_font);
-		}
-		else {
-			ImGui::PushFont(hud->toxic_font);
-		}
+		ImFont* speedometer_font = hud->inst_ui_menu->getSpeedometerFont();
+		if (speedometer_font) ImGui::PushFont(speedometer_font);
 
 		ImGui::SetWindowFontScale(scale);
 
@@ -233,7 +225,7 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 
 		ImGui::SetWindowFontScale(1.f);
 
-		ImGui::PopFont();
+		if (speedometer_font) ImGui::PopFont();
 		ImGui::End();
 	}
 

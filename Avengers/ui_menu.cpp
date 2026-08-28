@@ -2,6 +2,7 @@
 #include "ui_menu.h"
 #include "Avengers.h"
 #include <array>
+#include <algorithm>
 #include <string>
 
 void ui_menu::menu(Avengers* hud)
@@ -77,6 +78,28 @@ void ui_menu::menu(Avengers* hud)
 		{
 			hud->save_configuration();
 		}
+		if (!loadedFonts.empty()) {
+			if (!loadedFonts.contains(selected_imgui_font)) {
+				selected_imgui_font = loadedFonts.contains("Bahnschrift") ? "Bahnschrift" : loadedFonts.begin()->first;
+				ImGui::GetIO().FontDefault = getImguiFont();
+				hud->save_configuration();
+			}
+
+			ImGui::PushItemWidth(300.f);
+			if (ImGui::BeginCombo("ImGui font", selected_imgui_font.c_str())) {
+				for (const auto& [font_name, font] : loadedFonts) {
+					const bool is_selected = selected_imgui_font == font_name;
+					if (ImGui::Selectable(font_name.c_str(), is_selected)) {
+						selected_imgui_font = font_name;
+						ImGui::GetIO().FontDefault = font;
+						hud->save_configuration();
+					}
+					if (is_selected) ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
+		}
 		break;
 	}
 
@@ -122,12 +145,8 @@ void ui_menu::menu(Avengers* hud)
 		ImGui::SameLine();
 		if (ImGui::Button("Center")) {
 			ImGui::SetWindowFontScale(velo_scale);
-			if (hud->inst_ui_menu->sep_velo) {
-				ImGui::PushFont(hud->sep_font);
-			}
-			else {
-				ImGui::PushFont(hud->toxic_font);
-			}
+			ImFont* speedometer_font = getSpeedometerFont();
+			if (speedometer_font) ImGui::PushFont(speedometer_font);
 
 			if (keep_velo_centered) {
 				velo_pos.x = hud->inst_game->get_screen_res().x / 2.f - ImGui::CalcTextSize("0").x / 2.f;
@@ -135,38 +154,13 @@ void ui_menu::menu(Avengers* hud)
 			velo_pos.y = hud->inst_game->get_screen_res().y / 2.f;
 
 			ImGui::SetWindowFontScale(1.f);
-			ImGui::PopFont();
+			if (speedometer_font) ImGui::PopFont();
 
 			hud->save_configuration();
 		}
 		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
 			ImGui::SetTooltip("Centers the speedometer on the screen");
 		}
-
-		ImGui::SameLine();
-		static std::string currentSpeedoStyle = sep_velo ? "Style 2" : "Style 1";
-		std::array<std::string, 2> speedoStyles = { "Style 1", "Style 2" };
-		ImGui::PushItemWidth(200.f);
-		if (ImGui::BeginCombo("##Speedometer style", currentSpeedoStyle.c_str())) {
-			for (int n = 0; n < speedoStyles.size(); n++) {
-				bool isSelected = (currentSpeedoStyle == speedoStyles[n]);
-				if (ImGui::Selectable(speedoStyles[n].c_str(), isSelected)) {
-					currentSpeedoStyle = speedoStyles[n].c_str();
-					ImGui::SetItemDefaultFocus();
-					if (currentSpeedoStyle == "Style 2") {
-						sep_velo = true;
-					}
-					else {
-						sep_velo = false;
-					}
-
-					hud->save_configuration();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::PopItemWidth();
-
 
 		//Acceleration
 		if (ImGui::Checkbox("Show acceleration", &velo_show_acceleration)) {
@@ -255,6 +249,27 @@ void ui_menu::menu(Avengers* hud)
 		}
 		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
 			ImGui::SetTooltip("Measures acceleration downtime when switching strafes");
+		}
+
+		if (!loadedFonts.empty()) {
+			if (!loadedFonts.contains(selected_speedometer_font)) {
+				selected_speedometer_font = loadedFonts.contains("Bahnschrift") ? "Bahnschrift" : loadedFonts.begin()->first;
+				hud->save_configuration();
+			}
+
+			ImGui::PushItemWidth(300.f);
+			if (ImGui::BeginCombo("Speedometer font", selected_speedometer_font.c_str())) {
+				for (const auto& [font_name, font] : loadedFonts) {
+					const bool is_selected = selected_speedometer_font == font_name;
+					if (ImGui::Selectable(font_name.c_str(), is_selected)) {
+						selected_speedometer_font = font_name;
+						hud->save_configuration();
+					}
+					if (is_selected) ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::PopItemWidth();
 		}
 		break;
 	}
@@ -621,7 +636,8 @@ void ui_menu::render()
 void ui_menu::registerConfigs(Avengers* hud)
 {
 	hud->registerConfig("Speedometer", &velo_meter);
-	hud->registerConfig("SepVelo", &sep_velo);
+	hud->registerConfig("ImGuiFont", &selected_imgui_font);
+	hud->registerConfig("SpeedometerFont", &selected_speedometer_font);
 	hud->registerConfig("Position", &velo_pos);
 	hud->registerConfig("Color_anglehelper", &anglehelper_color);
 	hud->registerConfig("Color_90_lines", &lines_color);
@@ -688,6 +704,16 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("velo_keep_decel_for", &velo_keep_decel_for);
 	hud->registerConfig("enable_acceleration_on_ground", &enable_acceleration_on_ground);
 	hud->registerConfig("enable_deceleration_on_ground", &enable_deceleration_on_ground);
+}
+
+ImFont* ui_menu::getImguiFont()
+{
+	return loadedFonts[selected_imgui_font];
+}
+
+ImFont* ui_menu::getSpeedometerFont()
+{
+	return loadedFonts[selected_speedometer_font];
 }
 
 bool ui_menu::shouldDisplayTooltips() const

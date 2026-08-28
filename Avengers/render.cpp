@@ -198,8 +198,24 @@ void render::init_imgui(LPDIRECT3DDEVICE9 dev)
 
 		ImFontConfig fontConfig;
 		fontConfig.FontDataOwnedByAtlas = false;
-		hud->toxic_font = io.Fonts->AddFontFromMemoryTTF((void*)(_acbahnschrift), sizeof(_acbahnschrift) - 1, 24.f, &fontConfig);
-		hud->sep_font = io.Fonts->AddFontFromMemoryTTF((void*)(_acawesomefont1), sizeof(_acawesomefont1) - 1, 24.f, &fontConfig);
+		hud->inst_ui_menu->loadedFonts.clear();
+		hud->inst_ui_menu->loadedFonts.emplace("Bahnschrift", io.Fonts->AddFontFromMemoryTTF((void*)(_acbahnschrift), sizeof(_acbahnschrift) - 1, 24.f, &fontConfig));
+		hud->inst_ui_menu->loadedFonts.emplace("Awesome Font 1", io.Fonts->AddFontFromMemoryTTF((void*)(_acawesomefont1), sizeof(_acawesomefont1) - 1, 24.f, &fontConfig));
+
+		const std::filesystem::path fontDirectory = "AvengersFonts";
+		if (std::filesystem::is_directory(fontDirectory)) {
+			for (const auto& entry : std::filesystem::directory_iterator(fontDirectory)) {
+				if (!entry.is_regular_file()) continue;
+				const std::string extension = entry.path().extension().string();
+				if (extension != ".ttf") continue;
+
+				ImFont* customFont = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.f);
+				if (customFont) {
+					hud->inst_ui_menu->loadedFonts.emplace(entry.path().stem().string(), customFont);
+				}
+			}
+		}
+		io.FontDefault = hud->inst_ui_menu->getImguiFont();
 		
 		ImGui_ImplDX9_CreateDeviceObjects();
 		imgui_initialized = true;
