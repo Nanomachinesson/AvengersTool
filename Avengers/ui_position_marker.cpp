@@ -286,7 +286,7 @@ void ui_position_marker::menu()
         ImGui::PushID(i);
         bool isClosestMarker = i == closestMarkerIndex;
         if (isClosestMarker) {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.4f, 0.45f, 0.8f, 1.f));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.f, 1.f, 1.f, 1.f));
         }
 
         ImGui::ColorButton("##MarkerColor", m.color);
