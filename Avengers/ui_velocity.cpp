@@ -228,7 +228,7 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 			position.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 		}
 
-		draw_list->AddText(position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
+		draw_list->AddText(speedometer_font, ImGui::GetFontSize(), position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
 
 		ImGui::SetWindowFontScale(1.f);
 
