@@ -7,7 +7,14 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	ImGui::Begin("Velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
 	auto gameState = hud->gameState;
 
-	float velo = gameState->velocity.Length2D();
+	float velo = 0.f;
+	if (hud->inst_game->isDemoPlaying()) {
+		velo = hud->inst_game->get_velocity().Length2D();
+	}
+	else {
+		velo = gameState->velocity.Length2D();
+	}
+
 	static float prev_velo = gameState->velocity.Length2D();
 
 	static int frames_to_wait_for_velo_decrease = 0;  //Velo drops. Wait X frames for velo to drop again.
