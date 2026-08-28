@@ -560,8 +560,6 @@ void ui_menu::render()
 	if (show_position) {
 		hud->inst_ui_position->render();
 		hud->inst_ui_view->render();
-
-		hud->save_configuration();
 	}
 
 	/* WIP
