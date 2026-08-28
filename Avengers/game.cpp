@@ -242,7 +242,7 @@ float game::get_delta_optimal(const Lmove& lMove)
 	float speed = get_velocity().Length2D();
 	float deltaOpt = mm::to_degrees(acosf((g_speed - get_accel()) / speed));
 
-	if (lMove.isLeft)
+	if ((lMove.isLeft && !lMove.isBack) || (lMove.isBack && lMove.isRight))
 	{
 		deltaOpt *= -1.f;
 	}
@@ -578,7 +578,7 @@ float game::get_optimal_angle(const Lmove& lMove)
 
 	float yaw = get_view().y;
 
-	if (lMove.isBack) {  //If the user is doing s-tech we need to account for both strafe sides
+	if (lMove.isBack && !lMove.isLeft && !lMove.isRight) {  //If the user is doing s-tech we need to account for both strafe sides
 		if (decideStechSide(lMove)) {
 			deltaOptimal *= -1.f;
 		}

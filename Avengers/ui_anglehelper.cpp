@@ -4,7 +4,8 @@
 void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 {
 	Lmove lmove = hud->inst_game->get_lmove(true);
-	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
+	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward && !lmove.isBack)
+		|| (lmove.isBack && lmove.isLeft) || (lmove.isBack && !lmove.isRight && !lmove.isLeft && !hud->inst_game->decideStechSide(lmove));
 	float width = 2.5f;
 	width *= hud->inst_ui_menu->anglehelper_width;
 	if (goingRight) {
