@@ -160,8 +160,13 @@ vec2<float> ui_fpswheel::moveZone(const vec2<float>& zone)
 		zoney = mm::normalise(180 - zoney, 0, 360);
 	}
 
-	if (!lmove.isRight && !lmove.isForward && !lmove.isLeft) {
+	if (!lmove.isForward) {
 		if (lmove.isBack) {
+			if (lmove.isRight || lmove.isLeft) {
+				zonex = mm::normalise(180.f - zonex, 0.f, 360.f);
+				zoney = mm::normalise(180.f - zoney, 0.f, 360.f);
+			}
+
 			if (!hud->inst_game->decideStechSide(lmove)) {
 				zonex = mm::normalise(180.f - zonex + 45.f, 0.f, 360.f);  //I don't really understand this anymore, and opted to bruteforce the values.
 				zoney = mm::normalise(180.f - zoney + 45.f, 0.f, 360.f);

@@ -81,7 +81,15 @@ float game::get_dir_diff(const Lmove& lMove)
 		return (lMove.isRight) ? -45.f : 45.f;
 	}
 	else if (lMove.isBack) {
-		return 180.f;
+		if (lMove.isRight) {
+			return -135.f;
+		}
+		else if (lMove.isLeft) {
+			return 135.f;
+		}
+		else {
+			return 180.f;
+		}
 	}
 	else {
 		return (lMove.isRight) ? -90.f : +90.f;
