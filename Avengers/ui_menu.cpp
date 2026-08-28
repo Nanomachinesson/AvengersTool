@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ui_menu.h"
 #include "Avengers.h"
+#include <array>
+#include <string>
 
 void ui_menu::menu(Avengers* hud)
 {
@@ -11,497 +13,520 @@ void ui_menu::menu(Avengers* hud)
 		should_focus_next_frame = false;
 	}
 
-	//################ Demoplayer menu toggle ###############
-	if(ImGui::Button("Demo Player"))
-	{
-		demoplayer_menu = !demoplayer_menu;
+	const std::array<std::string, 6> tab_names = { "General", "Velocity", "Jump Target", "Anglehelper", "HUD & Timers", "Collision" };
+	ImGui::BeginChild("##AvengersHelperTabSelector", ImVec2(220.f, 0.f), true);
+	for (int tab = 0; tab < static_cast<int>(tab_names.size()); ++tab) {
+		const MenuTab menu_tab = static_cast<MenuTab>(tab);
+		if (ImGui::Selectable(tab_names[tab].c_str(), active_tab == menu_tab, 0, ImVec2(0.f, 30.f))) {
+			active_tab = menu_tab;
+		}
 	}
-	//#######################################################
-
-	//################ Marker menu toggle ###################
+	ImGui::EndChild();
 	ImGui::SameLine();
-	if (ImGui::Button("Marker Menu")) {
-		marker_menu = !marker_menu;
-	}
-	//#######################################################
+	ImGui::BeginChild("##AvengersHelperTabContent", ImVec2(0.f, 0.f), false);
 
-	//################ Bind demo to load key ###############
-	static char demoName[128] = "";
-	ImGui::InputText("Demo Name", demoName, 128);
-	ImGui::SameLine(); if (ImGui::Button("Bind demo to load key"))
+	switch (active_tab) {
+	case MenuTab::General:
 	{
-		if (std::string(demoName) != "")
+		if(ImGui::Button("Demo Player"))
 		{
-			std::stringstream ss;
-			ss << "bind f \"openscriptmenu cj load;stoprecord;record " << demoName << "\"";
-			
-			hud->inst_game->send_command_to_console(ss.str().c_str());
+			demoplayer_menu = !demoplayer_menu;
 		}
-		else
+		ImGui::SameLine();
+		if (ImGui::Button("Marker Menu")) {
+			marker_menu = !marker_menu;
+		}
+		static char demoName[128] = "";
+		ImGui::InputText("Demo Name", demoName, 128);
+		ImGui::SameLine(); if (ImGui::Button("Bind demo to load key"))
 		{
-			std::string cmd = "bind f \"openscriptmenu cj load;stoprecord;record\"";
+			if (std::string(demoName) != "")
+			{
+				std::stringstream ss;
+				ss << "bind f \"openscriptmenu cj load;stoprecord;record " << demoName << "\"";
 
-			hud->inst_game->send_command_to_console(cmd.c_str());
-		}
-	}
-	//#######################################################
+				hud->inst_game->send_command_to_console(ss.str().c_str());
+			}
+			else
+			{
+				std::string cmd = "bind f \"openscriptmenu cj load;stoprecord;record\"";
 
-	//################# Position ############################
-	if (ImGui::Button("Copy position"))
-	{
-		vec3<float> pos = hud->inst_game->get_origin();
-		vec3<float> view = hud->inst_game->get_view();
-
-		copied_position_origin = pos;
-		copied_position_view = view;
-		hud->save_configuration();
-		
-		pos.z += 60.f;
-		std::stringstream ss;
-		ss << std::fixed << std::setprecision(6) << pos.x <<  " " << pos.y << " " << pos.z << " " << view.y << " " << view.x;
-
-		ImGui::SetClipboardText(ss.str().c_str());
-	}
-	ImGui::SameLine(); if(ImGui::Checkbox("Show Coordinates", &show_position))
-	{
-		hud->save_configuration();
-	}
-
-	//#######################################################
-	
-	//################# SPEEDOMETER ########################
-	if (ImGui::Checkbox("Speedometer", &velo_meter))
-	{
-		hud->save_configuration();
-	}
-	
-	ImGui::SameLine(); ImGui::ColorButton("Color Button", color);
-
-
-	if(ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("ColorPickerPopup");
-	}
-
-	if(ImGui::BeginPopup("ColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Color Picker", &color.x);
-
-		ImGui::EndPopup();
-
-		hud->save_configuration();
-	}
-
-	ImGui::SameLine(); ImGui::Checkbox("Lock Speed Position", &lock_velo_pos);
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Keep Centered", &keep_velo_centered)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Use Static Positioning", &use_static_positioning)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Center")) {
-		ImGui::SetWindowFontScale(velo_scale);
-		if (hud->inst_ui_menu->sep_velo) {
-			ImGui::PushFont(hud->sep_font);
-		}
-		else {
-			ImGui::PushFont(hud->toxic_font);
-		}
-
-		if (keep_velo_centered) {
-			velo_pos.x = hud->inst_game->get_screen_res().x / 2.f - ImGui::CalcTextSize("0").x / 2.f;
-		}
-		velo_pos.y = hud->inst_game->get_screen_res().y / 2.f;
-
-		ImGui::SetWindowFontScale(1.f);
-		ImGui::PopFont();
-
-		hud->save_configuration();
-	}
-
-	ImGui::SameLine();
-	static std::string currentSpeedoStyle = sep_velo ? "Style 2" : "Style 1";
-	std::array<std::string, 2> speedoStyles = { "Style 1", "Style 2" };
-	ImGui::PushItemWidth(200.f);
-	if (ImGui::BeginCombo("##Speedometer style", currentSpeedoStyle.c_str())) {
-		for (int n = 0; n < speedoStyles.size(); n++) {
-			bool isSelected = (currentSpeedoStyle == speedoStyles[n]);
-			if (ImGui::Selectable(speedoStyles[n].c_str(), isSelected)) {
-				currentSpeedoStyle = speedoStyles[n].c_str();
-				ImGui::SetItemDefaultFocus();
-				if (currentSpeedoStyle == "Style 2") {
-					sep_velo = true;
-				}
-				else {
-					sep_velo = false;
-				}
-
-				hud->save_configuration();
+				hud->inst_game->send_command_to_console(cmd.c_str());
 			}
 		}
-		ImGui::EndCombo();
-	}
-	ImGui::PopItemWidth();
+		if (ImGui::Button("Copy position"))
+		{
+			vec3<float> pos = hud->inst_game->get_origin();
+			vec3<float> view = hud->inst_game->get_view();
 
+			copied_position_origin = pos;
+			copied_position_view = view;
+			hud->save_configuration();
+		
+			pos.z += 60.f;
+			std::stringstream ss;
+			ss << std::fixed << std::setprecision(6) << pos.x <<  " " << pos.y << " " << pos.z << " " << view.y << " " << view.x;
 
-	//Acceleration
-	if (ImGui::Checkbox("Show acceleration", &velo_show_acceleration)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	ImGui::ColorButton("Acceleration Color Button", acceleration_color);
-
-	if (ImGui::IsItemClicked()) {
-		ImGui::OpenPopup("AccelerationColorPickerPopup");
-	}
-
-	if (ImGui::BeginPopup("AccelerationColorPickerPopup")) {
-		ImGui::ColorPicker4("Acceleration Color Picker", &acceleration_color.x);
-
-		ImGui::EndPopup();
-
-		hud->save_configuration();
-	}
-
-	ImGui::SameLine();
-
-	//Deceleration
-	if (ImGui::Checkbox("Show deceleration", &velo_show_deceleration)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	ImGui::ColorButton("Deceleration Color Button", deceleration_color);
-
-	if (ImGui::IsItemClicked()) {
-		ImGui::OpenPopup("DecelerationColorPickerPopup");
-	}
-
-	if (ImGui::BeginPopup("DecelerationColorPickerPopup")) {
-		ImGui::ColorPicker4("Deceleration Color Picker", &deceleration_color.x);
-
-		ImGui::EndPopup();
-
-		hud->save_configuration();
-	}
-
-	ImGui::PushItemWidth(300.f);
-	if (ImGui::SliderFloat("Frames to keep acceleration for", &velo_keep_accel_for, 0.f, 100.f)) {
-		hud->save_configuration();
-	}
-	if (ImGui::SliderFloat("Acceleration threshold", &velo_acceleration_threshold, 1.f, 100.f)) {
-		hud->save_configuration();
-	}
-	ImGui::PopItemWidth();
-	if (ImGui::Checkbox("Enable acceleration on ground", &enable_acceleration_on_ground)) {
-		hud->save_configuration();
-	}
-
-	ImGui::PushItemWidth(300.f);
-	if (ImGui::SliderFloat("Frames to keep deceleration for", &velo_keep_decel_for, 0.f, 100.f)) {
-		hud->save_configuration();
-	}
-	if (ImGui::SliderFloat("Deceleration threshold", &velo_deceleration_threshold, 1.f, 100.f)) {
-		hud->save_configuration();
-	}
-	ImGui::PopItemWidth();
-	if (ImGui::Checkbox("Enable deceleration on ground", &enable_deceleration_on_ground)) {
-		hud->save_configuration();
-	}
-
-	/////////////
-	if(ImGui::SliderFloat("Speed Size", &velo_scale, 0.01f, 10.f))
-	{
-		hud->save_configuration();
-	}
-
-	if (ImGui::Checkbox("Jumpoff speed", &draw_jumpoff_speed)) {
-		hud->save_configuration();
-	}
-
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Display bottom left", &jumpoffspeed_display_bottom)) {
-		hud->save_configuration();
-	}
-
-	if (ImGui::Checkbox("Strafe downtime", &strafedowntime_toggle)) {
-		hud->save_configuration();
-	}
-	//#######################################################
-
-	//################# JUMP TARGET ########################
-	ImGui::Checkbox("Enable Jump Target", &jump_target);
-	
-	ImGui::SameLine();
-
-	if (ImGui::Checkbox("Brush Mode", &brush_mode)) {
-		hud->save_configuration();
-	}
-
-	if (!hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized) {
-		ImGui::SetTooltip("To use this feature, brushes must be processed by activating \"Draw collision\" under collision settings (once par map).");
-	}
-
-	ImGui::SameLine();
-
-	if (ImGui::Checkbox("Select closest", &jump_target_select_closest)) {
-		hud->save_configuration();
-	}
-
-	if ((!brush_mode || !hud->collision->hasInitialized) && ImGui::Button("Set Jump target"))
-	{
-		jump_target_origin = hud->inst_game->get_origin();
-	}
-	else if (brush_mode && hud->collision->hasInitialized) {
-		if (ImGui::Button("Add brush")) {
-			hud->inst_ui_jump_target->addBrush();
+			ImGui::SetClipboardText(ss.str().c_str());
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("Remove brush")) {
-			hud->inst_ui_jump_target->removeBrush();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Reset")) {
-			hud->inst_ui_jump_target->resetBrushes();
-		}
-		ImGui::SameLine();
-		if (ImGui::Checkbox("Draw selected brushes", &draw_selected_brushes)) {
+		ImGui::SameLine(); if(ImGui::Checkbox("Show Coordinates", &show_position))
+		{
 			hud->save_configuration();
 		}
+		if (ImGui::Checkbox("Display tooltips only while shift is held", &display_tooltips_only_while_shift_held))
+		{
+			hud->save_configuration();
+		}
+		break;
 	}
-	//#######################################################
 
-	//################# ANGLE HELPER ########################
-	if (ImGui::Checkbox("Anglehelper", &anglehelper_toggle))
+	case MenuTab::Velocity:
 	{
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	ImGui::ColorButton("Anglehelper color", anglehelper_color);
+		if (ImGui::Checkbox("Speedometer", &velo_meter))
+		{
+			hud->save_configuration();
+		}
+	
+		ImGui::SameLine(); ImGui::ColorButton("Color Button", color);
 
-	if (ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("AnglehelperColorPickerPopup");
-	}
 
-	if (ImGui::BeginPopup("AnglehelperColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("Anglehelper Color Picker", &anglehelper_color.x);
+		if(ImGui::IsItemClicked())
+		{
+			ImGui::OpenPopup("ColorPickerPopup");
+		}
 
-		ImGui::EndPopup();
+		if(ImGui::BeginPopup("ColorPickerPopup"))
+		{
+			ImGui::ColorPicker4("Color Picker", &color.x);
 
-		hud->save_configuration();
-	}
+			ImGui::EndPopup();
 
-	ImGui::SameLine();
+			hud->save_configuration();
+		}
 
-	std::array<std::string, 2> ahStyles = { "Style 1", "Style 2" };
-	ImGui::PushItemWidth(200.f);
-	if (ImGui::BeginCombo("##Anglehelper style", currentAhStyle.c_str())) {
-		for (int n = 0; n < ahStyles.size(); n++) {
-			bool isSelected = (currentAhStyle == ahStyles[n]);
-			if (ImGui::Selectable(ahStyles[n].c_str(), isSelected)) {
-				currentAhStyle = ahStyles[n];
-				if (isSelected) {
+		ImGui::SameLine(); ImGui::Checkbox("Lock Speed Position", &lock_velo_pos);
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Keep Centered", &keep_velo_centered)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Keeps the speedometer centered on the screen");
+		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Use Static Positioning", &use_static_positioning)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Prevent text from moving on velo change");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Center")) {
+			ImGui::SetWindowFontScale(velo_scale);
+			if (hud->inst_ui_menu->sep_velo) {
+				ImGui::PushFont(hud->sep_font);
+			}
+			else {
+				ImGui::PushFont(hud->toxic_font);
+			}
+
+			if (keep_velo_centered) {
+				velo_pos.x = hud->inst_game->get_screen_res().x / 2.f - ImGui::CalcTextSize("0").x / 2.f;
+			}
+			velo_pos.y = hud->inst_game->get_screen_res().y / 2.f;
+
+			ImGui::SetWindowFontScale(1.f);
+			ImGui::PopFont();
+
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Centers the speedometer on the screen");
+		}
+
+		ImGui::SameLine();
+		static std::string currentSpeedoStyle = sep_velo ? "Style 2" : "Style 1";
+		std::array<std::string, 2> speedoStyles = { "Style 1", "Style 2" };
+		ImGui::PushItemWidth(200.f);
+		if (ImGui::BeginCombo("##Speedometer style", currentSpeedoStyle.c_str())) {
+			for (int n = 0; n < speedoStyles.size(); n++) {
+				bool isSelected = (currentSpeedoStyle == speedoStyles[n]);
+				if (ImGui::Selectable(speedoStyles[n].c_str(), isSelected)) {
+					currentSpeedoStyle = speedoStyles[n].c_str();
 					ImGui::SetItemDefaultFocus();
-				}
+					if (currentSpeedoStyle == "Style 2") {
+						sep_velo = true;
+					}
+					else {
+						sep_velo = false;
+					}
 
+					hud->save_configuration();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+
+
+		//Acceleration
+		if (ImGui::Checkbox("Show acceleration", &velo_show_acceleration)) {
+			hud->save_configuration();
+		}
+		ImGui::SameLine();
+		ImGui::ColorButton("Acceleration Color Button", acceleration_color);
+
+		if (ImGui::IsItemClicked()) {
+			ImGui::OpenPopup("AccelerationColorPickerPopup");
+		}
+
+		if (ImGui::BeginPopup("AccelerationColorPickerPopup")) {
+			ImGui::ColorPicker4("Acceleration Color Picker", &acceleration_color.x);
+
+			ImGui::EndPopup();
+
+			hud->save_configuration();
+		}
+
+		ImGui::SameLine();
+
+		//Deceleration
+		if (ImGui::Checkbox("Show deceleration", &velo_show_deceleration)) {
+			hud->save_configuration();
+		}
+		ImGui::SameLine();
+		ImGui::ColorButton("Deceleration Color Button", deceleration_color);
+
+		if (ImGui::IsItemClicked()) {
+			ImGui::OpenPopup("DecelerationColorPickerPopup");
+		}
+
+		if (ImGui::BeginPopup("DecelerationColorPickerPopup")) {
+			ImGui::ColorPicker4("Deceleration Color Picker", &deceleration_color.x);
+
+			ImGui::EndPopup();
+
+			hud->save_configuration();
+		}
+
+		ImGui::PushItemWidth(300.f);
+		if (ImGui::SliderFloat("Frames to keep acceleration for", &velo_keep_accel_for, 0.f, 100.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::SliderFloat("Acceleration threshold", &velo_acceleration_threshold, 1.f, 100.f)) {
+			hud->save_configuration();
+		}
+		ImGui::PopItemWidth();
+		if (ImGui::Checkbox("Enable acceleration on ground", &enable_acceleration_on_ground)) {
+			hud->save_configuration();
+		}
+
+		ImGui::PushItemWidth(300.f);
+		if (ImGui::SliderFloat("Frames to keep deceleration for", &velo_keep_decel_for, 0.f, 100.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::SliderFloat("Deceleration threshold", &velo_deceleration_threshold, 1.f, 100.f)) {
+			hud->save_configuration();
+		}
+		ImGui::PopItemWidth();
+		if (ImGui::Checkbox("Enable deceleration on ground", &enable_deceleration_on_ground)) {
+			hud->save_configuration();
+		}
+
+		/////////////
+		if(ImGui::SliderFloat("Speed Size", &velo_scale, 0.01f, 10.f))
+		{
+			hud->save_configuration();
+		}
+
+		if (ImGui::Checkbox("Jumpoff speed", &draw_jumpoff_speed)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Displays jumpoff speed below the speedometer");
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Display bottom left", &jumpoffspeed_display_bottom)) {
+			hud->save_configuration();
+		}
+
+		if (ImGui::Checkbox("Strafe downtime", &strafedowntime_toggle)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Measures acceleration downtime when switching strafes");
+		}
+		break;
+	}
+
+	case MenuTab::JumpTarget:
+	{
+		ImGui::Checkbox("Enable Jump Target", &jump_target);
+	
+		ImGui::SameLine();
+
+		if (ImGui::Checkbox("Brush Mode", &brush_mode)) {
+			hud->save_configuration();
+		}
+
+		if (!hud->collision->hasInitialized && ImGui::IsItemHovered(ImGuiHoveredFlags_::ImGuiHoveredFlags_AllowWhenDisabled) && !hud->collision->hasInitialized && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("To use this feature, brushes must be processed by activating \"Draw collision\" under collision settings (once par map)");
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Checkbox("Select closest", &jump_target_select_closest)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Instead of selecting the brush with the same z-coordinate as you, 'Add brush' selects the closest one");
+		}
+
+		if ((!brush_mode || !hud->collision->hasInitialized) && ImGui::Button("Set Jump target"))
+		{
+			jump_target_origin = hud->inst_game->get_origin();
+		}
+		else if (brush_mode && hud->collision->hasInitialized) {
+			if (ImGui::Button("Add brush")) {
+				hud->inst_ui_jump_target->addBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Remove brush")) {
+				hud->inst_ui_jump_target->removeBrush();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Reset")) {
+				hud->inst_ui_jump_target->resetBrushes();
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Draw selected brushes", &draw_selected_brushes)) {
 				hud->save_configuration();
 			}
 		}
-		ImGui::EndCombo();
-	}
-	ImGui::PopItemWidth();
-
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Clamp to next zone", &clamp_to_next_zone)) {
-		hud->save_configuration();
+		break;
 	}
 
-	ImGui::PushItemWidth(200.f);
-	if (ImGui::SliderFloat("Anglehelper y-offset", &anglehelper_y_offset, -1000.f, 1000.f)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	if (ImGui::SliderFloat("Anglehelper height", &anglehelper_height, 1.f, 3.f)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	if (ImGui::SliderFloat("Anglehelper width", &anglehelper_width, 1.f, 10.f)) {
-		hud->save_configuration();
-	}
-	ImGui::PopItemWidth();
-
-	if (ImGui::Checkbox("Draw centerline", &drawcenterline)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	ImGui::ColorButton("Centerline color", centerline_color);
-
-	if (ImGui::IsItemClicked()) {
-		ImGui::OpenPopup("CenterLineColorPickerPopup");
-	}
-
-	if (ImGui::BeginPopup("CenterLineColorPickerPopup")) {
-		ImGui::ColorPicker4("Centerline Color Picker", &centerline_color.x);
-
-		ImGui::EndPopup();
-
-		hud->save_configuration();
-	}
-
-	//#######################################################
-
-	//################# 90 lines ########################
-	if (ImGui::Checkbox("90 lines", &lines_toggle))
+	case MenuTab::AngleHelper:
 	{
-		hud->save_configuration();
-	}
-	
-	ImGui::SameLine(); ImGui::ColorButton("90 Lines Color Button", lines_color);
-
-	if (ImGui::IsItemClicked())
-	{
-		ImGui::OpenPopup("90LinesColorPickerPopup");
-	}
-
-	if (ImGui::BeginPopup("90LinesColorPickerPopup"))
-	{
-		ImGui::ColorPicker4("90 Lines Color Picker", &lines_color.x);
-
-		ImGui::EndPopup();
-
-		hud->save_configuration();
-	}
-
-	//#######################################################
-
-	//################# Misc ################################
-
-	if (ImGui::Checkbox("RPG Timer", &rpgtimer_toggle)) {
-		hud->save_configuration();
-	}
-	if (ImGui::Checkbox("RPG angle", &rpgangle_toggle)) {
-		hud->save_configuration();
-	}
-	if (ImGui::Checkbox("Show velocity on bounce", &bouncevelocity_toggle)) {
-		hud->save_configuration();
-	}
-	/*
-	if (ImGui::Checkbox("Draw FPS", &drawfps_toggle)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	if (ImGui::SliderFloat("##Scale", &fpsScale, 0.3f, 2.5f)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	ImGui::ColorButton("FPS color", fpsColor);
-
-	if (ImGui::IsItemClicked()) {
-		ImGui::OpenPopup("FpsColorPopup");
-	}
-
-	if (ImGui::BeginPopup("FpsColorPopup")) {
-		ImGui::ColorPicker4("Fps color picker", &fpsColor.x);
-
-		ImGui::EndPopup();
-
-		hud->save_configuration();
-	}
-
-
-	ImGui::Indent(50.f);
-	if (ImGui::Checkbox("Only while spectating", &drawfps_spectateonly)) {
-		hud->save_configuration();
-	}
-	ImGui::Indent(-50.f);*/
-	//#######################################################
-
-	//################# FPS Wheel #######################
-	if (ImGui::Checkbox("FPS Wheel", &fpswheel_toggle)) {
-		hud->save_configuration();
-		if (fpswheel_toggle) {
-			should_focus_next_frame = true;
+		if (ImGui::Checkbox("Anglehelper", &anglehelper_toggle))
+		{
+			hud->save_configuration();
 		}
-	}
-	if (ImGui::Checkbox("Draw wheel centerline", &drawfpswheelcenterline)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	ImGui::ColorButton("wheel centerline color", fpswheelcenterline_color);
+		ImGui::SameLine();
+		ImGui::ColorButton("Anglehelper color", anglehelper_color);
 
-	if (ImGui::IsItemClicked()) {
-		ImGui::OpenPopup("WheelCenterLineColorPickerPopup");
+		if (ImGui::IsItemClicked())
+		{
+			ImGui::OpenPopup("AnglehelperColorPickerPopup");
+		}
+
+		if (ImGui::BeginPopup("AnglehelperColorPickerPopup"))
+		{
+			ImGui::ColorPicker4("Anglehelper Color Picker", &anglehelper_color.x);
+
+			ImGui::EndPopup();
+
+			hud->save_configuration();
+		}
+
+		ImGui::SameLine();
+
+		std::array<std::string, 2> ahStyles = { "Style 1", "Style 2" };
+		ImGui::PushItemWidth(200.f);
+		if (ImGui::BeginCombo("##Anglehelper style", currentAhStyle.c_str())) {
+			for (int n = 0; n < ahStyles.size(); n++) {
+				bool isSelected = (currentAhStyle == ahStyles[n]);
+				if (ImGui::Selectable(ahStyles[n].c_str(), isSelected)) {
+					currentAhStyle = ahStyles[n];
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+
+					hud->save_configuration();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Clamp to next zone", &clamp_to_next_zone)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Style 2 only, clamps anglehelper rectangle to the next fps zone");
+		}
+
+		ImGui::PushItemWidth(200.f);
+		if (ImGui::SliderFloat("Anglehelper y-offset", &anglehelper_y_offset, -1000.f, 1000.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::SliderFloat("Anglehelper height", &anglehelper_height, 1.f, 3.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::SliderFloat("Anglehelper width", &anglehelper_width, 1.f, 10.f)) {
+			hud->save_configuration();
+		}
+		ImGui::PopItemWidth();
+
+		break;
 	}
 
-	if (ImGui::BeginPopup("WheelCenterLineColorPickerPopup")) {
-		ImGui::ColorPicker4("Wheel Centerline Color Picker", &fpswheelcenterline_color.x);
-
-		ImGui::EndPopup();
-
-		hud->save_configuration();
-	}
-
-	if (ImGui::SliderFloat("FPS Wheel height", &fpswheel_size, 1.f, 100.f)) {
-		hud->save_configuration();
-	}
-
-	if (ImGui::SliderFloat("FPS Wheel y-offset", &fpswheel_offset_y, -200.f, 200.f)) {
-		hud->save_configuration();
-	}
-
-	if (ImGui::SliderFloat("FPS Wheel x-offset", &fpswheel_offset_x, 0.45f, 1.f)) {
-		hud->save_configuration();
-	}
-
-	if (ImGui::SliderFloat("Anglehelper pixel scale", &ah_pixel_scale, 0.3, 1.f)) {
-		hud->save_configuration();
-	}
-
-	if (ImGui::SliderFloat("Wheel anglehelper pixel scale", &wheel_ah_pixel_scale, 0.3, 1.f)) {
-		hud->save_configuration();
-	}
-
-	if (ImGui::SliderFloat("Wheel pixel scale", &wheel_pixel_scale, 0.3, 1.f)) {
-		hud->save_configuration();
-	}
-	//#######################################################
-
-	//################# Collision #######################
-
-	ImGui::SeparatorEx(ImGuiSeparatorFlags_::ImGuiSeparatorFlags_Horizontal, 30.f);
-	ImGui::Text("Collision settings");
-	if (ImGui::Checkbox("Draw collision", &draw_collision)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	ImGui::PushItemWidth(800.f);
-	if (ImGui::SliderFloat("Distance", &draw_collision_distance, 0.f, 15000.f)) {
-		hud->save_configuration();
-	}
-	ImGui::PopItemWidth();
+	case MenuTab::HudAndTimers:
+	{
+		if (ImGui::Checkbox("90 lines", &lines_toggle))
+		{
+			hud->save_configuration();
+		}
 	
-	if (ImGui::Checkbox("Only clips", &draw_collision_only_clips)) {
-		hud->save_configuration();
-	}
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Don't draw skies", &draw_collision_no_sky)) {
-		hud->save_configuration();
-	}
-	ImGui::Separator();
+		ImGui::SameLine(); ImGui::ColorButton("90 Lines Color Button", lines_color);
 
-	if (ImGui::Checkbox("Allow impure map IWDs", &allow_impure_map_iwds)) {
-		hud->save_configuration();
-	}
-	if (ImGui::IsItemHovered()) {
-		ImGui::SetTooltip("Modifying IWDs in your usermaps folder will not cause the server to force a redownload.");
+		if (ImGui::IsItemClicked())
+		{
+			ImGui::OpenPopup("90LinesColorPickerPopup");
+		}
+
+		if (ImGui::BeginPopup("90LinesColorPickerPopup"))
+		{
+			ImGui::ColorPicker4("90 Lines Color Picker", &lines_color.x);
+
+			ImGui::EndPopup();
+
+			hud->save_configuration();
+		}
+
+		if (ImGui::Checkbox("Draw centerline", &drawcenterline)) {
+			hud->save_configuration();
+		}
+		ImGui::SameLine();
+		ImGui::ColorButton("Centerline color", centerline_color);
+
+		if (ImGui::IsItemClicked()) {
+			ImGui::OpenPopup("CenterLineColorPickerPopup");
+		}
+
+		if (ImGui::BeginPopup("CenterLineColorPickerPopup")) {
+			ImGui::ColorPicker4("Centerline Color Picker", &centerline_color.x);
+
+			ImGui::EndPopup();
+
+			hud->save_configuration();
+		}
+
+		//#######################################################
+
+		//################# Misc ################################
+
+		if (ImGui::Checkbox("RPG Timer", &rpgtimer_toggle)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Displays frames passed between bounce and RPG shot");
+		}
+		if (ImGui::Checkbox("RPG angle", &rpgangle_toggle)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Displays RPG angle on bounce");
+		}
+		if (ImGui::Checkbox("Show velocity on bounce", &bouncevelocity_toggle)) {
+			hud->save_configuration();
+		}
+		if (ImGui::Checkbox("FPS Wheel", &fpswheel_toggle)) {
+			hud->save_configuration();
+			if (fpswheel_toggle) {
+				should_focus_next_frame = true;
+			}
+		}
+		if (ImGui::Checkbox("Draw wheel centerline", &drawfpswheelcenterline)) {
+			hud->save_configuration();
+		}
+		ImGui::SameLine();
+		ImGui::ColorButton("wheel centerline color", fpswheelcenterline_color);
+
+		if (ImGui::IsItemClicked()) {
+			ImGui::OpenPopup("WheelCenterLineColorPickerPopup");
+		}
+
+		if (ImGui::BeginPopup("WheelCenterLineColorPickerPopup")) {
+			ImGui::ColorPicker4("Wheel Centerline Color Picker", &fpswheelcenterline_color.x);
+
+			ImGui::EndPopup();
+
+			hud->save_configuration();
+		}
+
+		if (ImGui::SliderFloat("FPS Wheel height", &fpswheel_size, 1.f, 100.f)) {
+			hud->save_configuration();
+		}
+
+		if (ImGui::SliderFloat("FPS Wheel y-offset", &fpswheel_offset_y, -200.f, 200.f)) {
+			hud->save_configuration();
+		}
+
+		if (ImGui::SliderFloat("FPS Wheel x-offset", &fpswheel_offset_x, 0.45f, 1.f)) {
+			hud->save_configuration();
+		}
+
+		if (ImGui::SliderFloat("Anglehelper pixel scale", &ah_pixel_scale, 0.3, 1.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Stretches/Squishes the anglehelper");
+		}
+
+		if (ImGui::SliderFloat("Wheel anglehelper pixel scale", &wheel_ah_pixel_scale, 0.3, 1.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Stretches/Squishes the wheel anglehelper");
+		}
+
+		if (ImGui::SliderFloat("Wheel pixel scale", &wheel_pixel_scale, 0.3, 1.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Stretches/Squishes the wheel");
+		}
+		break;
 	}
 
-	//#######################################################
+	case MenuTab::Collision:
+	{
+		ImGui::Text("Collision settings");
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Draw collision", &draw_collision)) {
+			hud->save_configuration();
+		}
+		ImGui::SameLine();
+		ImGui::PushItemWidth(800.f);
+		if (ImGui::SliderFloat("Distance", &draw_collision_distance, 0.f, 15000.f)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("0 = Infinite");
+		}
+		ImGui::PopItemWidth();
+	
+		if (ImGui::Checkbox("Only clips", &draw_collision_only_clips)) {
+			hud->save_configuration();
+		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Don't draw skies", &draw_collision_no_sky)) {
+			hud->save_configuration();
+		}
 
+		if (ImGui::Checkbox("Allow impure map IWDs", &allow_impure_map_iwds)) {
+			hud->save_configuration();
+		}
+		if (ImGui::IsItemHovered() && hud->inst_ui_menu->shouldDisplayTooltips()) {
+			ImGui::SetTooltip("Modifying IWDs in your usermaps folder will not cause the server to force a redownload");
+		}
+		break;
+	}
+	}
+
+	ImGui::EndChild();
 	ImGui::End();
 }
 
@@ -656,6 +681,7 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("jump_target_select_closest", &jump_target_select_closest);
 	hud->registerConfig("allow_impure_map_iwds", &allow_impure_map_iwds);
 	hud->registerConfig("use_legacy_markers", &use_legacy_markers);
+	hud->registerConfig("display_tooltips_only_while_shift_held", &display_tooltips_only_while_shift_held);
 	hud->registerConfig("velo_acceleration_threshold", &velo_acceleration_threshold);
 	hud->registerConfig("velo_deceleration_threshold", &velo_deceleration_threshold);
 	hud->registerConfig("velo_keep_accel_for", &velo_keep_accel_for);
@@ -664,10 +690,16 @@ void ui_menu::registerConfigs(Avengers* hud)
 	hud->registerConfig("enable_deceleration_on_ground", &enable_deceleration_on_ground);
 }
 
+bool ui_menu::shouldDisplayTooltips() const
+{
+	return !display_tooltips_only_while_shift_held || (ImGui::GetIO().KeyMods & ImGuiMod_Shift);
+}
+
 ui_menu::ui_menu(Avengers* hud)
 {
 	hud->inst_render->add_callback([this]() { this->render(); });
 }
+
 ui_menu::~ui_menu()
 {
 

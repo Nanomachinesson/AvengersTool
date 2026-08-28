@@ -3,6 +3,16 @@
 #include "vectors.h"
 #include "config_manager.h"
 
+enum class MenuTab
+{
+	General,
+	Velocity,
+	JumpTarget,
+	AngleHelper,
+	HudAndTimers,
+	Collision
+};
+
 class ui_menu
 {
 public:
@@ -11,6 +21,7 @@ public:
 	void menu(Avengers* hud);
 	void render();
 
+	MenuTab active_tab = MenuTab::General;
 	bool demoplayer_menu = false;
 	bool marker_menu = false;
 	bool show_position = false;
@@ -68,6 +79,9 @@ public:
 	bool use_marker_binds = false;
 	bool use_legacy_markers = false;
 	bool allow_impure_map_iwds = false;
+	bool display_tooltips_only_while_shift_held = false;
+
+	bool shouldDisplayTooltips() const;
 	// Default the position to the center of the screen if there is no position in the config file
 	vec2<float> velo_pos = vec2<float>(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);
 
@@ -90,7 +104,6 @@ public:
 	ImVec4 fpsColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 
 	bool should_focus_next_frame = false;
-
 	std::string currentAhStyle = "Style 1";
 	void registerConfigs(Avengers* hud);
 

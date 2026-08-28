@@ -239,6 +239,9 @@ void ui_position_marker::menu()
     if (ImGui::Checkbox("Allow Binds", &avengers->inst_ui_menu->use_marker_binds)) {
         avengers->save_configuration();
     }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Numpad 1: Set a marker\nNumpad 2: Toggle the positioning helper\nNumpad 3: Toggle marker rendering");
+    }
     ImGui::PushItemWidth(430.f);
     if (ImGui::SliderFloat("Marker Render Distance", &avengers->inst_ui_menu->marker_render_distance, 0.f, 50000.f)) {
         avengers->save_configuration();
@@ -246,13 +249,22 @@ void ui_position_marker::menu()
     if (ImGui::Checkbox("Positioning Helper", &avengers->inst_ui_menu->positioning_helper)) {
         avengers->save_configuration();
     }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Displays a positioning helper for the selected marker");
+    }
     ImGui::SameLine();
     if (ImGui::Checkbox("Only on ground", &avengers->inst_ui_menu->positioning_helper_onlyonground)) {
         avengers->save_configuration();
     }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Only displays the positioning helper while on the ground");
+    }
     ImGui::SameLine();
     if (ImGui::Checkbox("Use legacy markers", &avengers->inst_ui_menu->use_legacy_markers)) {
         avengers->save_configuration();
+    }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Uses the legacy marker rendering style");
     }
     if (ImGui::SliderFloat("Widget Render Distance", &avengers->inst_ui_menu->widget_render_distance, 0.f, 500.f)) {
         avengers->save_configuration();
