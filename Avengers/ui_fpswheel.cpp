@@ -122,7 +122,8 @@ vec2<float> ui_fpswheel::getCurrentZoneBounds()
 	float optAngle = hud->inst_game->get_optimal_angle();
 	Lmove lmove = hud->inst_game->get_lmove(true);
 
-	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
+	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward && !lmove.isBack)
+		|| (lmove.isBack && lmove.isLeft) || (lmove.isBack && !lmove.isRight && !lmove.isLeft && !hud->inst_game->decideStechSide(lmove));
 
 	for (auto const& [fps, zone] : fpsZones) {
 		vec2<float> zoneCopy = zone;
@@ -160,9 +161,13 @@ vec2<float> ui_fpswheel::moveZone(const vec2<float>& zone)
 		zoney = mm::normalise(180 - zoney, 0, 360);
 	}
 
-	if (!lmove.isRight && !lmove.isForward && !lmove.isLeft) {
+	if (!lmove.isForward) {
 		if (lmove.isBack) {
-			if (!hud->inst_game->decideStechSide(lmove)) {
+			if (lmove.isRight || lmove.isLeft) {
+				zonex = mm::normalise(135 - zonex, 0.f, 360.f);
+				zoney = mm::normalise(135 - zoney, 0.f, 360.f);
+			}
+			else if (!hud->inst_game->decideStechSide(lmove)) {
 				zonex = mm::normalise(180.f - zonex + 45.f, 0.f, 360.f);  //I don't really understand this anymore, and opted to bruteforce the values.
 				zoney = mm::normalise(180.f - zoney + 45.f, 0.f, 360.f);
 			}

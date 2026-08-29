@@ -39,5 +39,6 @@ constexpr int addr_serveriwdsums = 0x0cb1aac0;
 constexpr int addr_serveriwdnames = 0x0cb1ccc0;
 constexpr int addr_servernumiwds = 0x0cb1988c;
 constexpr int addr_searchpathbase = 0x0d5ec4dc;
+constexpr int addr_demovelo = 0x0079449C;
 
 #endif

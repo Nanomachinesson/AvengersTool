@@ -1,7 +1,20 @@
 #pragma once
 #include <array>
+#include <unordered_map>
 #include "vectors.h"
 #include "config_manager.h"
+
+enum class MenuTab
+{
+	General,
+	Velocity,
+	JumpTarget,
+	AngleHelper,
+	Misc,
+	Collision,
+	Markers,
+	DemoPlayer
+};
 
 class ui_menu
 {
@@ -11,8 +24,7 @@ public:
 	void menu(Avengers* hud);
 	void render();
 
-	bool demoplayer_menu = false;
-	bool marker_menu = false;
+	MenuTab active_tab = MenuTab::General;
 	bool show_position = false;
 	bool velo_meter = false;
 	bool keep_velo_centered = false;
@@ -27,7 +39,6 @@ public:
 	bool enable_deceleration_on_ground = false;
 	bool draw_jumpoff_speed = false;
 	bool jumpoffspeed_display_bottom = false;
-	bool sep_velo = false;
 	ImVec4 color = { 0.0f, 0.0f, 1.0f, 1.0f };
 	ImVec4 acceleration_color = { 0.0f, 1.0f, 0.0f, 1.0f };
 	ImVec4 deceleration_color = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -41,6 +52,7 @@ public:
 	float anglehelper_height = 1.f;
 	bool clamp_to_next_zone = false;
 	bool drawcenterline = false;
+	float centerline_width = 2.5f;
 	ImVec4 centerline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	bool drawfpswheelcenterline = false;
 	ImVec4 fpswheelcenterline_color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -55,6 +67,7 @@ public:
 	bool strafedowntime_toggle = false;
 	bool rpgtimer_toggle = false;
 	bool rpgangle_toggle = false;
+	bool timing5_toggle = false;
 	bool bouncevelocity_toggle = false;
 	bool draw_collision = false;
 	bool draw_collision_only_clips = false;
@@ -68,6 +81,9 @@ public:
 	bool use_marker_binds = false;
 	bool use_legacy_markers = false;
 	bool allow_impure_map_iwds = false;
+	bool display_tooltips_only_while_shift_held = false;
+
+	bool shouldDisplayTooltips() const;
 	// Default the position to the center of the screen if there is no position in the config file
 	vec2<float> velo_pos = vec2<float>(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);
 
@@ -90,8 +106,12 @@ public:
 	ImVec4 fpsColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 
 	bool should_focus_next_frame = false;
-
 	std::string currentAhStyle = "Style 1";
+	std::string selected_speedometer_font = "Bahnschrift";
+	std::string selected_imgui_font = "Bahnschrift";
+	std::unordered_map<std::string, ImFont*> loadedFonts;
+	ImFont* getImguiFont();
+	ImFont* getSpeedometerFont();
 	void registerConfigs(Avengers* hud);
 
 };

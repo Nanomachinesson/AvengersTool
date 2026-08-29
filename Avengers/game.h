@@ -47,7 +47,7 @@ public:
 		}
 	};
 	
-	
+	bool isDemoPlaying();
 	HWND get_window(); 
 	bool is_focused();
 	bool is_in_main_menu();

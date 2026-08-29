@@ -7,7 +7,14 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	ImGui::Begin("Velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
 	auto gameState = hud->gameState;
 
-	float velo = gameState->velocity.Length2D();
+	float velo = 0.f;
+	if (hud->inst_game->isDemoPlaying()) {
+		velo = hud->inst_game->get_velocity().Length2D();
+	}
+	else {
+		velo = gameState->velocity.Length2D();
+	}
+
 	static float prev_velo = gameState->velocity.Length2D();
 
 	static int frames_to_wait_for_velo_decrease = 0;  //Velo drops. Wait X frames for velo to drop again.
@@ -140,12 +147,8 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 	ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
 	ImGui::SetWindowFontScale(scale);
-	if (hud->inst_ui_menu->sep_velo) {
-		ImGui::PushFont(hud->sep_font);
-	}
-	else {
-		ImGui::PushFont(hud->toxic_font);
-	}
+	ImFont* speedometer_font = hud->inst_ui_menu->getSpeedometerFont();
+	if (speedometer_font) ImGui::PushFont(speedometer_font);
 
 	vec2<float> adjustedPos = pos;
 	/*https://stackoverflow.com/a/67855985*/
@@ -178,7 +181,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 	prev_velo = velo;
 
-	ImGui::PopFont();
+	if (speedometer_font) ImGui::PopFont();
 
 	ImGui::End();
 }
@@ -210,12 +213,8 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 		ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
 		ImGui::SetWindowFontScale(scale);
-		if (hud->inst_ui_menu->sep_velo) {
-			ImGui::PushFont(hud->sep_font);
-		}
-		else {
-			ImGui::PushFont(hud->toxic_font);
-		}
+		ImFont* speedometer_font = hud->inst_ui_menu->getSpeedometerFont();
+		if (speedometer_font) ImGui::PushFont(speedometer_font);
 
 		ImGui::SetWindowFontScale(scale);
 
@@ -229,11 +228,11 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 			position.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 		}
 
-		draw_list->AddText(position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
+		draw_list->AddText(speedometer_font, ImGui::GetFontSize(), position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
 
 		ImGui::SetWindowFontScale(1.f);
 
-		ImGui::PopFont();
+		if (speedometer_font) ImGui::PopFont();
 		ImGui::End();
 	}
 

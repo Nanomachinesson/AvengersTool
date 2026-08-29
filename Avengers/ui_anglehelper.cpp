@@ -4,7 +4,8 @@
 void ui_anglehelper::render(Avengers*& hud, ImVec4& color)
 {
 	Lmove lmove = hud->inst_game->get_lmove(true);
-	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward) || (lmove.isBack && !hud->inst_game->decideStechSide(lmove));
+	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward && !lmove.isBack)
+		|| (lmove.isBack && lmove.isLeft) || (lmove.isBack && !lmove.isRight && !lmove.isLeft && !hud->inst_game->decideStechSide(lmove));
 	float width = 2.5f;
 	width *= hud->inst_ui_menu->anglehelper_width;
 	if (goingRight) {
@@ -128,7 +129,7 @@ void ui_anglehelper::renderOnWheel(Avengers*& hud, ImVec4& color)  //TODO: refac
 
 void ui_anglehelper::renderCenterLine(Avengers*& hud, ImVec4& color)
 {
-	float width = 2.5f;
+	float width = hud->inst_ui_menu->centerline_width;
 
 	vec2<float> center(hud->inst_game->get_screen_res().x / 2 - width/2, hud->inst_game->get_screen_res().y / 2);
 

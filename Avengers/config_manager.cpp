@@ -101,7 +101,13 @@ void ConfigManager::loadConfig()
 			}
 			case TYPE_STRING:
 			{
-				std::string value = line.substr(line.find(":") + 2, line.size() - line.find("TYPE"));
+				const std::size_t valueStart = line.find(":") + 2;
+				const std::size_t typeStart = line.find(" TYPE:");
+				if (valueStart > line.size() || typeStart == std::string::npos || typeStart < valueStart) {
+					break;
+				}
+
+				std::string value = line.substr(valueStart, typeStart - valueStart);
 
 				std::string* settingValue = reinterpret_cast<std::string*>(currentSetting->data);
 				*settingValue = value;

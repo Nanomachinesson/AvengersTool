@@ -65,9 +65,6 @@ public:
 	std::shared_ptr<Collision> collision;
 	std::shared_ptr<GameState> gameState;
 
-	ImFont* toxic_font;
-	ImFont* sep_font;
-
 	bool exit = false;
 	bool want_input = false;
 	bool bind_toggle_input(UINT key_state);

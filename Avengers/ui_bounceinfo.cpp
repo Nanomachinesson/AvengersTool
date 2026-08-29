@@ -132,6 +132,58 @@ void ui_bounceinfo::renderRpgAngle()
 	lastFrameWeaponDelay = weaponDelay;
 }
 
+void ui_bounceinfo::render5Timing()
+{
+	static vec3<float> prevVelo{};
+	static int consecutive5Velo = 0;
+	static std::chrono::time_point lastGood5Usage = std::chrono::system_clock::now();
+	static std::chrono::time_point lastHeld5 = std::chrono::system_clock::now();
+	static bool lookingFor5End = false;
+
+	auto gameState = avengers->gameState;
+	bool onGround = gameState->onGround;
+	int fps = avengers->inst_game->get_fps();
+	float zVeloDiff = gameState->velocity.z - prevVelo.z;
+
+	if (fps == 500) {
+		lastHeld5 = std::chrono::system_clock::now();
+	}
+
+	if (!onGround && fps == 500 && zVeloDiff == -1.f) {
+		consecutive5Velo++;
+	}
+	else {
+		consecutive5Velo = 0;
+	}
+
+	if (consecutive5Velo > 1) {
+		lastGood5Usage = std::chrono::system_clock::now();
+		lookingFor5End = true;
+	}
+
+	if (lookingFor5End) {
+		std::chrono::time_point now = std::chrono::system_clock::now();
+		int timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastGood5Usage).count();
+		int timeDiff5 = std::chrono::duration_cast<std::chrono::milliseconds>(lastHeld5 - lastGood5Usage).count();
+		if (timeDiff > 100) {
+			if (timeDiff5 <= 300) {
+				if (timeDiff5 == 0) {
+					avengers->inst_game->add_obituary("500: ^1too early");
+				}
+				else if (timeDiff5 < 100) {
+					avengers->inst_game->add_obituary("500: ^5" + std::to_string(timeDiff5) + "^9 ms too late");
+				}
+				else {
+					avengers->inst_game->add_obituary("500: ^1" + std::to_string(timeDiff5) + "^9 ms too late");
+				}
+			}
+			lookingFor5End = false;
+		}
+	}
+
+	prevVelo = gameState->velocity;
+}
+
 void ui_bounceinfo::renderBounceVelocity()
 {
 	static int pmFlagsLastFrame = 0;

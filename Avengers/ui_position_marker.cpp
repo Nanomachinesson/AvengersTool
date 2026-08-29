@@ -18,7 +18,6 @@ ImVec4 ui_position_marker::invertColor(const ImVec4& color)
 ui_position_marker::ui_position_marker(Avengers* avengers) :
     avengers(avengers)
 {
-    avengers->inst_render->add_callback([this]() { this->menu(); });
     avengers->inst_input->add_callback(VK_NUMPAD2, [this](UINT key_state) { return this->bindToggleWidget(key_state); });
     avengers->inst_input->add_callback(VK_NUMPAD1, [this](UINT key_state) { return this->bindSetMarker(key_state); });
     avengers->inst_input->add_callback(VK_NUMPAD3, [this](UINT key_state) { return this->bindToggleRenderMarkers(key_state); });
@@ -201,12 +200,21 @@ bool ui_position_marker::bindToggleRenderMarkers(UINT keyState)
 
 void ui_position_marker::menu()
 {
-    if (!(avengers->want_input && avengers->inst_ui_menu->marker_menu)) {
-        return;
-    }
-    bool isConnected = avengers->inst_game->is_connected();
+    int closestMarkerIndex = -1;
+    if (avengers->inst_game->is_connected() && !markers.empty()) {
+        vec3<float> playerPos = avengers->inst_game->get_origin();
+        float closestDistance = 0.f;
 
-    ImGui::Begin("Marker Menu", &avengers->inst_ui_menu->marker_menu);
+        for (int i = 0; i < static_cast<int>(markers.size()); ++i) {
+            float markerDistance = markers[i].position.Dist(playerPos);
+            if (closestMarkerIndex == -1 || markerDistance < closestDistance) {
+                closestDistance = markerDistance;
+                closestMarkerIndex = i;
+            }
+        }
+    }
+
+    bool isConnected = avengers->inst_game->is_connected();
 
     if (!isConnected) {
         ImGui::PushItemFlag(ImGuiItemFlags_::ImGuiItemFlags_Disabled, true);
@@ -239,6 +247,9 @@ void ui_position_marker::menu()
     if (ImGui::Checkbox("Allow Binds", &avengers->inst_ui_menu->use_marker_binds)) {
         avengers->save_configuration();
     }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Numpad 1: Set a marker\nNumpad 2: Toggle the positioning helper\nNumpad 3: Toggle marker rendering");
+    }
     ImGui::PushItemWidth(430.f);
     if (ImGui::SliderFloat("Marker Render Distance", &avengers->inst_ui_menu->marker_render_distance, 0.f, 50000.f)) {
         avengers->save_configuration();
@@ -246,13 +257,22 @@ void ui_position_marker::menu()
     if (ImGui::Checkbox("Positioning Helper", &avengers->inst_ui_menu->positioning_helper)) {
         avengers->save_configuration();
     }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Displays a positioning helper for nearby markers");
+    }
     ImGui::SameLine();
     if (ImGui::Checkbox("Only on ground", &avengers->inst_ui_menu->positioning_helper_onlyonground)) {
         avengers->save_configuration();
     }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Only displays the positioning helper while on the ground");
+    }
     ImGui::SameLine();
     if (ImGui::Checkbox("Use legacy markers", &avengers->inst_ui_menu->use_legacy_markers)) {
         avengers->save_configuration();
+    }
+    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
+        ImGui::SetTooltip("Renders a red circle instead of a vertical line");
     }
     if (ImGui::SliderFloat("Widget Render Distance", &avengers->inst_ui_menu->widget_render_distance, 0.f, 500.f)) {
         avengers->save_configuration();
@@ -264,6 +284,10 @@ void ui_position_marker::menu()
         Marker& m = markers[i];
 
         ImGui::PushID(i);
+        bool isClosestMarker = i == closestMarkerIndex;
+        if (isClosestMarker) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.f, 1.f, 1.f, 1.f));
+        }
 
         ImGui::ColorButton("##MarkerColor", m.color);
         std::string popupName = std::string("MarkerColorPickerPopup_") + std::to_string(i);
@@ -275,9 +299,16 @@ void ui_position_marker::menu()
         ImGui::Text("%.4f %.4f %.4f", m.position[0], m.position[1], m.position[2]);
         ImGui::SameLine();
 
+        if (isClosestMarker) {
+            ImGui::PopStyleColor();
+        }
+
         if (ImGui::Button("Delete")) {
             markers.erase(markers.begin() + i);
             avengers->save_markers();
+            if (isClosestMarker) {
+                closestMarkerIndex = -1;
+            }
             ImGui::PopID();
             --i;
             continue;
@@ -300,5 +331,4 @@ void ui_position_marker::menu()
         ImGui::PopID();
     }
 
-    ImGui::End();
 }

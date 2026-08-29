@@ -52,8 +52,14 @@ vec3<float> game::get_origin()
 {
 	pmove_t* pm = get_pmove_current();
 	vec3<float> origin{};
-	if (pm && pm->ps) {
-		origin = pm->ps->origin;
+
+	if (!isDemoPlaying()) {
+		if (pm && pm->ps) {
+			origin = pm->ps->origin;
+		}
+	}
+	else {
+		origin = *reinterpret_cast<vec3<float>*>(addr_demovelo - 12);
 	}
 
 	return origin;
@@ -61,13 +67,25 @@ vec3<float> game::get_origin()
 
 vec3<float> game::get_velocity()
 {
-	pmove_t* pm = get_pmove_current();
 	vec3<float> velocity{};
-	if (pm && pm->ps) {
-		velocity = pm->ps->velocity;
+	cvar_t* cvar = getCvar("cl_demoplaying");
+	if (!isDemoPlaying()) {
+		pmove_t* pm = get_pmove_current();
+		if (pm && pm->ps) {
+			velocity = pm->ps->velocity;
+		}
+	}
+	else {
+		velocity = *reinterpret_cast<vec3<float>*>(addr_demovelo);
 	}
 
 	return velocity;
+}
+
+bool game::isDemoPlaying()
+{
+	cvar_t* cvar = getCvar("cl_demoplaying");
+	return cvar->current.enabled;
 }
 
 float game::get_dir_diff()
@@ -81,7 +99,15 @@ float game::get_dir_diff(const Lmove& lMove)
 		return (lMove.isRight) ? -45.f : 45.f;
 	}
 	else if (lMove.isBack) {
-		return 180.f;
+		if (lMove.isRight) {
+			return -135.f;
+		}
+		else if (lMove.isLeft) {
+			return 135.f;
+		}
+		else {
+			return 180.f;
+		}
 	}
 	else {
 		return (lMove.isRight) ? -90.f : +90.f;
@@ -216,7 +242,7 @@ float game::get_delta_optimal(const Lmove& lMove)
 	float speed = get_velocity().Length2D();
 	float deltaOpt = mm::to_degrees(acosf((g_speed - get_accel()) / speed));
 
-	if (lMove.isLeft)
+	if ((lMove.isLeft && !lMove.isBack) || (lMove.isBack && lMove.isRight))
 	{
 		deltaOpt *= -1.f;
 	}
@@ -552,7 +578,7 @@ float game::get_optimal_angle(const Lmove& lMove)
 
 	float yaw = get_view().y;
 
-	if (lMove.isBack) {  //If the user is doing s-tech we need to account for both strafe sides
+	if (lMove.isBack && !lMove.isLeft && !lMove.isRight) {  //If the user is doing s-tech we need to account for both strafe sides
 		if (decideStechSide(lMove)) {
 			deltaOptimal *= -1.f;
 		}
