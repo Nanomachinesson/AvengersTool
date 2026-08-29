@@ -17,32 +17,6 @@ How to use:
 That's it!
 </pre>
 
-## Current Features:
-<pre>
-Demoplayer (more info below)
-
-Bind demo to load key (technically bind demo to F so I hope you use F for load position :D)
-
-Copy current position to clipboard 
-  - this is useful for players wanting to take a break mid performance and continue from where they left off. 
-    Additionally F3 will execute /setviewpos [copiedPosition] allowing users to easily resume performing
-
-Speedometer 
-  - with 2 fonts, position and color manipulation
-
-Position Markers
-  - Assists with lining up for jumps during Walkthroughs by marking a position showing the player where to stand
-</pre>
-
-## Demo Player
-<pre>
-Demoplayer was originally implemented by Wilhelm II to make editing walkthroughs much easier.
-
-Demoplayer takes the inputs provided and executes all the demos one after another so they can be AFK recorded.
-
-MORE INFO ON DEMOPLAYER TO COME...
-</pre>
-
 ## Credits
 <pre>
 This tool uses code from iw3xo by xoxor4d to draw collisions / extract brushes: https://github.com/xoxor4d/iw3xo-dev
