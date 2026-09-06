@@ -3,20 +3,20 @@
 
 namespace mm
 {
-	float to_radians(float degrees)
+	float toRadians(float degrees)
 	{
 		return degrees * PI / 180.f;
 	}
 
-	vec2<float> truncate_vector(const vec3<float>& v)
+	vec2<float> truncateVector(const vec3<float>& v)
 	{
 		return vec2<float>(v.x, v.y);
 	}
 
-	vec2<float> rotate_point(const vec2<float>& p1, const vec2<float>& p2, float angle)
+	vec2<float> rotatePoint(const vec2<float>& p1, const vec2<float>& p2, float angle)
 	{
 		vec2<float> p;
-		angle = to_radians(angle);
+		angle = toRadians(angle);
 		p.x = cosf(angle) * (p1.x - p2.x) - sinf(angle) * (p1.y - p2.y) + p2.x;
 		p.y = sinf(angle) * (p1.x - p2.x) + cosf(angle) * (p1.y - p2.y) + p2.y;
 		return p;
@@ -40,21 +40,21 @@ namespace mm
 		return value;
 	}
 
-	double short_to_angle(int angle)
+	double shortToAngle(int angle)
 	{
 		return ((angle) * (360.0 / 65536));
 	}
 
-	float tilt_angle(const vec2<float>& v)
+	float tiltAngle(const vec2<float>& v)
 	{
 		return normalise(std::atan2f(v.y, v.x) * 180.f / PI, 0.f, 360.f);
 	}
-	float to_degrees(float radians)
+	float toDegrees(float radians)
 	{
 		return radians * 180.f / PI;
 	}
 
-	void angle_vectors(const vec3<float> angles, float* forward, float* right, float* up)
+	void angleVectors(const vec3<float> angles, float* forward, float* right, float* up)
 	{
 		float angle;
 		static float  sr, sp, sy, cr, cp, cy, cpi = M_PI * 2 / 360;
@@ -88,7 +88,7 @@ namespace mm
 		}
 	}
 
-	void angle_vectors(vec3<float> angles, vec3<float>* forward, vec3<float>* right, vec3<float>* up) {
+	void angleVectors(vec3<float> angles, vec3<float>* forward, vec3<float>* right, vec3<float>* up) {
 		float angle;
 		static float sr, sp, sy, cr, cp, cy, cpi = (M_PI * 2 / 360);
 
@@ -124,7 +124,7 @@ namespace mm
 	// returns 1 if otherAngle is to the right of sourceAngle,
 	//         0 if the angles are identical
 	//         -1 if otherAngle is to the left of sourceAngle
-	int compare_angles(float sourceAngle, float otherAngle)
+	int compareAngles(float sourceAngle, float otherAngle)
 	{
 		// sourceAngle and otherAngle should be in the range -180 to 180
 		float difference = otherAngle - sourceAngle;

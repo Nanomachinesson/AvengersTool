@@ -3,17 +3,17 @@
 #include "Avengers.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-HWND WINAPI get_foreground_window()
+HWND WINAPI getForegroundWindow()
 {
-	Avengers* openhud = Avengers::get_instance();
-	HWND orig = openhud->inst_hooks->hook_map["GetForegroundWindow"]->original(get_foreground_window)();
-	HWND currentWindow = openhud->inst_game->get_window();
+	Avengers* openhud = Avengers::getInstance();
+	HWND orig = openhud->instHooks->hookMap["GetForegroundWindow"]->original(getForegroundWindow)();
+	HWND currentWindow = openhud->instGame->getWindow();
 
 	if (currentWindow != orig) {
-		openhud->inst_input->windowReady = false;
+		openhud->instInput->windowReady = false;
 	}
 
-	if (openhud->want_input && openhud->inst_input->windowReady) {
+	if (openhud->wantInput && openhud->instInput->windowReady) {
 		return 0; //tell the game that it isn't the foreground window
 	}
 
@@ -22,72 +22,109 @@ HWND WINAPI get_foreground_window()
 
 input::input(Avengers* openhud)
 {
-	window_handle = nullptr;
-	openhud->inst_hooks->Add("GetForegroundWindow", GetProcAddress(GetModuleHandleA("user32.dll"), "GetForegroundWindow"), get_foreground_window, hook_type_detour);
+	windowHandle = nullptr;
+	openhud->instHooks->add("GetForegroundWindow", GetProcAddress(GetModuleHandleA("user32.dll"), "GetForegroundWindow"), getForegroundWindow, hook_type_detour);
 }
 
 input::~input()
 {
-	Avengers* openhud = Avengers::get_instance();
-	if (openhud && openhud->inst_hooks)
+	Avengers* openhud = Avengers::getInstance();
+	if (openhud && openhud->instHooks)
 	{
-		openhud->inst_hooks->hook_map["GetForegroundWindow"]->remove(); //remove hook here in case of a race condition on destructors
+		openhud->instHooks->hookMap["GetForegroundWindow"]->remove(); //remove hook here in case of a race condition on destructors
 	}
-	SetWindowLongPtr(window_handle, GWLP_WNDPROC, (LONG_PTR)p_wndproc);
+	SetWindowLongPtr(windowHandle, GWLP_WNDPROC, (LONG_PTR)pWndproc);
 }
 
-bool input::handle_key(UINT key_code, UINT state)
+static void clearImguiKeys()
+{
+	if (!ImGui::GetCurrentContext()) {
+		return;
+	}
+	ImGui::GetIO().ClearInputKeys();
+	ImGui::GetIO().AddKeyEvent(ImGuiKey_Escape, false);
+}
+
+static bool isReleaseMessage(UINT uMsg)
+{
+	switch (uMsg) {
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool input::handleKey(UINT keyCode, UINT state)
 {
 
-	for (auto &[ key, fn ] : callbacks_input)
+	for (auto &[ key, fn ] : callbacksInput)
 	{
-		if (key == key_code && fn(state)) //if the callback returns true then return true here as well so we can block the input
+		if (key == keyCode && fn(state)) //if the callback returns true then return true here as well so we can block the input
 			return true;
 	}
-	if (key_code == VK_ESCAPE && Avengers::get_instance()->want_input)
+	if (keyCode == VK_ESCAPE && Avengers::getInstance()->wantInput)
 	{
-		Avengers::get_instance()->want_input = false;
+		Avengers::getInstance()->wantInput = false;
+		clearImguiKeys();
 		return true;
 	}
 	return false;
 }
 
-LRESULT __stdcall wndproc_hook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT __stdcall wndprocHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (!Avengers::get_instance())
+	Avengers* hud = Avengers::getInstance();
+	if (!hud)
 		return 1;
-	
-	if (Avengers::get_instance()->want_input && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+
+	// Escape must close the menu without ImGui latching the key. WndProc only
+	// forwards messages to ImGui while wantInput is true, so a KEYUP after this
+	// would never arrive and InputText would treat Escape as cancel forever.
+	if ((uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN) && wParam == VK_ESCAPE && hud->wantInput) {
+		hud->wantInput = false;
+		clearImguiKeys();
+		return 1;
+	}
+
+	const bool feedImgui = hud->wantInput || isReleaseMessage(uMsg);
+	if (feedImgui && ImGui::GetCurrentContext()
+		&& ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam) && hud->wantInput) {
 		return true;
 	}
 
-	if (Avengers::get_instance()->inst_game->is_focused())
+	if (hud->instGame->isFocused())
 	{
 		if (uMsg == WM_KEYUP || uMsg == WM_KEYDOWN)
 		{
-			if (Avengers::get_instance()->inst_input->handle_key(wParam, uMsg))
+			if (hud->instInput->handleKey(wParam, uMsg))
 				return 1; //the key was handled and blocked by the handle key function
 		}
 	}
 
-	if (Avengers::get_instance()->want_input && Avengers::get_instance()->inst_input->windowReady
+	if (hud->wantInput && hud->instInput->windowReady
 		&& (uMsg != WM_ACTIVATEAPP)) {  //block input unless its a window change msg
 		return 1;
 	}
 
-	return CallWindowProc(Avengers::get_instance()->inst_input->p_wndproc, hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(hud->instInput->pWndproc, hWnd, uMsg, wParam, lParam);
 }
-void input::add_callback(UINT key, InputCallback fn)
+void input::addCallback(UINT key, InputCallback fn)
 {
-	callbacks_input.push_back({ key, fn });
+	callbacksInput.push_back({ key, fn });
 }
-void input::update_wndproc(HWND handle)
+void input::updateWndproc(HWND handle)
 {
-	if (window_handle != handle)
+	if (windowHandle != handle)
 	{
-		if (p_wndproc)
-			SetWindowLongPtr(window_handle, GWLP_WNDPROC, (LONG_PTR)p_wndproc);
-		window_handle = handle;
-		p_wndproc = (WNDPROC)(SetWindowLongPtr(window_handle, GWLP_WNDPROC, (LONG_PTR)wndproc_hook));
+		if (pWndproc)
+			SetWindowLongPtr(windowHandle, GWLP_WNDPROC, (LONG_PTR)pWndproc);
+		windowHandle = handle;
+		pWndproc = (WNDPROC)(SetWindowLongPtr(windowHandle, GWLP_WNDPROC, (LONG_PTR)wndprocHook));
 	}
 }

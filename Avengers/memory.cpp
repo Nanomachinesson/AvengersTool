@@ -37,7 +37,7 @@ namespace mem
 			return NULL;
 	}
 
-	uint64_t find_pattern(HMODULE module, const char* pattern)
+	uint64_t findPattern(HMODULE module, const char* pattern)
 	{
 		MODULEINFO mInf;
 		GetModuleInformation(GetCurrentProcess(), module, &mInf, sizeof(mInf));
@@ -45,7 +45,7 @@ namespace mem
 	}
 
 
-	HMODULE find_module(std::string regex_str)
+	HMODULE findModule(std::string regexStr)
 	{
 		HANDLE hModuleSnap = INVALID_HANDLE_VALUE;
 		MODULEENTRY32 me32;
@@ -62,7 +62,7 @@ namespace mem
 		{
 			std::wstring mn = me32.szModule;
 			std::string name = std::string(mn.begin(), mn.end());
-			std::regex re(regex_str, std::regex_constants::icase);
+			std::regex re(regexStr, std::regex_constants::icase);
 			std::smatch match;
 			if (std::regex_search(name, match, re))
 				return me32.hModule;
@@ -72,37 +72,37 @@ namespace mem
 		return nullptr;
 	}
 	std::unordered_map<PVOID, mem_protect> protections;
-	int instruction_to_absolute_address(int instruction_address) //assumes 32 bit
+	int instructionToAbsoluteAddress(int instructionAddress) //assumes 32 bit
 	{
-		int end_of_instruction = instruction_address + 0x5;
-		unprotect_memory((PVOID)instruction_address, 5);
-		BYTE instruction = *(BYTE*)instruction_address;
+		int endOfInstruction = instructionAddress + 0x5;
+		unprotectMemory((PVOID)instructionAddress, 5);
+		BYTE instruction = *(BYTE*)instructionAddress;
 		int r = 0;
 		if (instruction == 0xE8 || instruction == 0xE9)
-			r = (*(int*)(instruction_address + 0x1)) + end_of_instruction;
+			r = (*(int*)(instructionAddress + 0x1)) + endOfInstruction;
 		else if (instruction == 0xFF)
 		{
-			r = (*(int*)(instruction_address + 0x2));
+			r = (*(int*)(instructionAddress + 0x2));
 			r = *(int*)r;
 		}
-		reset_memory_protection((PVOID)instruction_address);
+		resetMemoryProtection((PVOID)instructionAddress);
 		return r;
 	}
-	void unprotect_memory(PVOID target, size_t size)
+	void unprotectMemory(PVOID target, size_t size)
 	{
 		protections[target].size = size;
 		VirtualProtect((PVOID*)target, size, PAGE_EXECUTE_READWRITE, &protections[target].orig);
 
 	}
-	void reset_memory_protection(PVOID target)
+	void resetMemoryProtection(PVOID target)
 	{
 		if (protections[target].size)
 			VirtualProtect((PVOID*)target, protections[target].size, protections[target].orig, nullptr);
 	}
-	byte* mem_set(int target, int val, int size)
+	BYTE* memSet(int target, int val, int size)
 	{
 		DWORD oldprotect;
-		byte* x = new byte[size];
+		BYTE* x = new BYTE[size];
 
 		VirtualProtect((PVOID*)target, size, PAGE_EXECUTE_READWRITE, &oldprotect);
 		memcpy(x, (void*)target, size);
@@ -110,20 +110,20 @@ namespace mem
 		VirtualProtect((PVOID*)target, size, oldprotect, &oldprotect);
 		return x;
 	}
-	byte* copy(int target, byte* source, int size)
+	BYTE* copy(int target, BYTE* source, int size)
 	{
 		DWORD oldprotect;
-		byte* x = new byte[size];
+		BYTE* x = new BYTE[size];
 		VirtualProtect((PVOID*)target, size, PAGE_EXECUTE_READWRITE, &oldprotect);
 		memcpy((void*)x, (const void*)target, size);
 		memcpy((void*)target, (const void*)source, size);
 		VirtualProtect((PVOID*)target, size, oldprotect, &oldprotect);
 		return x;
 	}
-	byte* mem_get(int target, int size)
+	BYTE* memGet(int target, int size)
 	{
 		DWORD oldprotect;
-		byte* x = new byte[size];
+		BYTE* x = new BYTE[size];
 		VirtualProtect((PVOID*)target, size, PAGE_EXECUTE_READWRITE, &oldprotect);
 		memcpy((void*)x, (const void*)target, size);
 		VirtualProtect((PVOID*)target, size, oldprotect, &oldprotect);

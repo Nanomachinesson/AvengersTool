@@ -35,43 +35,43 @@ extern "C" {
 class Avengers
 {
 public:
-	void load_configuration();
-	void save_configuration();
-	void save_markers();
-	void load_markers();
+	void loadConfiguration();
+	void saveConfiguration();
+	void saveMarkers();
+	void loadMarkers();
 	Avengers();
 	~Avengers();
 
-	std::shared_ptr<input> inst_input;
-	std::shared_ptr<render> inst_render;
-	std::shared_ptr<game> inst_game;
-	std::shared_ptr<hook_wrapper> inst_hooks;
+	std::shared_ptr<input> instInput;
+	std::shared_ptr<render> instRender;
+	std::shared_ptr<game> instGame;
+	std::shared_ptr<hook_wrapper> instHooks;
 
 
-	std::shared_ptr<ui_position> inst_ui_position;
-	std::shared_ptr<ui_velocity> inst_ui_velocity;
-	std::shared_ptr<ui_anglehelper> inst_ui_anglehelper;
-	std::shared_ptr<ui_view> inst_ui_view;
-	std::shared_ptr<ui_settings> inst_ui_settings;
-	std::shared_ptr<ui_menu> inst_ui_menu;
-	std::shared_ptr<ui_demoplayer> inst_ui_demoplayer;
-	std::shared_ptr<ui_position_marker> inst_ui_position_marker;
-	std::shared_ptr<ui_fps_image> inst_ui_fps_image;
-	std::shared_ptr<ui_jump_target> inst_ui_jump_target;
-	std::shared_ptr<ui_90_lines> inst_ui_90_lines;
-	std::shared_ptr<ui_fpswheel> inst_ui_fpswheel;
-	std::shared_ptr<ui_strafedowntime> inst_ui_strafedowntime;
-	std::shared_ptr<ui_bounceinfo> inst_ui_bounceinfo;
+	std::shared_ptr<ui_position> instUiPosition;
+	std::shared_ptr<ui_velocity> instUiVelocity;
+	std::shared_ptr<ui_anglehelper> instUiAnglehelper;
+	std::shared_ptr<ui_view> instUiView;
+	std::shared_ptr<ui_settings> instUiSettings;
+	std::shared_ptr<ui_menu> instUiMenu;
+	std::shared_ptr<ui_demoplayer> instUiDemoplayer;
+	std::shared_ptr<ui_position_marker> instUiPositionMarker;
+	std::shared_ptr<ui_fps_image> instUiFpsImage;
+	std::shared_ptr<ui_jump_target> instUiJumpTarget;
+	std::shared_ptr<ui_90_lines> instUi90Lines;
+	std::shared_ptr<ui_fpswheel> instUiFpswheel;
+	std::shared_ptr<ui_strafedowntime> instUiStrafedowntime;
+	std::shared_ptr<ui_bounceinfo> instUiBounceinfo;
 	std::shared_ptr<Collision> collision;
 	std::shared_ptr<GameState> gameState;
 
 	bool exit = false;
-	bool want_input = false;
-	bool bind_toggle_input(UINT key_state);
-	bool bind_tp_to_saved_pos(UINT key_state);
-	bool bind_close(UINT key_state);
-	static Avengers* inst_Avengers;
-	static Avengers* get_instance();
+	bool wantInput = false;
+	bool bindToggleInput(UINT keyState);
+	bool bindTpToSavedPos(UINT keyState);
+	bool bindClose(UINT keyState);
+	static Avengers* instAvengers;
+	static Avengers* getInstance();
 
 	std::string markerDirectory = "AvengersMarkers";
 

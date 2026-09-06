@@ -21,8 +21,8 @@ namespace mem
 		}
 	};
 
-	HMODULE find_module(std::string regex_str);
-	uint64_t find_pattern(HMODULE module, const char* pattern);
+	HMODULE findModule(std::string regexStr);
+	uint64_t findPattern(HMODULE module, const char* pattern);
 
 	template<typename T>
 	void write(int target, T value)
@@ -34,37 +34,37 @@ namespace mem
 		VirtualProtect((PVOID*)target, size, oldprotect, &oldprotect);
 	}
 
-	BYTE* mem_set(int target, int val, int size);
+	BYTE* memSet(int target, int val, int size);
 	BYTE* copy(int target, BYTE* source, int size);
-	BYTE* mem_get(int target, int size);
-	void unprotect_memory(PVOID target, size_t size);
-	void reset_memory_protection(PVOID target);
+	BYTE* memGet(int target, int size);
+	void unprotectMemory(PVOID target, size_t size);
+	void resetMemoryProtection(PVOID target);
 	extern std::unordered_map<PVOID, mem_protect> protections;
-	int instruction_to_absolute_address(int instruction_address); //assumes 32 bit
+	int instructionToAbsoluteAddress(int instructionAddress); //assumes 32 bit
 	template <typename T>
 	class function
 	{
 	public:
-		using result_type = typename std::function<T>::result_type;
-		std::uintptr_t fn_address;
+		using resultType = typename std::function<T>::result_type;
+		std::uintptr_t fnAddress;
 		function() : func_(reinterpret_cast<T*>(nullptr))
 		{
-			fn_address = 0;
+			fnAddress = 0;
 		};
 
 		function(const std::uintptr_t& address) : func_(reinterpret_cast<T*>(address))
 		{
-			fn_address = address;
+			fnAddress = address;
 		}
 
-		function(const function<T>& function) : func_(function.func_), fn_address(0)
+		function(const function<T>& function) : func_(function.func_), fnAddress(0)
 		{
-			//fn_address = (int)&function;
+			//fnAddress = (int)&function;
 		}
 
 		function& operator=(const std::uintptr_t& address)
 		{
-			fn_address = address;
+			fnAddress = address;
 			this->func_ = std::function<T>(reinterpret_cast<T*>(address));
 			return *this;
 		}
@@ -76,12 +76,12 @@ namespace mem
 		}
 
 		template <typename ...Args>
-		result_type operator()(Args&& ...args)
+		resultType operator()(Args&& ...args)
 		{
 			return this->func_(args...);
 		}
 
-		result_type operator()(void)
+		resultType operator()(void)
 		{
 			return this->func_();
 		}

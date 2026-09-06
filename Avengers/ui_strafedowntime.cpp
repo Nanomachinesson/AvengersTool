@@ -12,22 +12,22 @@ ui_strafedowntime::~ui_strafedowntime()
 
 void ui_strafedowntime::render()
 {
-	std::shared_ptr<game> inst_game = avengers->inst_game;
+	std::shared_ptr<game> instGame = avengers->instGame;
 
-	Lmove lmove = inst_game->get_lmove(true);
+	Lmove lmove = instGame->getLmove(true);
 	static Lmove acceleratingFrom = lmove;
 	static int keysPressedLastFrame = 0;
 	static float lastFrameVelocity = 0.f;
 	static std::chrono::time_point lastAccelerationPoint = std::chrono::system_clock::now();
 	static bool measuringSwitch = false;
 
-	float velocity = inst_game->get_velocity().Length2D();
+	float velocity = instGame->getVelocity().length2D();
 	int keysPressed = static_cast<int>(lmove.isBack) + static_cast<int>(lmove.isForward) * 2
 		+ static_cast<int>(lmove.isLeft) * 4 + static_cast<int>(lmove.isRight) * 8;
 	bool didAccelerate = velocity > lastFrameVelocity;
 	std::chrono::time_point now = std::chrono::system_clock::now();
 
-	if (!inst_game->isOnGround() && velocity > VELO_CUTOFF && !inst_game->is_spectating() && !inst_game->is_noclipping()) {
+	if (!instGame->isOnGround() && velocity > VELO_CUTOFF && !instGame->isSpectating() && !instGame->isNoclipping()) {
 		if (keysPressed != keysPressedLastFrame) {
 			measuringSwitch = true;
 		}
@@ -54,7 +54,7 @@ void ui_strafedowntime::render()
 
 				std::string switchText = color + fromText + "-" + toText + ": " + switchtimeColor + switchTimeText;
 				if (switchTime < MAX_SWITCHTIME_CUTOFF) {
-					inst_game->add_obituary(switchText);
+					instGame->addObituary(switchText);
 				}
 				measuringSwitch = false;
 			}

@@ -5,9 +5,9 @@
 
 int main()
 {
-    Avengers inst_hud;
+    Avengers instHud;
     //wait for the flag for exit to be set
-    while (!inst_hud.exit)
+    while (!instHud.exit)
         Sleep(500);
     //when this function returns the destructor of main will be called and all of the singletons inside it will also be destroyed and deconstructed
     return 0;
@@ -15,17 +15,17 @@ int main()
 
 
 BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
+                       DWORD  ulReasonForCall,
                        LPVOID lpReserved
                      )
 {
-    switch (ul_reason_for_call)
+    switch (ulReasonForCall)
     {
     case DLL_PROCESS_ATTACH:
     {
         //create a thread and detach it so anything we do inside of main is non-blocking for the loading thread
-        std::thread main_thread(main);
-        main_thread.detach();
+        std::thread mainThread(main);
+        mainThread.detach();
         break;
     }
     case DLL_THREAD_ATTACH:
@@ -33,7 +33,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        Avengers::get_instance()->exit = true;
+        Avengers::getInstance()->exit = true;
         break;
     }
     return TRUE;

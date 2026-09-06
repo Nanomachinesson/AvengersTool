@@ -1,37 +1,39 @@
 #include "pch.h"
 #include "Render.h"
 #include "Avengers.h"
+#include <cctype>
+#include <filesystem>
 
-void init_graphics_stub()
+void initGraphicsStub()
 {
-	Avengers* hud = Avengers::get_instance();
-	if (hud && hud->inst_render)
-		hud->inst_render->init_graphics();
+	Avengers* hud = Avengers::getInstance();
+	if (hud && hud->instRender)
+		hud->instRender->initGraphics();
 }
 
 void __cdecl EngineDraw_Hook()
 {
-	Avengers* hud = Avengers::get_instance();
-	if (hud && hud->inst_hooks && hud->inst_render)
+	Avengers* hud = Avengers::getInstance();
+	if (hud && hud->instHooks && hud->instRender)
 	{
-		hud->inst_hooks->hook_map["EngineDraw"]->original(EngineDraw_Hook)();
-		hud->inst_render->enginedraw();
+		hud->instHooks->hookMap["EngineDraw"]->original(EngineDraw_Hook)();
+		hud->instRender->enginedraw();
 	}
 }
 
 HRESULT __stdcall EndScene_Hook(LPDIRECT3DDEVICE9 dev)
 {
-	Avengers* hud = Avengers::get_instance();
+	Avengers* hud = Avengers::getInstance();
 
 	typedef HRESULT __stdcall EndsceneFunc(LPDIRECT3DDEVICE9 dev);
-	EndsceneFunc* endsceneFunc = (EndsceneFunc*)hud->inst_render->endsceneAddress;
+	EndsceneFunc* endsceneFunc = (EndsceneFunc*)hud->instRender->endsceneAddress;
 ;
-	hud->inst_input->windowReady = true;
+	hud->instInput->windowReady = true;
 
-	if (hud && hud->inst_hooks && hud->inst_render)
+	if (hud && hud->instHooks && hud->instRender)
 	{
 		auto orig = endsceneFunc(dev);
-		hud->inst_render->endscene(dev);
+		hud->instRender->endscene(dev);
 		return orig;
 	}
 
@@ -41,19 +43,19 @@ HRESULT __stdcall EndScene_Hook(LPDIRECT3DDEVICE9 dev)
 HRESULT __stdcall Reset_Hook(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
 
-	Avengers* hud = Avengers::get_instance();
-	if (hud && hud->inst_hooks && hud->inst_render)
+	Avengers* hud = Avengers::getInstance();
+	if (hud && hud->instHooks && hud->instRender)
 	{
 
-		auto orig = hud->inst_hooks->hook_map["Reset"]->original(Reset_Hook);
-		hud->inst_render->invalidate_objects(pDevice);
+		auto orig = hud->instHooks->hookMap["Reset"]->original(Reset_Hook);
+		hud->instRender->invalidateObjects(pDevice);
 		HRESULT rval = orig(pDevice, pPresentationParameters);
-		hud->inst_render->create_objects(pDevice);
+		hud->instRender->createObjects(pDevice);
 		return rval;
 	}
 	return 1;
 }
-void imgui_easy_theming(ImVec4 color_for_text, ImVec4 color_for_head, ImVec4 color_for_area, ImVec4 color_for_body, ImVec4 color_for_pops)
+void imguiEasyTheming(ImVec4 colorForText, ImVec4 colorForHead, ImVec4 colorForArea, ImVec4 colorForBody, ImVec4 colorForPops)
 {
 	// DUCK RED nope! is DARK RED style by for40255 from ImThemes
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -145,13 +147,13 @@ void imgui_easy_theming(ImVec4 color_for_text, ImVec4 color_for_head, ImVec4 col
 }
 
 
-void render::SetupImGuiStyle2()
+void render::setupImGuiStyle2()
 {
-	static ImVec4 color_for_text = ImVec4(.92f, .94f, .94f, 0);
-	static ImVec4 color_for_head = ImVec4(ImColor(65, 60, 73, 255).Value);
-	static ImVec4 color_for_area = ImVec4(ImColor(82, 75, 92, 255).Value);
-	static ImVec4 color_for_body = ImVec4(ImColor(0, 0, 0, 255).Value);
-	static ImVec4 color_for_pops = ImColor(40, 37, 45, 255).Value;
+	static ImVec4 colorForText = ImVec4(.92f, .94f, .94f, 0);
+	static ImVec4 colorForHead = ImVec4(ImColor(65, 60, 73, 255).Value);
+	static ImVec4 colorForArea = ImVec4(ImColor(82, 75, 92, 255).Value);
+	static ImVec4 colorForBody = ImVec4(ImColor(0, 0, 0, 255).Value);
+	static ImVec4 colorForPops = ImColor(40, 37, 45, 255).Value;
 
 	ImGui::GetStyle().WindowRounding = 0.0f;
 	ImGui::GetStyle().ChildRounding = 0.0f;
@@ -166,100 +168,130 @@ void render::SetupImGuiStyle2()
 	ImGui::GetStyle().AntiAliasedLines = true;
 	
 
-	if (first_run_style)
+	if (firstRunStyle)
 	{
-		imgui_easy_theming(color_for_text, color_for_head, color_for_area, color_for_body, color_for_pops);
-		first_run_style = false;
+		imguiEasyTheming(colorForText, colorForHead, colorForArea, colorForBody, colorForPops);
+		firstRunStyle = false;
 	}
 
 }
 
-void render::init_imgui(LPDIRECT3DDEVICE9 dev)
+void render::initImgui(LPDIRECT3DDEVICE9 dev)
 {
-	if (!imgui_initialized)
+	if (!imguiInitialized)
 	{
+		Avengers* hud = Avengers::getInstance();
 		if (ImGui::GetCurrentContext()) {
+			hud->instUiMenu->menuFont = nullptr;
+			hud->instUiMenu->loadedFonts.clear();
 			ImGui_ImplDX9_Shutdown();
 			ImGui_ImplWin32_Shutdown();
 			ImGui::DestroyContext();
-			first_run_style = true;
+			firstRunStyle = true;
 		}
 
-		Avengers* hud = Avengers::get_instance();
-		
 		ImGui_ImplDX9_InvalidateDeviceObjects();
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
 		ImGuiIO& io = ImGui::GetIO();
 		io.MouseDrawCursor = false;
-		ImGui_ImplWin32_Init(Avengers::get_instance()->inst_game->get_window());
+		ImGui_ImplWin32_Init(Avengers::getInstance()->instGame->getWindow());
 		ImGui_ImplDX9_Init(dev);
 
 		ImFontConfig fontConfig;
 		fontConfig.FontDataOwnedByAtlas = false;
-		hud->inst_ui_menu->loadedFonts.clear();
-		hud->inst_ui_menu->loadedFonts.emplace("Bahnschrift", io.Fonts->AddFontFromMemoryTTF((void*)(_acbahnschrift), sizeof(_acbahnschrift) - 1, 24.f, &fontConfig));
-		hud->inst_ui_menu->loadedFonts.emplace("Awesome Font 1", io.Fonts->AddFontFromMemoryTTF((void*)(_acawesomefont1), sizeof(_acawesomefont1) - 1, 24.f, &fontConfig));
+		hud->instUiMenu->loadedFonts.clear();
+		ImFont* defaultHudFont = io.Fonts->AddFontFromMemoryTTF(
+			(void*)(_acbahnschrift), sizeof(_acbahnschrift) - 1, 24.f, &fontConfig);
+		if (defaultHudFont) {
+			hud->instUiMenu->loadedFonts.emplace("Bahnschrift", defaultHudFont);
+		}
+
+		ImFont* awesomeFont = io.Fonts->AddFontFromMemoryTTF(
+			(void*)(_acawesomefont1), sizeof(_acawesomefont1) - 1, 24.f, &fontConfig);
+		if (awesomeFont) {
+			hud->instUiMenu->loadedFonts.emplace("Awesome Font 1", awesomeFont);
+		}
+
+		char windowsDirectory[MAX_PATH] {};
+		const UINT windowsDirectoryLength = GetWindowsDirectoryA(windowsDirectory, MAX_PATH);
+		if (windowsDirectoryLength > 0 && windowsDirectoryLength < MAX_PATH) {
+			const std::filesystem::path trebuchetPath =
+				std::filesystem::path(windowsDirectory) / "Fonts" / "trebuc.ttf";
+			if (std::filesystem::is_regular_file(trebuchetPath)) {
+				hud->instUiMenu->menuFont =
+					io.Fonts->AddFontFromFileTTF(trebuchetPath.string().c_str(), 16.f);
+			}
+		}
 
 		const std::filesystem::path fontDirectory = "AvengersFonts";
 		if (std::filesystem::is_directory(fontDirectory)) {
 			for (const auto& entry : std::filesystem::directory_iterator(fontDirectory)) {
 				if (!entry.is_regular_file()) continue;
-				const std::string extension = entry.path().extension().string();
-				if (extension != ".ttf") continue;
+				std::string extension = entry.path().extension().string();
+				for (char& ch : extension) {
+					ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+				}
+				if (extension != ".ttf" && extension != ".otf") continue;
 
 				ImFont* customFont = io.Fonts->AddFontFromFileTTF(entry.path().string().c_str(), 24.f);
 				if (customFont) {
-					hud->inst_ui_menu->loadedFonts.emplace(entry.path().stem().string(), customFont);
+					hud->instUiMenu->loadedFonts.emplace(entry.path().stem().string(), customFont);
 				}
 			}
 		}
-		io.FontDefault = hud->inst_ui_menu->getImguiFont();
+		if (!defaultHudFont) {
+			defaultHudFont = io.Fonts->AddFontDefault();
+		}
+		io.FontDefault = defaultHudFont;
+		if (!hud->instUiMenu->menuFont) {
+			hud->instUiMenu->menuFont = defaultHudFont;
+		}
 		
 		ImGui_ImplDX9_CreateDeviceObjects();
-		imgui_initialized = true;
+		imguiInitialized = true;
 
-		SetupImGuiStyle2();
+		setupImGuiStyle2();
 	}
 	dev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xFFFFFFF);
 }
 
 void __cdecl render::enginedraw()
 {
-	Avengers* hud = Avengers::get_instance();
+	Avengers* hud = Avengers::getInstance();
 
-	if (hud->inst_game->is_connected() && hud->inst_ui_menu->draw_collision) {
+	if (hud->instGame->isConnected() && hud->instUiMenu->drawCollision) {
 		hud->collision->render();
 	}
 
-	if (hud->inst_ui_jump_target->selectedBrushes.size() > 0 && hud->inst_ui_menu->brush_mode && hud->inst_ui_menu->draw_selected_brushes) {
-		const auto poly_lit = false;
-		const auto poly_outlines = false;
-		const auto poly_linecolor = ImColor(255, 255, 255, 255);
-		const auto poly_depth = true;
-		const auto poly_face = false;
+	if (hud->instUiJumpTarget->selectedBrushes.size() > 0 && hud->instUiMenu->brushMode && hud->instUiMenu->drawSelectedBrushes) {
+		const auto polyLit = false;
+		const auto polyOutlines = false;
+		const auto polyLinecolor = ImColor(255, 255, 255, 255);
+		const auto polyDepth = true;
+		const auto polyFace = false;
 		ImColor color(0.3f, 1.f, 0.f, 0.4f);
 
-		for (BrushSide* face : hud->inst_ui_jump_target->selectedBrushes) {
+		for (BrushSide* face : hud->instUiJumpTarget->selectedBrushes) {
 			vec3<float>* points = face->points.data();
-			hud->inst_game->drawPoly(face->points.size(), (float(*)[3]) points, (const float*)&color,
-				poly_lit, poly_outlines, (const float*)&poly_linecolor, poly_depth, poly_face);
+			hud->instGame->drawPoly(face->points.size(), (float(*)[3]) points, (const float*)&color,
+				polyLit, polyOutlines, (const float*)&polyLinecolor, polyDepth, polyFace);
 		}
 	}
 
-	if (hud->inst_game->is_connected() && hud->inst_ui_menu->lines_toggle) {
-		hud->inst_ui_90_lines->render();
+	if (hud->instGame->isConnected() && hud->instUiMenu->linesToggle) {
+		hud->instUi90Lines->render();
 	}
 }
 
 void render::endscene(LPDIRECT3DDEVICE9 dev)
 {
-	init_imgui(dev);
+	initImgui(dev);
 	auto& io = ImGui::GetIO();
 
-	Avengers* hud = Avengers::get_instance();
-	if (hud->want_input)
+	Avengers* hud = Avengers::getInstance();
+	if (hud->wantInput)
 		io.MouseDrawCursor = true;
 	else
 		io.MouseDrawCursor = false;
@@ -268,8 +300,11 @@ void render::endscene(LPDIRECT3DDEVICE9 dev)
 	ImGui_ImplWin32_NewFrame();
 
 	ImGui::NewFrame();
+	if (!hud->wantInput) {
+		io.ClearInputKeys();
+	}
 
-	for (auto& fn : callbacks_render)
+	for (auto& fn : callbacksRender)
 		fn();
 
 	ImGui::EndFrame();
@@ -277,53 +312,53 @@ void render::endscene(LPDIRECT3DDEVICE9 dev)
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 }
 
-void render::add_callback(RenderCallback render)
+void render::addCallback(RenderCallback render)
 {
-	callbacks_render.push_back(render);
+	callbacksRender.push_back(render);
 }
 
-void render::invalidate_objects(LPDIRECT3DDEVICE9 pDevice)
+void render::invalidateObjects(LPDIRECT3DDEVICE9 pDevice)
 {
 	ImGui_ImplDX9_InvalidateDeviceObjects();
 }
 
-void render::create_objects(LPDIRECT3DDEVICE9 pDevice)
+void render::createObjects(LPDIRECT3DDEVICE9 pDevice)
 {
 	ImGui_ImplDX9_CreateDeviceObjects();
 }
 
-void render::init_graphics()
+void render::initGraphics()
 {
-	Avengers* hud = Avengers::get_instance();
+	Avengers* hud = Avengers::getInstance();
 	//call the original function first
-	hud->inst_hooks->hook_map["InitGraphics"]->original(init_graphics_stub)();
-	static LPDIRECT3DDEVICE9 current_device = nullptr;
-	if (current_device != hud->inst_game->get_device())
+	hud->instHooks->hookMap["InitGraphics"]->original(initGraphicsStub)();
+	static LPDIRECT3DDEVICE9 currentDevice = nullptr;
+	if (currentDevice != hud->instGame->getDevice())
 	{
-		Avengers* hud = Avengers::get_instance();
+		Avengers* hud = Avengers::getInstance();
 
-		if (hud && hud->inst_hooks) //remove the old hooks
+		if (hud && hud->instHooks) //remove the old hooks
 		{
-			if (hud->inst_hooks->hook_map.find("EndScene") != hud->inst_hooks->hook_map.end())
-				hud->inst_hooks->hook_map["EndScene"]->remove();
-			if (hud->inst_hooks->hook_map.find("Reset") != hud->inst_hooks->hook_map.end())
-				hud->inst_hooks->hook_map["Reset"]->remove();
-			if (hud->inst_hooks->hook_map.find("EngineDraw") != hud->inst_hooks->hook_map.end())
-				hud->inst_hooks->hook_map["EngineDraw"]->remove();
+			if (hud->instHooks->hookMap.find("EndScene") != hud->instHooks->hookMap.end())
+				hud->instHooks->hookMap["EndScene"]->remove();
+			if (hud->instHooks->hookMap.find("Reset") != hud->instHooks->hookMap.end())
+				hud->instHooks->hookMap["Reset"]->remove();
+			if (hud->instHooks->hookMap.find("EngineDraw") != hud->instHooks->hookMap.end())
+				hud->instHooks->hookMap["EngineDraw"]->remove();
 		}
 
-		current_device = hud->inst_game->get_device();
-		uint32_t* g_methodsTable = (uint32_t*)::calloc(119, sizeof(uint32_t));
-		if (g_methodsTable)
+		currentDevice = hud->instGame->getDevice();
+		uint32_t* gMethodsTable = (uint32_t*)::calloc(119, sizeof(uint32_t));
+		if (gMethodsTable)
 		{
-			imgui_initialized = false;
-			::memcpy(g_methodsTable, *(uint32_t**)(hud->inst_game->get_device()), 119 * sizeof(uint32_t));
-			endsceneAddress = g_methodsTable[42];
-			hud->inst_hooks->Add("Reset", g_methodsTable[16], Reset_Hook, hook_type_detour);
-			mem::mem_set(0x6496d8, 0x90, 3); //disable check for developer to engine draw
-			hud->inst_hooks->Add("EngineDraw", addr_engine_draw, EngineDraw_Hook, hook_type_detour);
+			imguiInitialized = false;
+			::memcpy(gMethodsTable, *(uint32_t**)(hud->instGame->getDevice()), 119 * sizeof(uint32_t));
+			endsceneAddress = gMethodsTable[42];
+			hud->instHooks->add("Reset", gMethodsTable[16], Reset_Hook, hook_type_detour);
+			mem::memSet(0x6496d8, 0x90, 3); //disable check for developer to engine draw
+			hud->instHooks->add("EngineDraw", addr_engine_draw, EngineDraw_Hook, hook_type_detour);
 			//update the wndproc hook on init
-			hud->inst_input->update_wndproc(hud->inst_game->get_window());
+			hud->instInput->updateWndproc(hud->instGame->getWindow());
 
 			//Hook endscene call in RB_CallExecuteRenderCommands
 
@@ -349,20 +384,20 @@ void render::init_graphics()
 render::render(Avengers* hud)
 {
 	//doing it this way only works if its loaded before initgraphics is called
-	hud->inst_hooks->Add("InitGraphics", 0x5f4f09, init_graphics_stub, hook_type_replace_call);
+	hud->instHooks->add("InitGraphics", 0x5f4f09, initGraphicsStub, hook_type_replace_call);
 }
 
 render::~render() //hooks are removed when the hook wrapper is destroyed
 {
-	Avengers* hud = Avengers::get_instance();
-	if (hud && hud->inst_hooks)
+	Avengers* hud = Avengers::getInstance();
+	if (hud && hud->instHooks)
 	{
-		if (hud->inst_hooks->hook_map.count("InitGraphics") > 0)
-			hud->inst_hooks->hook_map["InitGraphics"]->remove(); //remove hook here in case of a race condition on destructors
-		if (hud->inst_hooks->hook_map.count("Reset") > 0)
-			hud->inst_hooks->hook_map["Reset"]->remove(); //remove hook here in case of a race condition on destructors
-		if (hud->inst_hooks->hook_map.count("EngineDraw") > 0)
-			hud->inst_hooks->hook_map["EngineDraw"]->remove(); //remove hook here in case of a race condition on destructors
+		if (hud->instHooks->hookMap.count("InitGraphics") > 0)
+			hud->instHooks->hookMap["InitGraphics"]->remove(); //remove hook here in case of a race condition on destructors
+		if (hud->instHooks->hookMap.count("Reset") > 0)
+			hud->instHooks->hookMap["Reset"]->remove(); //remove hook here in case of a race condition on destructors
+		if (hud->instHooks->hookMap.count("EngineDraw") > 0)
+			hud->instHooks->hookMap["EngineDraw"]->remove(); //remove hook here in case of a race condition on destructors
 
 	}
 	ImGui::DestroyContext();

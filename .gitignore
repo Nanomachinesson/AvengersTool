@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Jetbrains Rider
 /.idea
+
+# Local HTML menu preview
+/menu-preview.html
+
+# Local build helper
+Avengers/build.bat

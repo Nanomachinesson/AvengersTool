@@ -55,6 +55,9 @@
     <ClCompile Include="render.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="obs_websocket.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="ui_demoplayer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -62,6 +65,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="ui_menu.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ui_theme.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="ui_position.cpp">
@@ -174,6 +180,9 @@
     <ClInclude Include="stb_image.h">
       <Filter>Stb</Filter>
     </ClInclude>
+    <ClInclude Include="obs_websocket.h">
+      <Filter>Header</Filter>
+    </ClInclude>
     <ClInclude Include="ui_demoplayer.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -181,6 +190,12 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="ui_menu.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_theme.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_widgets.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="ui_position.h">

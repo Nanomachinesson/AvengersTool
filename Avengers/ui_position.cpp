@@ -4,10 +4,10 @@
 
 void ui_position::render()
 {
-	Avengers* hud = Avengers::get_instance();
-	if (!hud->inst_game->is_connected()) //only draw while connected to a server
+	Avengers* hud = Avengers::getInstance();
+	if (!hud->instGame->isConnected()) //only draw while connected to a server
 		return;
-	vec3<float> pos = hud->inst_game->get_origin();
+	vec3<float> pos = hud->instGame->getOrigin();
 
 	ImGui::SetNextWindowBgAlpha(.2);
 	ImGui::Begin("Position information", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);

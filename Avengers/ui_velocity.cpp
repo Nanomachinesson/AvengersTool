@@ -2,127 +2,127 @@
 #include "ui_velocity.h"
 #include "Avengers.h"
 
-void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, float &scale, ImVec4 &color)
+void ui_velocity::render(Avengers* &hud, bool &isLocked, vec2<float> &pos, float &scale, ImVec4 &color)
 {
 	ImGui::Begin("Velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
 	auto gameState = hud->gameState;
 
 	float velo = 0.f;
-	if (hud->inst_game->isDemoPlaying()) {
-		velo = hud->inst_game->get_velocity().Length2D();
+	if (hud->instGame->isDemoPlaying()) {
+		velo = hud->instGame->getVelocity().length2D();
 	}
 	else {
-		velo = gameState->velocity.Length2D();
+		velo = gameState->velocity.length2D();
 	}
 
-	static float prev_velo = gameState->velocity.Length2D();
+	static float prevVelo = gameState->velocity.length2D();
 
-	static int frames_to_wait_for_velo_decrease = 0;  //Velo drops. Wait X frames for velo to drop again.
-	static int frames_checking_for_velo_decrease = 0;  // After having waited X frames, wait Y frames and check if it decreased again.
-	static int frames_to_decrease_velo_for = 0;  //Mark velocity as decreasing for Z frames.
-	static bool velocity_decreasing = false;
+	static int framesToWaitForVeloDecrease = 0;  //Velo drops. Wait X frames for velo to drop again.
+	static int framesCheckingForVeloDecrease = 0;  // After having waited X frames, wait Y frames and check if it decreased again.
+	static int framesToDecreaseVeloFor = 0;  //Mark velocity as decreasing for Z frames.
+	static bool velocityDecreasing = false;
 
-	static int frames_to_wait_for_velo_increase = 0;
-	static int frames_checking_for_velo_increase = 0;
-	static int frames_to_increase_velo_for = 0;
-	static bool velocity_increasing = false;
+	static int framesToWaitForVeloIncrease = 0;
+	static int framesCheckingForVeloIncrease = 0;
+	static int framesToIncreaseVeloFor = 0;
+	static bool velocityIncreasing = false;
 
 
 	//////////////////////////////////////////////////////////////////DECREASE LOGIC
 	bool onGround = gameState->onGround;
-	if (hud->inst_ui_menu->enable_deceleration_on_ground) {
+	if (hud->instUiMenu->enableDecelerationOnGround) {
 		onGround = false;
 	}
 
-	if (velo < prev_velo && frames_to_decrease_velo_for > 0) {
-		frames_to_decrease_velo_for = hud->inst_ui_menu->velo_keep_decel_for;
+	if (velo < prevVelo && framesToDecreaseVeloFor > 0) {
+		framesToDecreaseVeloFor = hud->instUiMenu->veloKeepDecelFor;
 	}
 
-	if (velo < prev_velo
-		&& frames_to_wait_for_velo_decrease == 0 && frames_checking_for_velo_decrease == 0 && frames_to_decrease_velo_for == 0
+	if (velo < prevVelo
+		&& framesToWaitForVeloDecrease == 0 && framesCheckingForVeloDecrease == 0 && framesToDecreaseVeloFor == 0
 		&& !onGround) {
-		frames_to_wait_for_velo_decrease = hud->inst_ui_menu->velo_deceleration_threshold;
-		frames_checking_for_velo_decrease = 0;
-		frames_to_decrease_velo_for = 0;
+		framesToWaitForVeloDecrease = hud->instUiMenu->veloDecelerationThreshold;
+		framesCheckingForVeloDecrease = 0;
+		framesToDecreaseVeloFor = 0;
 	}
 
-	if (velo > prev_velo) {
-		velocity_decreasing = false;
-		frames_to_decrease_velo_for = 0;
-		frames_to_wait_for_velo_decrease = 0;
-		frames_checking_for_velo_decrease = 0;
+	if (velo > prevVelo) {
+		velocityDecreasing = false;
+		framesToDecreaseVeloFor = 0;
+		framesToWaitForVeloDecrease = 0;
+		framesCheckingForVeloDecrease = 0;
 	}
 
-	if (frames_to_wait_for_velo_decrease > 0) {
-		frames_to_wait_for_velo_decrease--;
-		if (frames_to_wait_for_velo_decrease == 0) {
-			frames_checking_for_velo_decrease = hud->inst_ui_menu->velo_deceleration_threshold;
+	if (framesToWaitForVeloDecrease > 0) {
+		framesToWaitForVeloDecrease--;
+		if (framesToWaitForVeloDecrease == 0) {
+			framesCheckingForVeloDecrease = hud->instUiMenu->veloDecelerationThreshold;
 		}
 	}
 
-	if (frames_checking_for_velo_decrease > 0) {
-		frames_checking_for_velo_decrease--;
-		if (velo < prev_velo) {
-			velocity_decreasing = true;
-			frames_to_decrease_velo_for = hud->inst_ui_menu->velo_keep_decel_for;
+	if (framesCheckingForVeloDecrease > 0) {
+		framesCheckingForVeloDecrease--;
+		if (velo < prevVelo) {
+			velocityDecreasing = true;
+			framesToDecreaseVeloFor = hud->instUiMenu->veloKeepDecelFor;
 		}
 	}
 
-	if (frames_to_decrease_velo_for > 0) {
-		frames_to_decrease_velo_for--;
-		if (frames_to_decrease_velo_for == 0) {
-			velocity_decreasing = false;
+	if (framesToDecreaseVeloFor > 0) {
+		framesToDecreaseVeloFor--;
+		if (framesToDecreaseVeloFor == 0) {
+			velocityDecreasing = false;
 		}
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	onGround = gameState->onGround;
-	if (hud->inst_ui_menu->enable_acceleration_on_ground) {
+	if (hud->instUiMenu->enableAccelerationOnGround) {
 		onGround = false;
 	}
 
-	if (velo > prev_velo && frames_to_increase_velo_for > 0) {
-		frames_to_increase_velo_for = hud->inst_ui_menu->velo_keep_accel_for;
+	if (velo > prevVelo && framesToIncreaseVeloFor > 0) {
+		framesToIncreaseVeloFor = hud->instUiMenu->veloKeepAccelFor;
 	}
 
-	if (velo > prev_velo
-		&& frames_to_wait_for_velo_increase == 0 && frames_checking_for_velo_increase == 0 && frames_to_increase_velo_for == 0
+	if (velo > prevVelo
+		&& framesToWaitForVeloIncrease == 0 && framesCheckingForVeloIncrease == 0 && framesToIncreaseVeloFor == 0
 		&& !onGround) {
-		frames_to_wait_for_velo_increase = hud->inst_ui_menu->velo_acceleration_threshold;
-		frames_checking_for_velo_increase = 0;
-		frames_to_increase_velo_for = 0;
+		framesToWaitForVeloIncrease = hud->instUiMenu->veloAccelerationThreshold;
+		framesCheckingForVeloIncrease = 0;
+		framesToIncreaseVeloFor = 0;
 	}
 
-	if (velo < prev_velo) {
-		velocity_increasing = false;
-		frames_to_increase_velo_for = 0;
-		frames_to_wait_for_velo_increase = 0;
-		frames_checking_for_velo_increase = 0;
+	if (velo < prevVelo) {
+		velocityIncreasing = false;
+		framesToIncreaseVeloFor = 0;
+		framesToWaitForVeloIncrease = 0;
+		framesCheckingForVeloIncrease = 0;
 	}
 
-	if (frames_to_wait_for_velo_increase > 0) {
-		frames_to_wait_for_velo_increase--;
-		if (frames_to_wait_for_velo_increase == 0) {
-			frames_checking_for_velo_increase = hud->inst_ui_menu->velo_acceleration_threshold;
+	if (framesToWaitForVeloIncrease > 0) {
+		framesToWaitForVeloIncrease--;
+		if (framesToWaitForVeloIncrease == 0) {
+			framesCheckingForVeloIncrease = hud->instUiMenu->veloAccelerationThreshold;
 		}
 	}
 
-	if (frames_checking_for_velo_increase > 0) {
-		frames_checking_for_velo_increase--;
-		if (velo > prev_velo) {
-			velocity_increasing = true;
-			frames_to_increase_velo_for = hud->inst_ui_menu->velo_keep_accel_for;
+	if (framesCheckingForVeloIncrease > 0) {
+		framesCheckingForVeloIncrease--;
+		if (velo > prevVelo) {
+			velocityIncreasing = true;
+			framesToIncreaseVeloFor = hud->instUiMenu->veloKeepAccelFor;
 		}
 	}
 
-	if (frames_to_increase_velo_for > 0) {
-		frames_to_increase_velo_for--;
-		if (frames_to_increase_velo_for == 0) {
-			velocity_increasing = false;
+	if (framesToIncreaseVeloFor > 0) {
+		framesToIncreaseVeloFor--;
+		if (framesToIncreaseVeloFor == 0) {
+			velocityIncreasing = false;
 		}
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	prev_velo = velo;
+	prevVelo = velo;
 
 	//Velocity converted to string
 	std::string veloText = std::to_string(static_cast<int>(velo));
@@ -131,7 +131,7 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 		
 		
 	// Check if the mouse is over the text and is being dragged
-	if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !is_locked) {
+	if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !isLocked) {
 		vec2<float> prevPos = pos;
 		
 		// Update the text position based on mouse drag
@@ -140,22 +140,22 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 
 		if(prevPos != pos)
 		{
-			hud->save_configuration();
+			hud->saveConfiguration();
 		}
 	}
 
-	ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
+	ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
 	ImGui::SetWindowFontScale(scale);
-	ImFont* speedometer_font = hud->inst_ui_menu->getSpeedometerFont();
-	if (speedometer_font) ImGui::PushFont(speedometer_font);
+	ImFont* speedometerFont = hud->instUiMenu->getSpeedometerFont();
+	if (speedometerFont) ImGui::PushFont(speedometerFont);
 
 	vec2<float> adjustedPos = pos;
 	/*https://stackoverflow.com/a/67855985*/
-	if (hud->inst_ui_menu->keep_velo_centered) {
+	if (hud->instUiMenu->keepVeloCentered) {
 		float windowWidth = ImGui::GetWindowSize().x;
 		float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
-		if (hud->inst_ui_menu->use_static_positioning) {
+		if (hud->instUiMenu->useStaticPositioning) {
 			std::string widthHelper(veloText.length(), '5');  //Different digits may have different sizes
 			textWidth = ImGui::CalcTextSize(widthHelper.c_str()).x;
 		}
@@ -163,30 +163,30 @@ void ui_velocity::render(Avengers* &hud, bool &is_locked, vec2<float> &pos, floa
 		adjustedPos.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 	}
 
-	ImVec2 outline_position(adjustedPos.x + 1, adjustedPos.y + 1);
+	ImVec2 outlinePosition(adjustedPos.x + 1, adjustedPos.y + 1);
 	
-	draw_list->AddText(outline_position, outlineColor, veloText.c_str());
+	drawList->AddText(outlinePosition, outlineColor, veloText.c_str());
 	
-	if (hud->inst_ui_menu->velo_show_deceleration && velocity_decreasing) {
-		draw_list->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->deceleration_color), veloText.c_str());
+	if (hud->instUiMenu->veloShowDeceleration && velocityDecreasing) {
+		drawList->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->instUiPositionMarker->imVec4ToImCol32(hud->instUiMenu->decelerationColor), veloText.c_str());
 	}
-	else if (hud->inst_ui_menu->velo_show_acceleration && velocity_increasing) {
-		draw_list->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->acceleration_color), veloText.c_str());
+	else if (hud->instUiMenu->veloShowAcceleration && velocityIncreasing) {
+		drawList->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->instUiPositionMarker->imVec4ToImCol32(hud->instUiMenu->accelerationColor), veloText.c_str());
 	}
 	else {
-		draw_list->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->inst_ui_position_marker->im_vec4_to_im_col32(hud->inst_ui_menu->color), veloText.c_str());
+		drawList->AddText(ImVec2(adjustedPos.x, adjustedPos.y), hud->instUiPositionMarker->imVec4ToImCol32(hud->instUiMenu->color), veloText.c_str());
 	}
 
 	ImGui::SetWindowFontScale(1.0f);
 
-	prev_velo = velo;
+	prevVelo = velo;
 
-	if (speedometer_font) ImGui::PopFont();
+	if (speedometerFont) ImGui::PopFont();
 
 	ImGui::End();
 }
 
-void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& scale, ImVec4& color)
+void ui_velocity::renderJumpoffSpeed(Avengers*& hud, vec2<float>& pos, float& scale, ImVec4& color)
 {
 	auto gameState = hud->gameState;
 	static bool onGroundLastFrame = true;
@@ -196,43 +196,43 @@ void ui_velocity::render_jumpoff_speed(Avengers*& hud, vec2<float>& pos, float& 
 	ImVec2 position(pos.x, pos.y + offset);
 	float VELO_CUTOFF = 5.f;
 
-	float velo = gameState->velocity.Length2D();
+	float velo = gameState->velocity.length2D();
 	std::string veloText;
 
 	if (onGroundLastFrame && !onGround && velo >= VELO_CUTOFF) {
 		jumpOffVelo = velo;
-		if (hud->inst_ui_menu->jumpoffspeed_display_bottom) {
+		if (hud->instUiMenu->jumpoffspeedDisplayBottom) {
 			veloText = "Jump speed: ^5" + std::to_string(static_cast<int>(jumpOffVelo));
-			hud->inst_game->add_obituary(veloText);
+			hud->instGame->addObituary(veloText);
 		}
 	}
 	veloText = std::to_string(static_cast<int>(jumpOffVelo));
 
-	if (hud->inst_ui_menu->draw_jumpoff_speed) {
+	if (hud->instUiMenu->drawJumpoffSpeed) {
 		ImGui::Begin("Jumpoff velocity", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar);
-		ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
+		ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
 		ImGui::SetWindowFontScale(scale);
-		ImFont* speedometer_font = hud->inst_ui_menu->getSpeedometerFont();
-		if (speedometer_font) ImGui::PushFont(speedometer_font);
+		ImFont* speedometerFont = hud->instUiMenu->getSpeedometerFont();
+		if (speedometerFont) ImGui::PushFont(speedometerFont);
 
 		ImGui::SetWindowFontScale(scale);
 
-		if (hud->inst_ui_menu->keep_velo_centered) {
+		if (hud->instUiMenu->keepVeloCentered) {
 			float windowWidth = ImGui::GetWindowSize().x;
 			float textWidth = ImGui::CalcTextSize(veloText.c_str()).x;
-			if (hud->inst_ui_menu->use_static_positioning) {
+			if (hud->instUiMenu->useStaticPositioning) {
 				std::string widthHelper(veloText.length(), '5');  //Different digits may have different sizes
 				textWidth = ImGui::CalcTextSize(widthHelper.c_str()).x;
 			}
 			position.x += (windowWidth - textWidth) * 0.5f - (windowWidth - ImGui::CalcTextSize("0").x) * 0.5f;
 		}
 
-		draw_list->AddText(speedometer_font, ImGui::GetFontSize(), position, hud->inst_ui_position_marker->im_vec4_to_im_col32(color), veloText.c_str());
+		drawList->AddText(speedometerFont, ImGui::GetFontSize(), position, hud->instUiPositionMarker->imVec4ToImCol32(color), veloText.c_str());
 
 		ImGui::SetWindowFontScale(1.f);
 
-		if (speedometer_font) ImGui::PopFont();
+		if (speedometerFont) ImGui::PopFont();
 		ImGui::End();
 	}
 

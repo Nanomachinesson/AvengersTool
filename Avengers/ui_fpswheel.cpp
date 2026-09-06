@@ -30,11 +30,11 @@ void ui_fpswheel::render(Avengers* hud)
 	};
 
 	cg_t* ref = (cg_t*)0x0074E338;
-	vec2<float> center(hud->inst_game->get_screen_res().x / 2, hud->inst_game->get_screen_res().y / 2);
-	float yaw = hud->inst_game->get_view().y;
-	float fov = hud->inst_game->get_fov();
+	vec2<float> center(hud->instGame->getScreenRes().x / 2, hud->instGame->getScreenRes().y / 2);
+	float yaw = hud->instGame->getView().y;
+	float fov = hud->instGame->getFov();
 
-	float pixelScale = (hud->inst_game->get_screen_res().x / fov) * hud->inst_ui_menu->wheel_pixel_scale;
+	float pixelScale = (hud->instGame->getScreenRes().x / fov) * hud->instUiMenu->wheelPixelScale;
 
 	for (auto const& [fps, zone] : fpsZones) {
 		float onePx;
@@ -52,12 +52,12 @@ void ui_fpswheel::render(Avengers* hud)
 			continue;
 		}
 
-		if (mm::compare_angles(yaw, zonex) == 1) {
+		if (mm::compareAngles(yaw, zonex) == 1) {
 			onePx = center.x - differencex * pixelScale;
 		} else {
 			onePx = center.x + differencex * pixelScale;
 		}
-		if (mm::compare_angles(yaw, zoney) == 1) {
+		if (mm::compareAngles(yaw, zoney) == 1) {
 			onePy = center.x - differencey * pixelScale;
 		}
 		else {
@@ -68,19 +68,19 @@ void ui_fpswheel::render(Avengers* hud)
 			std::swap(onePx, onePy);
 		}
 
-		bool screenCullEnabled = hud->inst_ui_menu->wheel_pixel_scale <= 1.f;  //Some psychopaths use large enough pixelscales for a single zone to cover the whole screen
+		bool screenCullEnabled = hud->instUiMenu->wheelPixelScale <= 1.f;  //Some psychopaths use large enough pixelscales for a single zone to cover the whole screen
 
-		if ( (screenCullEnabled && (onePx < 0 && onePy > hud->inst_game->get_screen_res().x) )
-			||  ( (onePx > hud->inst_game->get_screen_res().x) && (onePy > hud->inst_game->get_screen_res().x) )
+		if ( (screenCullEnabled && (onePx < 0 && onePy > hud->instGame->getScreenRes().x) )
+			||  ( (onePx > hud->instGame->getScreenRes().x) && (onePy > hud->instGame->getScreenRes().x) )
 			||  ( (onePx < 0) && (onePy < 0)) )
 				{  //Shouldnt draw stuff outside the screen
 			continue;
 		}
 
-		int xCutoffLeft = hud->inst_game->get_screen_res().x - hud->inst_game->get_screen_res().x * hud->inst_ui_menu->fpswheel_offset_x;
-		int xCutoffRight = hud->inst_game->get_screen_res().x * hud->inst_ui_menu->fpswheel_offset_x;
+		int xCutoffLeft = hud->instGame->getScreenRes().x - hud->instGame->getScreenRes().x * hud->instUiMenu->fpswheelOffsetX;
+		int xCutoffRight = hud->instGame->getScreenRes().x * hud->instUiMenu->fpswheelOffsetX;
 
-		float fpsWheelPos = center.y + hud->inst_ui_menu->fpswheel_offset_y;
+		float fpsWheelPos = center.y + hud->instUiMenu->fpswheelOffsetY;
 		std::string fpsText = std::to_string(fps);
 		if (fpsText == "251") {
 			fpsText = "250";
@@ -94,22 +94,22 @@ void ui_fpswheel::render(Avengers* hud)
 		}
 
 		ImGui::SetNextWindowBgAlpha(0.f);
-		ImVec2 windowSize(hud->inst_game->get_screen_res().x * hud->inst_ui_menu->fpswheel_offset_x + 5, hud->inst_game->get_screen_res().y);
+		ImVec2 windowSize(hud->instGame->getScreenRes().x * hud->instUiMenu->fpswheelOffsetX + 5, hud->instGame->getScreenRes().y);
 		ImGui::SetNextWindowSize(windowSize);
 		ImGui::SetNextWindowPos(ImVec2(center.x - windowSize.x / 2, center.y - windowSize.y / 2));
 		ImGui::Begin("FPSWheel", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
 
-		ImGui::SetWindowFontScale(0.80f + hud->inst_ui_menu->fpswheel_size / 100.f);
+		ImGui::SetWindowFontScale(0.80f + hud->instUiMenu->fpswheelSize / 100.f);
 
-		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(onePx, fpsWheelPos), ImVec2(onePy, fpsWheelPos + hud->inst_ui_menu->fpswheel_size), zoneColors[fps]);
+		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(onePx, fpsWheelPos), ImVec2(onePy, fpsWheelPos + hud->instUiMenu->fpswheelSize), zoneColors[fps]);
 		ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 255, 255, 200), fpsText.c_str());
 		ImGui::SetWindowFontScale(1.f);
 
 		ImVec4 color(0, 0, 0, 1.f);
-		hud->inst_ui_anglehelper->renderOnWheel(hud, color);
+		hud->instUiAnglehelper->renderOnWheel(hud, color);
 
-		if (hud->inst_ui_menu->drawfpswheelcenterline) {
-			hud->inst_ui_anglehelper->renderCenterLineOnWheel(hud, hud->inst_ui_menu->fpswheelcenterline_color);
+		if (hud->instUiMenu->drawfpswheelcenterline) {
+			hud->instUiAnglehelper->renderCenterLineOnWheel(hud, hud->instUiMenu->fpswheelcenterlineColor);
 		}
 
 		ImGui::End();
@@ -118,20 +118,20 @@ void ui_fpswheel::render(Avengers* hud)
 
 vec2<float> ui_fpswheel::getCurrentZoneBounds()
 {
-	Avengers* hud = Avengers::get_instance();
-	float optAngle = hud->inst_game->get_optimal_angle();
-	Lmove lmove = hud->inst_game->get_lmove(true);
+	Avengers* hud = Avengers::getInstance();
+	float optAngle = hud->instGame->getOptimalAngle();
+	Lmove lmove = hud->instGame->getLmove(true);
 
 	bool goingRight = (lmove.isRight && lmove.isForward) || (lmove.isRight && !lmove.isForward && !lmove.isBack)
-		|| (lmove.isBack && lmove.isLeft) || (lmove.isBack && !lmove.isRight && !lmove.isLeft && !hud->inst_game->decideStechSide(lmove));
+		|| (lmove.isBack && lmove.isLeft) || (lmove.isBack && !lmove.isRight && !lmove.isLeft && !hud->instGame->decideStechSide(lmove));
 
 	for (auto const& [fps, zone] : fpsZones) {
 		vec2<float> zoneCopy = zone;
 		zoneCopy = moveZone(zoneCopy);
-		if (!goingRight && mm::compare_angles(zoneCopy.x, optAngle) == 1 && mm::compare_angles(zoneCopy.y, optAngle) == -1) {
+		if (!goingRight && mm::compareAngles(zoneCopy.x, optAngle) == 1 && mm::compareAngles(zoneCopy.y, optAngle) == -1) {
 			return zoneCopy;
 		}
-		else if (goingRight && mm::compare_angles(zoneCopy.x, optAngle) == -1 && mm::compare_angles(zoneCopy.y, optAngle) == 1) {
+		else if (goingRight && mm::compareAngles(zoneCopy.x, optAngle) == -1 && mm::compareAngles(zoneCopy.y, optAngle) == 1) {
 			return zoneCopy;
 		}
 	}
@@ -142,9 +142,9 @@ vec2<float> ui_fpswheel::moveZone(const vec2<float>& zone)
 	float zonex = zone.x;
 	float zoney = zone.y;
 
-	Avengers* hud = Avengers::get_instance();
+	Avengers* hud = Avengers::getInstance();
 
-	Lmove lmove = hud->inst_game->get_lmove(true);
+	Lmove lmove = hud->instGame->getLmove(true);
 
 	if (!lmove.isForward) {
 		if (lmove.isRight) {
@@ -167,7 +167,7 @@ vec2<float> ui_fpswheel::moveZone(const vec2<float>& zone)
 				zonex = mm::normalise(135 - zonex, 0.f, 360.f);
 				zoney = mm::normalise(135 - zoney, 0.f, 360.f);
 			}
-			else if (!hud->inst_game->decideStechSide(lmove)) {
+			else if (!hud->instGame->decideStechSide(lmove)) {
 				zonex = mm::normalise(180.f - zonex + 45.f, 0.f, 360.f);  //I don't really understand this anymore, and opted to bruteforce the values.
 				zoney = mm::normalise(180.f - zoney + 45.f, 0.f, 360.f);
 			}

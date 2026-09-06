@@ -5,9 +5,9 @@
 
 void ui_90_lines::render()
 {
-	Avengers* hud = Avengers::get_instance();
-	auto color = ImColor(hud->inst_ui_menu->lines_color);
-	vec3<float> c_direction;
+	Avengers* hud = Avengers::getInstance();
+	auto color = ImColor(hud->instUiMenu->linesColor);
+	vec3<float> cDirection;
 	std::vector<std::pair<game::GfxPointVertex, game::GfxPointVertex>> verts;
 
 	cg_t* ref = (cg_t*)0x0074E338;
@@ -18,13 +18,13 @@ void ui_90_lines::render()
 		auto origin = ref->Refdef.Origin;
 		origin.z -= 10;
 		float length = 80000;
-		mm::angle_vectors({ 0, (float)(i * 90), 0 }, &c_direction, 0, 0);
+		mm::angleVectors({ 0, (float)(i * 90), 0 }, &cDirection, 0, 0);
 
-		vec3<float> c_point = origin + (c_direction * vec3<float>(length, length, length));
-		verts.push_back({ game::GfxPointVertex(origin, color), game::GfxPointVertex(c_point, color) });
+		vec3<float> cPoint = origin + (cDirection * vec3<float>(length, length, length));
+		verts.push_back({ game::GfxPointVertex(origin, color), game::GfxPointVertex(cPoint, color) });
 	}
 
-	hud->inst_game->polyline(verts.size(), 1, reinterpret_cast<game::GfxPointVertex*>(verts.data()), true);
+	hud->instGame->polyline(verts.size(), 1, reinterpret_cast<game::GfxPointVertex*>(verts.data()), true);
 }
 ui_90_lines::ui_90_lines(Avengers* hud)
 {

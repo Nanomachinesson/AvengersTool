@@ -3,7 +3,7 @@
 #include "game.h"
 
 
-float convert_to_cod_pitch(float pitch)
+float convertToCodPitch(float pitch)
 {
 	if (pitch > 0)
 		pitch = 360 - pitch;

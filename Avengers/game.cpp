@@ -2,39 +2,39 @@
 #include "Game.h"
 
 
-HWND game::get_window()
+HWND game::getWindow()
 {
 	return *(HWND*)0xCC1B6FC;
 }
-bool game::is_focused()
+bool game::isFocused()
 {
 	return *(bool*)0x0CC1B704;
 }
 
-bool game::is_in_main_menu()
+bool game::isInMainMenu()
 {
 	return *reinterpret_cast<int*>(addr_ingame) == connection_state_uninitialized;
 }
 
-LPDIRECT3DDEVICE9 game::get_device()
+LPDIRECT3DDEVICE9 game::getDevice()
 {
 	return *(LPDIRECT3DDEVICE9*)0xCC9A408;
 }
 
-bool game::is_connected()
+bool game::isConnected()
 {
 	int state = *(int*)addr_ingame;
 	return state == connection_state_connected;
 }
 
-vec3<float> game::get_view()
+vec3<float> game::getView()
 {
 	vec3<float> deltaAngles = *reinterpret_cast<vec3<float>*>(addr_deltaAngles);
 	vec3<float> cameraAngles = *reinterpret_cast<vec3<float>*>(addr_writeableAngles);
 	vec3<float> normalized;
-	pmove_t* pm = get_pmove_current();
+	pmove_t* pm = getPmoveCurrent();
 
-	if (!is_spectating()) {
+	if (!isSpectating()) {
 		normalized.x = mm::normalise(cameraAngles.x + deltaAngles.x, 0.f, 360.f);
 		normalized.y = mm::normalise(cameraAngles.y + deltaAngles.y, 0.f, 360.f);
 		normalized.z = mm::normalise(cameraAngles.z + deltaAngles.z, 0.f, 360.f);
@@ -48,9 +48,9 @@ vec3<float> game::get_view()
 	return normalized;
 }
 
-vec3<float> game::get_origin()
+vec3<float> game::getOrigin()
 {
-	pmove_t* pm = get_pmove_current();
+	pmove_t* pm = getPmoveCurrent();
 	vec3<float> origin{};
 
 	if (!isDemoPlaying()) {
@@ -65,12 +65,12 @@ vec3<float> game::get_origin()
 	return origin;
 }
 
-vec3<float> game::get_velocity()
+vec3<float> game::getVelocity()
 {
 	vec3<float> velocity{};
 	cvar_t* cvar = getCvar("cl_demoplaying");
 	if (!isDemoPlaying()) {
-		pmove_t* pm = get_pmove_current();
+		pmove_t* pm = getPmoveCurrent();
 		if (pm && pm->ps) {
 			velocity = pm->ps->velocity;
 		}
@@ -88,12 +88,12 @@ bool game::isDemoPlaying()
 	return cvar->current.enabled;
 }
 
-float game::get_dir_diff()
+float game::getDirDiff()
 {
-	return get_dir_diff(get_lmove(true));
+	return getDirDiff(getLmove(true));
 }
 
-float game::get_dir_diff(const Lmove& lMove)
+float game::getDirDiff(const Lmove& lMove)
 {
 	if (lMove.isForward) {
 		return (lMove.isRight) ? -45.f : 45.f;
@@ -116,7 +116,7 @@ float game::get_dir_diff(const Lmove& lMove)
 	return 0;
 }
 
-Lmove game::get_lmove(bool adjustForSpectator)
+Lmove game::getLmove(bool adjustForSpectator)
 {
 	using namespace mm;
 	input_s* input = (input_s*)addr_usercmd;
@@ -125,11 +125,11 @@ Lmove game::get_lmove(bool adjustForSpectator)
 	static Lmove prevLmove {};
 
 	static float prevYaw = 0.f;
-	float yaw = get_view().y;
+	float yaw = getView().y;
 
-	lMove.isInAir = !Avengers::get_instance()->inst_game->isOnGround();
+	lMove.isInAir = !Avengers::getInstance()->instGame->isOnGround();
 	lMove.isSprint = *reinterpret_cast<int*>(addr_sprint) >= 20 || *reinterpret_cast<int*>(addr_sprint) == 5 ? true : false;
-	lMove.isMoving = fabsf(get_velocity().Length2D()) > 0 ? true : false;
+	lMove.isMoving = fabsf(getVelocity().length2D()) > 0 ? true : false;
 	lMove.fullLean = *reinterpret_cast<float*>(addr_lean) >= 0.5f || *reinterpret_cast<float*>(addr_lean) >= 0.25f ? true : false;
 
 	if (cmd->forward != 0)
@@ -157,7 +157,7 @@ Lmove game::get_lmove(bool adjustForSpectator)
 
 	float CHANGE_TOLERANCE = 4.f;
 	float MINIMUM_VELO = 200.f;
-	if (adjustForSpectator && game::is_spectating() && fabsf(yaw - prevYaw) <= CHANGE_TOLERANCE && get_velocity().Length2D() >= MINIMUM_VELO) {
+	if (adjustForSpectator && game::isSpectating() && fabsf(yaw - prevYaw) <= CHANGE_TOLERANCE && getVelocity().length2D() >= MINIMUM_VELO) {
 		if (yaw > prevYaw) {
 			lMove.isLeft = true;
 			lMove.isRight = false;
@@ -181,9 +181,9 @@ Lmove game::get_lmove(bool adjustForSpectator)
 		backMove.isRight = false;
 		backMove.isBack = true;
 
-		float optimalAngleForward = get_optimal_angle(forwardLmove);
-		float optimalAngleNoForward = get_optimal_angle(noForwardLmove);
-		float optimalAngleBack = get_optimal_angle(backMove);
+		float optimalAngleForward = getOptimalAngle(forwardLmove);
+		float optimalAngleNoForward = getOptimalAngle(noForwardLmove);
+		float optimalAngleBack = getOptimalAngle(backMove);
 
 		float forwardDiff = fabsf(yaw - optimalAngleForward);
 		float noForwardDiff = fabsf(yaw - optimalAngleNoForward);
@@ -208,39 +208,39 @@ Lmove game::get_lmove(bool adjustForSpectator)
 	return lMove;
 }
 
-float game::get_velocity_angle()
+float game::getVelocityAngle()
 {
 	using namespace mm;
-	vec3<float> velocity = get_velocity();
-	return normalise(tilt_angle(truncate_vector(get_velocity())), 0.f, 360.f);
+	vec3<float> velocity = getVelocity();
+	return normalise(tiltAngle(truncateVector(getVelocity())), 0.f, 360.f);
 }
 
-float game::get_delta()
+float game::getDelta()
 {
-	return get_delta(get_lmove(true));
+	return getDelta(getLmove(true));
 }
 
-float game::get_delta(const Lmove& lMove)
+float game::getDelta(const Lmove& lMove)
 {
 	float accelAngle = 0.f;
 
-	accelAngle = mm::normalise(get_view().y + get_dir_diff(lMove), 0.f, 360.f);
+	accelAngle = mm::normalise(getView().y + getDirDiff(lMove), 0.f, 360.f);
 
-	float delta = get_velocity_angle() - accelAngle;
+	float delta = getVelocityAngle() - accelAngle;
 	return mm::normalise(delta, -180.f, 180.f);
 }
 
-float game::get_delta_optimal()
+float game::getDeltaOptimal()
 {
-	return get_delta_optimal(get_lmove(true));
+	return getDeltaOptimal(getLmove(true));
 }
 
-float game::get_delta_optimal(const Lmove& lMove)
+float game::getDeltaOptimal(const Lmove& lMove)
 {
 	constexpr float g_speed = 190.f;
 
-	float speed = get_velocity().Length2D();
-	float deltaOpt = mm::to_degrees(acosf((g_speed - get_accel()) / speed));
+	float speed = getVelocity().length2D();
+	float deltaOpt = mm::toDegrees(acosf((g_speed - getAccel()) / speed));
 
 	if ((lMove.isLeft && !lMove.isBack) || (lMove.isBack && lMove.isRight))
 	{
@@ -250,11 +250,11 @@ float game::get_delta_optimal(const Lmove& lMove)
 	return deltaOpt;
 }
 
-int game::get_fps(bool adjustForSpectator)
+int game::getFps(bool adjustForSpectator)
 {
 	int maxFps = 0;  //TODO: make this stuff work for spectator
-	if (adjustForSpectator && is_spectating()) {
-		maxFps = get_fps_3_xp();
+	if (adjustForSpectator && isSpectating()) {
+		maxFps = getFps3Xp();
 	}
 	else {
 		cvar_t* maxFpsCvar = getCvar("com_maxfps");
@@ -263,17 +263,17 @@ int game::get_fps(bool adjustForSpectator)
 	return maxFps;
 }
 
-float game::get_accel()
+float game::getAccel()
 {
-	return g_speed / get_fps();
+	return g_speed / getFps();
 }
 
-float game::get_deltamax_bogus()
+float game::getDeltamaxBogus()
 {
 	constexpr float g_speed = 190.f;
 
-	float speed = get_velocity().Length2D();
-	float deltaMax = mm::to_degrees(acosf( ( (-1.f * get_accel()) / (2 * speed) ) ));
+	float speed = getVelocity().length2D();
+	float deltaMax = mm::toDegrees(acosf( ( (-1.f * getAccel()) / (2 * speed) ) ));
 
 	return deltaMax;
 }
@@ -309,7 +309,7 @@ MaterialTechnique* game::RB_BeginSurface_CustomMaterial(MaterialTechniqueType te
 	}
 }
 
-void game::check_tess_overflow(int vertex_count)
+void game::checkTessOverflow(int vertex_count)
 {
 	materialCommands_t* tess = reinterpret_cast<materialCommands_t*>(addr_material_commands);
 	GfxCmdBufState* gfxCmdBufState = reinterpret_cast<GfxCmdBufState*>(addr_gfxcmdbufstate);
@@ -322,7 +322,7 @@ void game::check_tess_overflow(int vertex_count)
 }
 
 // set vertices for current render-surface
-void game::set_poly_vert(const float* xyz, GfxColor color, int vertCount, int vertNum)
+void game::setPolyVert(const float* xyz, GfxColor color, int vertCount, int vertNum)
 {
 	materialCommands_t* tess = reinterpret_cast<materialCommands_t*>(addr_material_commands);
 
@@ -362,11 +362,11 @@ void game::set_poly_vert(const float* xyz, GfxColor color, int vertCount, int ve
 
 __declspec(naked) PackedUnitVec game::Vec3PackUnitVec(const float*)
 {
-	const static uint32_t func_addr = 0x5645A0;
+	const static uint32_t funcAddr = 0x5645A0;
 	__asm
 	{
 		mov		eax, [esp + 4h];
-		call	func_addr;
+		call	funcAddr;
 		retn;
 
 		//push	0x5645A0;
@@ -376,7 +376,7 @@ __declspec(naked) PackedUnitVec game::Vec3PackUnitVec(const float*)
 
 // *
 // set vertices for current render-surface
-void game::set_poly_vert_with_normal(const float* xyz, const float* normal, GfxColor color, int vert_count, int vertNum)
+void game::setPolyVertWithNormal(const float* xyz, const float* normal, GfxColor color, int vert_count, int vertNum)
 {
 	materialCommands_t* tess = reinterpret_cast<materialCommands_t*>(addr_material_commands);
 
@@ -414,22 +414,22 @@ void game::set_poly_vert_with_normal(const float* xyz, const float* normal, GfxC
 	tess->verts[vert_count].normal = Vec3PackUnitVec(normal);
 }
 
-void game::drawPoly(const int num_points, float(*points)[3], const float* brush_color, bool brush_lit, bool outlines, const float* outline_color, bool depth_check, bool two_sides_poly)
+void game::drawPoly(const int numPoints, float(*points)[3], const float* brushColor, bool brushLit, bool outlines, const float* outlineColor, bool depthCheck, bool twoSidesPoly)
 {
-	if (num_points < 3) {
+	if (numPoints < 3) {
 		return;
 	}
 
-	int vert_index;
+	int vertIndex;
 
 	GfxColor color = {};
-	R_ConvertColorToBytes(brush_color, (char*)&color);
+	R_ConvertColorToBytes(brushColor, (char*)&color);
 
 	GfxCmdBufState* gfxCmdBufState = reinterpret_cast<GfxCmdBufState*>(addr_gfxcmdbufstate);
 	r_global_permanent_t* rgp = reinterpret_cast<r_global_permanent_t*>(addr_r_global_permanent_t);
 	materialCommands_t* tess = reinterpret_cast<materialCommands_t*>(addr_material_commands);
 	GfxCmdBufSourceState* gfxCmdBufSourceState = reinterpret_cast<GfxCmdBufSourceState*>(addr_gfxcmdbufsourcestate);
-	GfxWorld* gfx_world = reinterpret_cast<GfxWorld*>(addr_gfxworld);
+	GfxWorld* gfxWorld = reinterpret_cast<GfxWorld*>(addr_gfxworld);
 	RB_EndTessSurface_t RB_EndTessSurface = (RB_EndTessSurface_t)addr_rb_endtesssurface;
 
 	// check render-surface overflow
@@ -439,74 +439,74 @@ void game::drawPoly(const int num_points, float(*points)[3], const float* brush_
 			RB_EndTessSurface();
 		}
 
-		if (brush_lit) {
+		if (brushLit) {
 			// use a custom material for polygons
-			Material* unlit_material = Material_RegisterHandle("iw3xo_showcollision_fakelight", 3);
+			Material* unlitMaterial = Material_RegisterHandle("iw3xo_showcollision_fakelight", 3);
 
-			if (!unlit_material) {
-				//Com_Error(0, utils::va("^1_debug::draw_poly L#%d ^7:: unlit_material was null\n", __LINE__));
+			if (!unlitMaterial) {
+				//Com_Error(0, utils::va("^1_debug::draw_poly L#%d ^7:: unlitMaterial was null\n", __LINE__));
 			}
 
 			// dirty shader constants for our fakelight shader
-			gfxCmdBufSourceState->input.consts[ShaderCodeConstants::CONST_SRC_CODE_FILTER_TAP_3][0] = gfx_world->sunParse.ambientScale * gfx_world->sunParse.ambientColor[0];
-			gfxCmdBufSourceState->input.consts[ShaderCodeConstants::CONST_SRC_CODE_FILTER_TAP_3][1] = gfx_world->sunParse.ambientScale * gfx_world->sunParse.ambientColor[1];
-			gfxCmdBufSourceState->input.consts[ShaderCodeConstants::CONST_SRC_CODE_FILTER_TAP_3][2] = gfx_world->sunParse.ambientScale * gfx_world->sunParse.ambientColor[2];
+			gfxCmdBufSourceState->input.consts[ShaderCodeConstants::CONST_SRC_CODE_FILTER_TAP_3][0] = gfxWorld->sunParse.ambientScale * gfxWorld->sunParse.ambientColor[0];
+			gfxCmdBufSourceState->input.consts[ShaderCodeConstants::CONST_SRC_CODE_FILTER_TAP_3][1] = gfxWorld->sunParse.ambientScale * gfxWorld->sunParse.ambientColor[1];
+			gfxCmdBufSourceState->input.consts[ShaderCodeConstants::CONST_SRC_CODE_FILTER_TAP_3][2] = gfxWorld->sunParse.ambientScale * gfxWorld->sunParse.ambientColor[2];
 
 			// start poly
-			RB_BeginSurface_CustomMaterial(MaterialTechniqueType::TECHNIQUE_UNLIT, unlit_material);
+			RB_BeginSurface_CustomMaterial(MaterialTechniqueType::TECHNIQUE_UNLIT, unlitMaterial);
 		}
 		else {
 			// patch default line material so that it uses Blend and PolyOffset
-			const auto unlit_material = rgp->lineMaterial;//reinterpret_cast<game::Material*>(*(DWORD32*)(game::builtIn_material_unlit_depth));
+			const auto unlitMaterial = rgp->lineMaterial;//reinterpret_cast<game::Material*>(*(DWORD32*)(game::builtInMaterialUnlitDepth));
 
 			// fill poly on both sides
-			if (two_sides_poly) {
+			if (twoSidesPoly) {
 				// blendFunc Blend + cullFace "None"
-				unlit_material->stateBitsTable->loadBits[0] = 422072677;
+				unlitMaterial->stateBitsTable->loadBits[0] = 422072677;
 			}
 			else // 1 sided poly
 			{
 				// blendFunc Blend + cullFace "Back"
-				unlit_material->stateBitsTable->loadBits[0] = 422089061;
+				unlitMaterial->stateBitsTable->loadBits[0] = 422089061;
 			}
 
 			// give poly a slight offset to stop z-fighting :: polyOffset StaticDecal
-			unlit_material->stateBitsTable->loadBits[1] = 44;
+			unlitMaterial->stateBitsTable->loadBits[1] = 44;
 
 			// start poly
-			RB_BeginSurface(MaterialTechniqueType::TECHNIQUE_UNLIT, depth_check ? rgp->lineMaterial : rgp->lineMaterialNoDepth);
+			RB_BeginSurface(MaterialTechniqueType::TECHNIQUE_UNLIT, depthCheck ? rgp->lineMaterial : rgp->lineMaterialNoDepth);
 		}
 	}
 
 
 	// render all added polys if we would overflow the surface by adding new ones
-	check_tess_overflow(num_points);
+	checkTessOverflow(numPoints);
 
-	if (brush_lit) {
+	if (brushLit) {
 		vec3_t pt1, pt2, normal;
 
 		mm::subtract3(points[1], points[0], pt1);
 		mm::subtract3(points[2], points[0], pt2);
 		mm::cross3(pt1, pt2, normal);
 
-		for (vert_index = 0; vert_index < num_points; ++vert_index) {
-			set_poly_vert_with_normal(&(*points)[3 * vert_index], normal, color, tess->vertexCount + vert_index, vert_index);
+		for (vertIndex = 0; vertIndex < numPoints; ++vertIndex) {
+			setPolyVertWithNormal(&(*points)[3 * vertIndex], normal, color, tess->vertexCount + vertIndex, vertIndex);
 		}
 	}
 	else {
-		for (vert_index = 0; vert_index < num_points; ++vert_index) {
-			set_poly_vert(&(*points)[3 * vert_index], color, tess->vertexCount + vert_index, vert_index);
+		for (vertIndex = 0; vertIndex < numPoints; ++vertIndex) {
+			setPolyVert(&(*points)[3 * vertIndex], color, tess->vertexCount + vertIndex, vertIndex);
 		}
 	}
 
-	for (vert_index = 0; vert_index < num_points - 2; ++vert_index) {
+	for (vertIndex = 0; vertIndex < numPoints - 2; ++vertIndex) {
 		tess->indices[tess->indexCount + 0] = (unsigned short int)(0);
-		tess->indices[tess->indexCount + 1] = (unsigned short int)(vert_index + 2);
-		tess->indices[tess->indexCount + 2] = (unsigned short int)(vert_index + 1);
+		tess->indices[tess->indexCount + 1] = (unsigned short int)(vertIndex + 2);
+		tess->indices[tess->indexCount + 2] = (unsigned short int)(vertIndex + 1);
 		tess->indexCount += 3;
 	}
 
-	tess->vertexCount += num_points;
+	tess->vertexCount += numPoints;
 
 	// draw all added polys
 	RB_EndTessSurface();
@@ -524,59 +524,59 @@ void game::drawPoly(const int num_points, float(*points)[3], const float* brush_
 			}
 
 			// use a custom material for outlines
-			const auto unlit_material = game::Material_RegisterHandle("iw3xo_showcollision_wire", 3);
+			const auto unlitMaterial = game::Material_RegisterHandle("iw3xo_showcollision_wire", 3);
 
-			if (!unlit_material) {
-				//Com_Error(0, utils::va("^1_debug::draw_poly L#%d ^7:: unlit_material was null\n", __LINE__));
+			if (!unlitMaterial) {
+				//Com_Error(0, utils::va("^1_debug::draw_poly L#%d ^7:: unlitMaterial was null\n", __LINE__));
 				return;
 			}
 
-			RB_BeginSurface_CustomMaterial(MaterialTechniqueType::TECHNIQUE_UNLIT, unlit_material);
+			RB_BeginSurface_CustomMaterial(MaterialTechniqueType::TECHNIQUE_UNLIT, unlitMaterial);
 		}
 
 		// Check if we would overflow our Surface and if we would, render all added polys
-		check_tess_overflow(num_points);
+		checkTessOverflow(numPoints);
 
-		if (outline_color == nullptr) {
+		if (outlineColor == nullptr) {
 			float tempColor[3] = { 1.0f, 0.0f, 0.0f };
 			game::R_ConvertColorToBytes(tempColor, (char*)&color);
 		}
 		else {
-			game::R_ConvertColorToBytes(outline_color, (char*)&color);
+			game::R_ConvertColorToBytes(outlineColor, (char*)&color);
 		}
 
 		// set our surface verts (tess->verts)
-		for (vert_index = 0; vert_index < num_points; ++vert_index) {
-			set_poly_vert(&(*points)[3 * vert_index], color, tess->vertexCount + vert_index, 0);
+		for (vertIndex = 0; vertIndex < numPoints; ++vertIndex) {
+			setPolyVert(&(*points)[3 * vertIndex], color, tess->vertexCount + vertIndex, 0);
 		}
 
 		// counter-clockwise polys?
-		for (vert_index = 0; vert_index < num_points - 2; ++vert_index) {
+		for (vertIndex = 0; vertIndex < numPoints - 2; ++vertIndex) {
 			tess->indices[tess->indexCount + 0] = (unsigned short int)(0);
-			tess->indices[tess->indexCount + 1] = (unsigned short int)(vert_index + 2);
-			tess->indices[tess->indexCount + 2] = (unsigned short int)(vert_index + 1);
+			tess->indices[tess->indexCount + 1] = (unsigned short int)(vertIndex + 2);
+			tess->indices[tess->indexCount + 2] = (unsigned short int)(vertIndex + 1);
 
 			tess->indexCount += 3;
 		}
 
-		tess->vertexCount += num_points;
+		tess->vertexCount += numPoints;
 
 		// Draw all added polys
 		RB_EndTessSurface();
 	}
 }
 
-float game::get_optimal_angle()
+float game::getOptimalAngle()
 {
-	return get_optimal_angle(get_lmove(true));
+	return getOptimalAngle(getLmove(true));
 }
 
-float game::get_optimal_angle(const Lmove& lMove)
+float game::getOptimalAngle(const Lmove& lMove)
 {
-	float delta = get_delta(lMove);
-	float deltaOptimal = get_delta_optimal(lMove);
+	float delta = getDelta(lMove);
+	float deltaOptimal = getDeltaOptimal(lMove);
 
-	float yaw = get_view().y;
+	float yaw = getView().y;
 
 	if (lMove.isBack && !lMove.isLeft && !lMove.isRight) {  //If the user is doing s-tech we need to account for both strafe sides
 		if (decideStechSide(lMove)) {
@@ -592,7 +592,7 @@ float game::get_optimal_angle(const Lmove& lMove)
 bool game::isOnGround()
 {
 	bool onGround = false;
-	pmove_t* pm = get_pmove_current();
+	pmove_t* pm = getPmoveCurrent();
 	if (pm && pm->ps) {
 		onGround = pm->ps->groundEntityNum != 1023;
 	}
@@ -606,7 +606,7 @@ int game::getJumpTime()
 	return ps->JumpTime;
 }
 
-vec2<float> game::get_screen_res()
+vec2<float> game::getScreenRes()
 {
 	cg_t* ref = (cg_t*)0x0074E338;
 	vec2<float> screenres{};
@@ -615,26 +615,26 @@ vec2<float> game::get_screen_res()
 	return screenres;
 }
 
-vec3<float> game::get_delta_angles()
+vec3<float> game::getDeltaAngles()
 {
 	return *reinterpret_cast<vec3<float>*>(addr_delta_angles);
 }
 
-float game::get_fov()
+float game::getFov()
 {
 	cvar_t* fov = getCvar("cg_fov");
 	cvar_t* fovScale = getCvar("cg_fovScale");
 	return fov->current.value * fovScale->current.value;
 }
 
-pmove_t* game::get_pmove_current()
+pmove_t* game::getPmoveCurrent()
 {
 	return reinterpret_cast<pmove_t*>(addr_pMove_current);
 }
 
-bool game::is_spectating()
+bool game::isSpectating()
 {
-	pmove_t* pm = get_pmove_current();
+	pmove_t* pm = getPmoveCurrent();
 	bool spectating = false;
 	if (pm && pm->ps) {
 		spectating = pm->ps->otherFlags & PMF_FOLLOW;
@@ -642,9 +642,9 @@ bool game::is_spectating()
 	return spectating;
 }
 
-bool game::is_noclipping()
+bool game::isNoclipping()
 {
-	pmove_t* pm = get_pmove_current();
+	pmove_t* pm = getPmoveCurrent();
 	bool nocliping = false;
 	if (pm->ps) {
 		nocliping = pm->ps->pm_type & PM_NOCLIP;
@@ -664,8 +664,8 @@ cvar_t* game::getCvar(const char* name)
 
 bool game::decideStechSide(const Lmove& lMove)  //True = left, False = right
 {
-	float delta = get_delta(lMove);
-	float deltaOptimal = get_delta_optimal(lMove);
+	float delta = getDelta(lMove);
+	float deltaOptimal = getDeltaOptimal(lMove);
 
 	float deltaDiff = fabsf(delta - deltaOptimal);
 	float deltaDiffOtherSide = fabsf(delta - deltaOptimal * -1.f);
@@ -697,7 +697,7 @@ void game::setVelocity(const vec3<float>& velocity)
 
 vec3<float> game::toCodAngles(const vec3<float>& angles)
 {
-	vec3<float> delta = get_delta_angles();
+	vec3<float> delta = getDeltaAngles();
 	vec3<float> view;
 	view.x = angles.x - delta.x;
 	view.y = angles.y - delta.y;
@@ -706,53 +706,53 @@ vec3<float> game::toCodAngles(const vec3<float>& angles)
 	return view;
 }
 
-void game::send_command_to_console(const char* command)
+void game::sendCommandToConsole(const char* command)
 {
-	DWORD buffer_cmd = 0x4f8d90;
+	DWORD bufferCmd = 0x4f8d90;
 	__asm
 	{
 		mov eax, command
 		mov ecx, 0
-		call buffer_cmd
+		call bufferCmd
 	}
 }
 
-bool game::world_to_screen(vec3<float> world, float* screen_x, float* screen_y)
+bool game::worldToScreen(vec3<float> world, float* screenX, float* screenY)
 {
 	cg_t* ref = (cg_t*)0x0074E338;
 	
 	vec3<float> position = world - ref->Refdef.Origin;
 	
 	vec3<float> transform;
-	transform.x = position.DotProduct(ref->Refdef.ViewAxis[1]);
-	transform.y = position.DotProduct(ref->Refdef.ViewAxis[2]);
-	transform.z = position.DotProduct(ref->Refdef.ViewAxis[0]);
+	transform.x = position.dotProduct(ref->Refdef.ViewAxis[1]);
+	transform.y = position.dotProduct(ref->Refdef.ViewAxis[2]);
+	transform.z = position.dotProduct(ref->Refdef.ViewAxis[0]);
 	
 	if (transform.z < 0.0f)
 		return false;
 
 	vec2 center = { ref->Refdef.ScreenWidth * 0.5f, ref->Refdef.ScreenHeight * 0.5f };
 
-	*screen_x = center.x * (1 - (transform.x / ref->Refdef.FOV.x / transform.z));
-	*screen_y = center.y * (1 - (transform.y / ref->Refdef.FOV.y / transform.z));
+	*screenX = center.x * (1 - (transform.x / ref->Refdef.FOV.x / transform.z));
+	*screenY = center.y * (1 - (transform.y / ref->Refdef.FOV.y / transform.z));
 
 	return true;
 }
 
-int game::get_fps_wtmod()
+int game::getFpsWtmod()
 {
 	int maxFps = (int)*reinterpret_cast<float*>(addr_maxfps_wtmod);
 	return maxFps;
 }
 
-int game::get_fps_3_xp()
+int game::getFps3Xp()
 {
 	int maxFps = (int)*reinterpret_cast<float*>(addr_maxfps_3xp);
 	return maxFps;
 }
 
-void game::add_obituary(const std::string& msg)
+void game::addObituary(const std::string& msg)
 {
-	std::string final_msg = msg + "\n";
-	reinterpret_cast<void(__cdecl*)(conChannel_t, const char*, msgtype_t)>(0x4FCA50)(conChannel_t::CON_CHANNEL_GAMENOTIFY, final_msg.c_str(), msgtype_t::MSG_DEFAULT);
+	std::string finalMsg = msg + "\n";
+	reinterpret_cast<void(__cdecl*)(conChannel_t, const char*, msgtype_t)>(0x4FCA50)(conChannel_t::CON_CHANNEL_GAMENOTIFY, finalMsg.c_str(), msgtype_t::MSG_DEFAULT);
 }
