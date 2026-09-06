@@ -2,76 +2,88 @@
 
 #include "pch.h"
 #include "Avengers.h"
+#include "obs_websocket.h"
 
+namespace
+{
+	void pressF9()
+	{
+		INPUT press[2]{};
+		press[0].type = INPUT_KEYBOARD;
+		press[0].ki.wVk = VK_F9;
+		press[0].ki.wScan = static_cast<WORD>(MapVirtualKeyW(VK_F9, MAPVK_VK_TO_VSC));
+		press[1] = press[0];
+		press[1].ki.dwFlags = KEYEVENTF_KEYUP;
+		SendInput(2, press, sizeof(INPUT));
+	}
+
+	void notifyRecord(ui_demoplayer* demo, bool start)
+	{
+		if (demo->simF9) {
+			pressF9();
+		}
+		if (demo->obsWebsocket) {
+			obsWebsocketConfigure(true, demo->obsHost.c_str(), demo->obsPort.c_str(), demo->obsPassword.c_str());
+			if (start) {
+				obsWebsocketStartRecord();
+			}
+			else {
+				obsWebsocketStopRecord();
+			}
+		}
+	}
+}
 
 void ui_demoplayer::render()
 {
-	Avengers* hud = Avengers::get_instance();
-	if (playing_demos && !hud->want_input)
+	Avengers* hud = Avengers::getInstance();
+	if (playingDemos && !hud->wantInput)
 	{
-		play_all_demos();
+		playAllDemos();
 	}
 
-	//simulate an F9 keypress after the last demo is played
-	//as the default keybind to stop/start fraps recording is F9
-	if (just_finished && hud->inst_game->is_in_main_menu()) {
-		if (sim_f9) {
-			INPUT ip;
-			ip.type = INPUT_KEYBOARD;
-			ip.ki.wScan = 0; // hardware scan code for key
-			ip.ki.time = 0;
-			ip.ki.dwExtraInfo = 0;
-
-			// Press the "F9" key
-			ip.ki.wVk = VK_F9; // virtual-key code for the "F9" key
-			ip.ki.dwFlags = 0; // 0 for key press
-			SendInput(1, &ip, sizeof(INPUT));
-		}
-		just_finished = false;
+	if (demoPlaying && hud->instGame->isInMainMenu()) {
+		notifyRecord(this, false);
+		demoPlaying = false;
 	}
 
-	if(show_fps_image)
+	if(showFpsImage)
 	{
-		hud->inst_ui_fps_image->render();
+		hud->instUiFpsImage->render();
 	}
 }
 
 void ui_demoplayer::menu(Avengers* hud)
 {
 	if (ImGui::Button("Play Demos")) {
-		hud->want_input = false;
-		playing_demos = true;
+		hud->wantInput = false;
+		playingDemos = true;
 	}
 
-	ImGui::Checkbox("F9 on all demos played", &sim_f9);
+	ImGui::Checkbox("F9 on all demos played", &simF9);
 
-	static char inp1[128] = "1";
-	static char inp2[128] = "1";
-	static char inp3[1024]{};
-	static char inpDemoNum[10]{"1"};
+	ImGui::InputText("Timescale", timescaleInput, sizeof(timescaleInput));
+	timescale = static_cast<float>(atof(timescaleInput));
 	
-	ImGui::InputText("Timescale", inp1, 128);
-	timescale = atof(inp1);
+	ImGui::InputText("Demo count", demoCountInput, sizeof(demoCountInput));
+	demoNum = atoi(demoCountInput);
 	
-	ImGui::InputText("Demo count", inp2, 128);
-	demo_num = atoi(inp2);
+	ImGui::InputText("Execute every demo", extraCommandInput, sizeof(extraCommandInput));
 	
-	ImGui::InputText("Execute every demo", inp3, 128);
+	extraCmd = extraCommandInput;
 	
-	extra_cmd = inp3;
+	ImGui::InputText("Play demos from", playFromInput, sizeof(playFromInput));
 	
-	ImGui::InputText("Play demos from", inpDemoNum, 10);
-	
-	ImGui::Checkbox("Show FPS image", &show_fps_image);
+	ImGui::Checkbox("Show FPS image", &showFpsImage);
 	ImGui::Checkbox("WTMOD", &wtmod);
 	ImGui::Checkbox("3XP", &threexp);
-	ImGui::SliderFloat("FPS Image scale", &image_scale, 0.01f, 10.f);
+	ImGui::SliderFloat("FPS Image scale", &imageScale, 0.01f, 10.f);
 
-	if (play_demos_from != atoi(inpDemoNum)) {
-		play_demos_index = atoi(inpDemoNum);
+	if (playDemosFrom != atoi(playFromInput)) {
+		playDemosIndex = atoi(playFromInput);
 	}
 	
-	play_demos_from = atoi(inpDemoNum);
+	playDemosFrom = atoi(playFromInput);
 
 	if (wtmod && threexp) {
 		threexp = false;
@@ -79,56 +91,60 @@ void ui_demoplayer::menu(Avengers* hud)
 
 }
 
-void ui_demoplayer::play_all_demos()
+void ui_demoplayer::playAllDemos()
 {
-	Avengers* hud = Avengers::get_instance();
+	Avengers* hud = Avengers::getInstance();
 	static bool demoPlayed = true;
 	static bool cmdExecuted = false;
 
 	*reinterpret_cast<float*>(addr_timescale) = timescale;
 
 	std::string a = "demo ";
-	a += std::to_string(play_demos_index);
+	a += std::to_string(playDemosIndex);
 
-	if (hud->inst_game->is_connected() && !demoPlayed) {
+	if (hud->instGame->isConnected() && !demoPlayed) {
 		demoPlayed = true;
-		play_demos_index++;
+		playDemosIndex++;
 	}
 
-	if (play_demos_index > demo_num) {
-		play_demos_index = play_demos_from;
-		playing_demos = false;
+	if (playDemosIndex > demoNum) {
+		playDemosIndex = playDemosFrom;
+		playingDemos = false;
 		demoPlayed = true;
 		cmdExecuted = false;
-		just_finished = true;
 	}
 
-	if (hud->inst_game->is_in_main_menu()) {
+	if (hud->instGame->isInMainMenu()) {
 		using namespace std;
 		static auto t = chrono::system_clock::now();
 		int timeCount = abs(chrono::duration_cast<chrono::milliseconds>(t - chrono::system_clock::now()).count());
 		if (timeCount > 1000.f) {
-			hud->inst_game->send_command_to_console(a.c_str());
+			hud->instGame->sendCommandToConsole(a.c_str());
 			demoPlayed = false;
 			cmdExecuted = false;
 			t = chrono::system_clock::now();
 		}
 	}
 
-	if (hud->inst_game->is_connected() && !cmdExecuted) {
+	if (hud->instGame->isConnected() && !cmdExecuted) {
 		cmdExecuted = true;
-		if (std::string(extra_cmd) != "") {
-			hud->inst_game->send_command_to_console(extra_cmd);
+		if (!demoPlaying) {
+			notifyRecord(this, true);
+		}
+		demoPlaying = true;
+		if (std::string(extraCmd) != "") {
+			hud->instGame->sendCommandToConsole(extraCmd);
 		}
 	}
 }
 
 ui_demoplayer::ui_demoplayer(Avengers* hud)
 {
-	hud->inst_render->add_callback([this]() { this->render(); });
+	extraCmd = extraCommandInput;
+	hud->instRender->addCallback([this]() { this->render(); });
 }
 
 ui_demoplayer::~ui_demoplayer()
 {
-
+	obsWebsocketShutdown();
 }

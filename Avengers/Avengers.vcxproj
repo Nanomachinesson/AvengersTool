@@ -191,10 +191,13 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="ui_90_lines.h" />
     <ClInclude Include="ui_anglehelper.h" />
+    <ClInclude Include="obs_websocket.h" />
     <ClInclude Include="ui_demoplayer.h" />
     <ClInclude Include="ui_fps_image.h" />
     <ClInclude Include="ui_jump_target.h" />
     <ClInclude Include="ui_menu.h" />
+    <ClInclude Include="ui_theme.h" />
+    <ClInclude Include="ui_widgets.h" />
     <ClInclude Include="ui_position.h" />
     <ClInclude Include="ui_position_marker.h" />
     <ClInclude Include="ui_settings.h" />
@@ -273,6 +276,7 @@
     <ClCompile Include="input.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
+    <ClCompile Include="obs_websocket.cpp" />
     <ClCompile Include="memory.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -302,6 +306,9 @@
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ClCompile Include="ui_menu.cpp">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="ui_theme.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ClCompile Include="ui_position.cpp">

@@ -3,11 +3,11 @@
 
 void predictPlayerState(int unk)
 {
-	Avengers* avengers = Avengers::get_instance();
-	auto game = avengers->inst_game;
-	avengers->inst_hooks->hook_map["cg_predictPlayerState"]->original(predictPlayerState)(unk);
+	Avengers* avengers = Avengers::getInstance();
+	auto game = avengers->instGame;
+	avengers->instHooks->hookMap["cg_predictPlayerState"]->original(predictPlayerState)(unk);
 	
-	pmove_t* pm = avengers->inst_game->get_pmove_current();
+	pmove_t* pm = avengers->instGame->getPmoveCurrent();
 	if (!(pm && pm->ps)) {
 		return;
 	}
@@ -15,9 +15,9 @@ void predictPlayerState(int unk)
 	auto gameState = avengers->gameState;
 
 	gameState->onGround = game->isOnGround();
-	gameState->lMove = game->get_lmove(true);
-	gameState->origin = game->get_origin();
-	gameState->velocity = game->get_velocity();
+	gameState->lMove = game->getLmove(true);
+	gameState->origin = game->getOrigin();
+	gameState->velocity = game->getVelocity();
 	gameState->weaponDelay = pm->ps->weaponDelay;
 	gameState->pmFlags = pm->ps->pm_flags;
 	gameState->weaponState = pm->ps->weaponstate;
@@ -25,13 +25,13 @@ void predictPlayerState(int unk)
 
 int __cdecl FS_CompareIwds(char* needediwds, int len, int dlstring)
 {
-	Avengers* avengers = Avengers::get_instance();
+	Avengers* avengers = Avengers::getInstance();
 	int* pIwdSums = (int*)addr_serveriwdsums;
 	char** pIwdNames = (char**)addr_serveriwdnames;
 	int numIds = *(int*)addr_servernumiwds;
 
-	if (!avengers->inst_ui_menu->allow_impure_map_iwds) {
-		int orig = avengers->inst_hooks->hook_map["FS_CompareIwds"]->original(FS_CompareIwds)(needediwds, len, dlstring);
+	if (!avengers->instUiMenu->allowImpureMapIwds) {
+		int orig = avengers->instHooks->hookMap["FS_CompareIwds"]->original(FS_CompareIwds)(needediwds, len, dlstring);
 		return orig;
 	}
 
@@ -72,12 +72,12 @@ int __cdecl FS_CompareIwds(char* needediwds, int len, int dlstring)
 		}
 	}
 
-	int orig = avengers->inst_hooks->hook_map["FS_CompareIwds"]->original(FS_CompareIwds)(needediwds, len, dlstring);
+	int orig = avengers->instHooks->hookMap["FS_CompareIwds"]->original(FS_CompareIwds)(needediwds, len, dlstring);
 	return orig;
 }
 
 GameState::GameState(Avengers* avengers)
 {
-	avengers->inst_hooks->Add("cg_predictPlayerState", addr_cg_predictPlayerState, predictPlayerState, hook_type_detour);
-	avengers->inst_hooks->Add("FS_CompareIwds", addr_FS_CompareIwds, FS_CompareIwds, hook_type_detour);
+	avengers->instHooks->add("cg_predictPlayerState", addr_cg_predictPlayerState, predictPlayerState, hook_type_detour);
+	avengers->instHooks->add("FS_CompareIwds", addr_FS_CompareIwds, FS_CompareIwds, hook_type_detour);
 }

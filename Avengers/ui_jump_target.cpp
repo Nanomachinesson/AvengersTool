@@ -15,7 +15,7 @@ ui_jump_target::~ui_jump_target()
 
 void ui_jump_target::render()
 {
-	Avengers* hud = Avengers::get_instance();
+	Avengers* hud = Avengers::getInstance();
 
 	static float minDist = 99999999.f;
 	static float minDistZ = 99999999.f;
@@ -25,20 +25,20 @@ void ui_jump_target::render()
 	constexpr int minimumAirtimeMs = 500;
 
 	bool onGround = hud->gameState->onGround;
-	vec3<float> jumpTargetOrigin = hud->inst_ui_menu->jump_target_origin;
+	vec3<float> jumpTargetOrigin = hud->instUiMenu->jumpTargetOrigin;
 	vec3<float> origin = hud->gameState->origin;
 	float dist;
 	float distZ;
 
-	if (hud->inst_game->is_spectating() || hud->inst_game->is_noclipping()) {
+	if (hud->instGame->isSpectating() || hud->instGame->isNoclipping()) {
 		return;
 	}
 
-	if ((hud->inst_ui_menu->brush_mode && selectedBrushes.size() == 0) || (!hud->inst_ui_menu->brush_mode && jumpTargetOrigin == vec3<float>(0.f, 0.f, 0.f))) {
+	if ((hud->instUiMenu->brushMode && selectedBrushes.size() == 0) || (!hud->instUiMenu->brushMode && jumpTargetOrigin == vec3<float>(0.f, 0.f, 0.f))) {
 		return;
 	}
 
-	if (hud->inst_ui_menu->brush_mode) {
+	if (hud->instUiMenu->brushMode) {
 		vec2<float> brushDist = getBrushDistance();
 		dist = brushDist.x;
 		distZ = brushDist.y;
@@ -48,7 +48,7 @@ void ui_jump_target::render()
 		}
 	}
 	else {
-		dist = origin.Dist(jumpTargetOrigin);
+		dist = origin.dist(jumpTargetOrigin);
 		distZ = jumpTargetOrigin.z - origin.z;
 
 		if (distZ < globalMinZ) {
@@ -69,7 +69,7 @@ void ui_jump_target::render()
 			ss << globalMinZ << " too low" << std::endl;
 			ss << minDist << " units off" << std::endl;
 			ss << minDistZ << " too low at closest position";
-			hud->inst_game->add_obituary(ss.str());
+			hud->instGame->addObituary(ss.str());
 		}
 
 		minDist = 99999999.f;
@@ -103,7 +103,7 @@ void ui_jump_target::resetBrushes()
 
 void ui_jump_target::selectFacePlayerIsStandingOn()
 {
-	Avengers* avengers = Avengers::get_instance();
+	Avengers* avengers = Avengers::getInstance();
 	auto gameState = avengers->gameState;
 
 	vec3<float> origin = gameState->origin;
@@ -115,7 +115,7 @@ void ui_jump_target::selectFacePlayerIsStandingOn()
 		for (auto& brushSide : brush.sides) {
 			constexpr float LEEWAY = 0.01f;
 			constexpr float EXTEND_WIDTH = 15.f;
-			float dist = brushSide.center.Dist(origin);
+			float dist = brushSide.center.dist(origin);
 
 			if (dist < closest) {
 				closest = dist;
@@ -138,7 +138,7 @@ void ui_jump_target::selectFacePlayerIsStandingOn()
 		}
 	}
 	
-	bool selectClosest = avengers->inst_ui_menu->jump_target_select_closest;
+	bool selectClosest = avengers->instUiMenu->jumpTargetSelectClosest;
 	if (face && std::find(selectedBrushes.begin(), selectedBrushes.end(), face) == selectedBrushes.end()) {
 		selectedBrushes.push_back(face);
 	}
@@ -153,7 +153,7 @@ vec2<float> ui_jump_target::getBrushDistance()
 	float closestZ = 9999999999.f;
 	constexpr float EXTEND_WIDTH = 15.f;
 
-	Avengers* avengers = Avengers::get_instance();
+	Avengers* avengers = Avengers::getInstance();
 	auto gameState = avengers->gameState;
 	vec3<float> origin = gameState->origin;
 	BrushSide* selectedBrush;
@@ -168,10 +168,10 @@ vec2<float> ui_jump_target::getBrushDistance()
 		extendPolygon(points2D, EXTEND_WIDTH);
 
 		for (int i = 0; i < points2D.size(); i++) {
-			points.push_back(vec3<float>(points2D[i].x, points2D[i].y, brush->points[i].z + 0.125f));  //Add 0.125 because were looking at collisions
+			points.push_back(vec3<float>(points2D[i].x, points2D[i].y, brush->points[i].z + 0.125f));  //add 0.125 because were looking at collisions
 		}
 
-		float dist = PolygonDist(points, origin);
+		float dist = polygonDist(points, origin);
 		if (dist < closest) {
 			closest = dist;
 			closestZ = points[0].z - origin.z;
@@ -183,7 +183,7 @@ vec2<float> ui_jump_target::getBrushDistance()
 }
 
 //I had copilot write these, hopefully they work
-float ui_jump_target::PolygonSideDist(const std::vector<vec3<float>>& polygon, const vec3<float>& point)
+float ui_jump_target::polygonSideDist(const std::vector<vec3<float>>& polygon, const vec3<float>& point)
 {
 	if (polygon.empty())
 		return 0.0f;
@@ -214,15 +214,15 @@ float ui_jump_target::PolygonSideDist(const std::vector<vec3<float>>& polygon, c
 		const float apy = point.y - A.y;
 		const float apz = point.z - A.z;
 
-		const float ab_len2 = abx*abx + aby*aby + abz*abz;
+		const float abLen2 = abx*abx + aby*aby + abz*abz;
 
 		float t;
-		if (ab_len2 <= 1e-12f) {
+		if (abLen2 <= 1e-12f) {
 			// Degenerate edge: treat as distance to A
 			t = 0.0f;
 		} else {
 			const float dot = apx*abx + apy*aby + apz*abz;
-			t = dot / ab_len2;
+			t = dot / abLen2;
 			if (t < 0.0f) t = 0.0f;
 			else if (t > 1.0f) t = 1.0f;
 		}
@@ -245,7 +245,7 @@ float ui_jump_target::PolygonSideDist(const std::vector<vec3<float>>& polygon, c
 	return std::sqrt(minDist2);
 }
 
-float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const vec3<float>& point)
+float ui_jump_target::polygonDist(const std::vector<vec3<float>>& polygon, const vec3<float>& point)
 {
 	if (polygon.empty())
 		return 0.0f;
@@ -253,7 +253,7 @@ float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const
 	const size_t n = polygon.size();
 	if (n < 3) {
 		// line or point: distance to segments/points
-		return PolygonSideDist(polygon, point);
+		return polygonSideDist(polygon, point);
 	}
 
 	constexpr float EPS = 1e-8f;
@@ -289,7 +289,7 @@ float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const
 
 	if (!found) {
 		// Degenerate / collinear polygon => distance to edges/vertices
-		return PolygonSideDist(polygon, point);
+		return polygonSideDist(polygon, point);
 	}
 
 	// Compute signed distance numerator: dot(AP, normal)
@@ -323,7 +323,7 @@ float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const
 	}
 	if (!gotEdge) {
 		// fallback
-		return PolygonSideDist(polygon, point);
+		return polygonSideDist(polygon, point);
 	}
 
 	// u = normalized edge (ex,ey,ez)
@@ -338,7 +338,7 @@ float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const
 	const float vlen2 = vx * vx + vy * vy + vz * vz;
 	if (vlen2 <= EPS) {
 		// numerical degeneracy fallback
-		return PolygonSideDist(polygon, point);
+		return polygonSideDist(polygon, point);
 	}
 	const float invVlen = 1.0f / std::sqrt(vlen2);
 	vx *= invVlen;
@@ -357,7 +357,7 @@ float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const
 		poly2d.push_back(vec2<float>(px, py));
 	}
 
-	// projected point: subtract projection along normal: point_proj = point - (signedDot / norm2) * normal
+	// projected point: subtract projection along normal: pointProj = point - (signedDot / norm2) * normal
 	const float projScale = signedDot / norm2;
 	const float projx = point.x - projScale * nx;
 	const float projy = point.y - projScale * ny;
@@ -379,13 +379,13 @@ float ui_jump_target::PolygonDist(const std::vector<vec3<float>>& polygon, const
 			}
 		}
 		if (abovePolygon) {
-			return -1.f * PolygonSideDist(polygon, point);
+			return -1.f * polygonSideDist(polygon, point);
 		}
 		//return fabsf(polygon[0].z - point.z);
 	}
 
 	// Otherwise distance is to polygon sides/vertices
-	return PolygonSideDist(polygon, point);
+	return polygonSideDist(polygon, point);
 }
 
 bool ui_jump_target::isInPolygon(const std::vector<vec2<float>>& polygon, const vec2<float>& point)
@@ -436,11 +436,11 @@ bool ui_jump_target::isInPolygon(const std::vector<vec2<float>>& polygon, const 
 			return true;
 
 		// Ray-casting: check if edge crosses the horizontal ray to the right of the point
-		const bool yi_gt = a.y > point.y;
-		const bool yj_gt = b.y > point.y;
+		const bool yiGt = a.y > point.y;
+		const bool yjGt = b.y > point.y;
 
-		// Edge crosses the horizontal line of point if yi_gt != yj_gt
-		if (yi_gt != yj_gt) {
+		// Edge crosses the horizontal line of point if yiGt != yjGt
+		if (yiGt != yjGt) {
 			// Compute x coordinate of intersection of edge with horizontal line at point.y
 			const float intersectX = a.x + (b.x - a.x) * ((point.y - a.y) / (b.y - a.y));
 			if (intersectX > point.x)

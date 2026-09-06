@@ -1,21 +1,22 @@
 #pragma once
 #include <d3d9.h>
+#include <string>
 
 // struct demo_player_states
 // {
-// 	bool playing_demos = false;
-// 	int demo_num;
+// 	bool playingDemos = false;
+// 	int demoNum;
 // 	float timescale = 1;
-// 	char* extra_cmd;
-// 	bool sim_f9 = false;
-// 	bool just_finished = false;
-// 	int play_demos_from = 1;
-// 	int play_demos_index = 1;
-// 	bool demo_playing = false;
-// 	bool show_fps_image = false;
+// 	char* extraCmd;
+// 	bool simF9 = false;
+// 	bool justFinished = false;
+// 	int playDemosFrom = 1;
+// 	int playDemosIndex = 1;
+// 	bool demoPlaying = false;
+// 	bool showFpsImage = false;
 // 	bool wtmod = false;
 // 	bool threexp = true;
-// 	float image_scale = 0.7f;
+// 	float imageScale = 0.7f;
 // };
 
 class ui_demoplayer
@@ -25,22 +26,31 @@ public:
 	~ui_demoplayer();
 	void render();
 	void menu(Avengers* hud);
-	void play_all_demos();
+	void playAllDemos();
 
 	//demo_player_states demo_player_states;
 
-	bool playing_demos = false;
-	int demo_num;
+	bool playingDemos = false;
+	int demoNum = 1;
 	float timescale = 1;
-	char* extra_cmd;
-	bool sim_f9 = false;
-	bool just_finished = false;
-	int play_demos_from = 1;
-	int play_demos_index = 1;
-	bool demo_playing = false;
-	bool show_fps_image = false;
+	char* extraCmd = nullptr;
+	bool simF9 = false;
+	bool obsWebsocket = false;
+	std::string obsHost = "127.0.0.1";
+	std::string obsPort = "4455";
+	std::string obsPassword;
+	bool justFinished = false;
+	int playDemosFrom = 1;
+	int playDemosIndex = 1;
+	bool demoPlaying = false;
+	bool showFpsImage = false;
 	bool wtmod = false;
 	bool threexp = true;
-	float image_scale = 0.7f;
+	float imageScale = 0.7f;
+
+	char timescaleInput[128] = "1";
+	char demoCountInput[128] = "1";
+	char extraCommandInput[1024]{};
+	char playFromInput[10] = "1";
 };
 

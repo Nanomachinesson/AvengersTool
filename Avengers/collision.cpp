@@ -12,14 +12,14 @@ Collision::~Collision()
 
 void Collision::render()
 {
-	float maxDist = avengers->inst_ui_menu->draw_collision_distance;
+	float maxDist = avengers->instUiMenu->drawCollisionDistance;
 	if (maxDist == 0.f) {
 		maxDist = 99999999.f;
 	}
 
-	vec3<float> origin = avengers->inst_game->get_origin();
-	bool drawOnlyClips = avengers->inst_ui_menu->draw_collision_only_clips;
-	bool noDrawSky = avengers->inst_ui_menu->draw_collision_no_sky;
+	vec3<float> origin = avengers->instGame->getOrigin();
+	bool drawOnlyClips = avengers->instUiMenu->drawCollisionOnlyClips;
+	bool noDrawSky = avengers->instUiMenu->drawCollisionNoSky;
 
 	if (!hasInitialized) {
 		return;
@@ -28,7 +28,7 @@ void Collision::render()
 	for (ProcessedBrush& processedBrush : processedBrushes) {
 		if ( ((drawOnlyClips && processedBrush.isClip) || !drawOnlyClips) 
 			&& (! (noDrawSky && processedBrush.isSky) || !noDrawSky)
-			&& processedBrush.center.Dist(origin) <= maxDist) {
+			&& processedBrush.center.dist(origin) <= maxDist) {
 			drawCollision(processedBrush);
 		}
 	}
@@ -37,14 +37,14 @@ void Collision::render()
 void Collision::init()
 {
 	///////////////////////////////////////////////////////////////////////////////
-	bool connected = avengers->inst_game->is_connected();
+	bool connected = avengers->instGame->isConnected();
 
-	if (avengers->inst_ui_menu->draw_collision && !hasInitialized && connected) {
+	if (avengers->instUiMenu->drawCollision && !hasInitialized && connected) {
 		clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
-		const char* mapents_ptr = cm->mapEnts->entityString;
+		const char* mapentsPtr = cm->mapEnts->entityString;
 
-		parseEntities(std::string(mapents_ptr));
-		brushModels = get_brushmodels();
+		parseEntities(std::string(mapentsPtr));
+		brushModels = getBrushmodels();
 		createMaterials();
 		buildBrushes();
 
@@ -56,7 +56,7 @@ void Collision::init()
 		entities.clear();
 		brushModels.clear();
 		mapMaterials.clear();
-		avengers->inst_ui_jump_target->resetBrushes();
+		avengers->instUiJumpTarget->resetBrushes();
 	}
 	///////////////////////////////////////////////////////////////////////////////
 }
@@ -175,46 +175,46 @@ void Collision::buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* b
 	currentColorIndex = (currentColorIndex + 1) % COLOR_COUNT;
 	processedBrush.color = currentColor;
 
-	AxialPlane_t axial_planes[6] {};
-	get_axial_planes(axial_planes, brush);
+	AxialPlane_t axialPlanes[6] {};
+	getAxialPlanes(axialPlanes, brush);
 
-	int pt_count = pts.size();
+	int ptCount = pts.size();
 
 	// -------------------------------
 	// brushside [0]-[5] (axialPlanes)
-	for (auto side_index = 0u; side_index < 6; ++side_index) {
-		vec3<float> plane_normal;
-		plane_normal = axial_planes[side_index].plane;
+	for (auto windingSideIndex = 0u; windingSideIndex < 6; ++windingSideIndex) {
+		vec3<float> planeNormal;
+		planeNormal = axialPlanes[windingSideIndex].plane;
 
-		if (build_brush_winding_for_side((winding_t*)&winding_pool, reinterpret_cast<const float*>(&plane_normal), side_index, pts)) {
+		if (buildBrushWindingForSide((winding_t*)&windingPool, reinterpret_cast<const float*>(&planeNormal), windingSideIndex, pts)) {
 			processedBrush.sides.push_back(BrushSide());
 			vec3<float> sideCenter(0.f, 0.f, 0.f);
 			std::size_t sideIndex = processedBrush.sides.size() - 1;
-			for (int i = 0; i < winding_pool.numpoints; i++) {
-				vec3<float> p(reinterpret_cast<vec3<float>*>(winding_pool.p)[i]);
+			for (int i = 0; i < windingPool.numpoints; i++) {
+				vec3<float> p(reinterpret_cast<vec3<float>*>(windingPool.p)[i]);
 				sideCenter += p;
 				processedBrush.sides[sideIndex].points.push_back(p);
 			}
 
-			sideCenter /= winding_pool.numpoints;
+			sideCenter /= windingPool.numpoints;
 			processedBrush.sides[sideIndex].center = sideCenter;
 		}
 	}
 
 	// ---------------------------------
 	// brushside [6] and up (additional)
-	for (auto side_index = 6u; side_index < brush->numsides + 6; ++side_index) {
-		if (build_brush_winding_for_side((winding_t*)&winding_pool, brush->sides[side_index - 6].plane->normal, side_index, pts)) {
+	for (auto windingSideIndex = 6u; windingSideIndex < brush->numsides + 6; ++windingSideIndex) {
+		if (buildBrushWindingForSide((winding_t*)&windingPool, brush->sides[windingSideIndex - 6].plane->normal, windingSideIndex, pts)) {
 			processedBrush.sides.push_back(BrushSide());
 			std::size_t sideIndex = processedBrush.sides.size() - 1;
 			vec3<float> sideCenter(0.f, 0.f, 0.f);
-			for (int i = 0; i < winding_pool.numpoints; i++) {
-				vec3<float> p(reinterpret_cast<vec3<float>*>(winding_pool.p)[i]);
+			for (int i = 0; i < windingPool.numpoints; i++) {
+				vec3<float> p(reinterpret_cast<vec3<float>*>(windingPool.p)[i]);
 				sideCenter += p;
 				processedBrush.sides[sideIndex].points.push_back(p);
 			}
 
-			sideCenter /= winding_pool.numpoints;
+			sideCenter /= windingPool.numpoints;
 			processedBrush.sides[sideIndex].center = sideCenter;
 		}
 	}
@@ -222,26 +222,26 @@ void Collision::buildCollisionPoints(ProcessedBrush& processedBrush, cbrush_t* b
 
 void Collision::drawCollision(ProcessedBrush& processedBrush)
 {
-	const auto poly_lit = false;
-	const auto poly_outlines = false;
-	const auto poly_linecolor = ImColor(255, 255, 255, 255);
-	const auto poly_depth = true;
-	const auto poly_face = false;
+	const auto polyLit = false;
+	const auto polyOutlines = false;
+	const auto polyLinecolor = ImColor(255, 255, 255, 255);
+	const auto polyDepth = true;
+	const auto polyFace = false;
 
 	for (BrushSide& side : processedBrush.sides) {
 		vec3<float>* points = side.points.data();
-		avengers->inst_game->drawPoly(side.points.size(), (float(*)[3]) points, (const float*)&processedBrush.color,
-			poly_lit, poly_outlines, (const float*)&poly_linecolor, poly_depth, poly_face);
+		avengers->instGame->drawPoly(side.points.size(), (float(*)[3]) points, (const float*)&processedBrush.color,
+			polyLit, polyOutlines, (const float*)&polyLinecolor, polyDepth, polyFace);
 	}
 }
 
 void Collision::drawCircle(const vec3<float>& pos, ImColor color)
 {
-	vec2<float> screen_pos;
+	vec2<float> screenPos;
 	ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
-	if (avengers->inst_game->world_to_screen(pos, &screen_pos.x, &screen_pos.y)) {
-		drawList->AddCircle(screen_pos.toImvec2(), 20.f, color, 16, 2);
+	if (avengers->instGame->worldToScreen(pos, &screenPos.x, &screenPos.y)) {
+		drawList->AddCircle(screenPos.toImvec2(), 20.f, color, 16, 2);
 	}
 }
 
@@ -255,79 +255,79 @@ void Collision::createMaterials()
 {
 	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
 
-	const std::uint32_t clipmap_material_index = cm->numMaterials;
-	std::vector<dmaterial_t*> map_materials(clipmap_material_index);
+	const std::uint32_t clipmapMaterialIndex = cm->numMaterials;
+	std::vector<dmaterial_t*> materials(clipmapMaterialIndex);
 
-	for (auto num = 0u; num < clipmap_material_index; num++) {
-		map_materials[num] = &cm->materials[num];
+	for (auto num = 0u; num < clipmapMaterialIndex; num++) {
+		materials[num] = &cm->materials[num];
 	}
 
-	mapMaterials = map_materials;
+	mapMaterials = materials;
 }
 
 std::vector<ShowCollisionBrushPt> Collision::getPointsForBrush(cbrush_t* brush)
 {
-	std::vector<ShowCollisionBrushPt> brush_pts(128);
+	std::vector<ShowCollisionBrushPt> brushPts(128);
 
-	AxialPlane_t axial_planes[6];
-	axial_planes[0].plane = vec3<float>(-1.0f, 0.0f, 0.0f);
-	axial_planes[0].dist = -brush->mins[0];
+	AxialPlane_t axialPlanes[6];
+	axialPlanes[0].plane = vec3<float>(-1.0f, 0.0f, 0.0f);
+	axialPlanes[0].dist = -brush->mins[0];
 
-	axial_planes[1].plane = vec3<float>(1.0f, 0.0f, 0.0f);
-	axial_planes[1].dist = brush->maxs[0];
+	axialPlanes[1].plane = vec3<float>(1.0f, 0.0f, 0.0f);
+	axialPlanes[1].dist = brush->maxs[0];
 
-	axial_planes[2].plane = vec3<float>(0.0f, -1.0f, 0.0f);
-	axial_planes[2].dist = -brush->mins[1];
+	axialPlanes[2].plane = vec3<float>(0.0f, -1.0f, 0.0f);
+	axialPlanes[2].dist = -brush->mins[1];
 
-	axial_planes[3].plane = vec3<float>(0.0f, 1.0f, 0.0f);
-	axial_planes[3].dist = brush->maxs[1];
+	axialPlanes[3].plane = vec3<float>(0.0f, 1.0f, 0.0f);
+	axialPlanes[3].dist = brush->maxs[1];
 
-	axial_planes[4].plane = vec3<float>(0.0f, 0.0f, -1.0f);
-	axial_planes[4].dist = -brush->mins[2];
+	axialPlanes[4].plane = vec3<float>(0.0f, 0.0f, -1.0f);
+	axialPlanes[4].dist = -brush->mins[2];
 
-	axial_planes[5].plane = vec3<float>(0.0f, 0.0f, 1.0f);
-	axial_planes[5].dist = brush->maxs[2];
+	axialPlanes[5].plane = vec3<float>(0.0f, 0.0f, 1.0f);
+	axialPlanes[5].dist = brush->maxs[2];
 
-	int pt_count = 0;
-	int pt_count_all = 0;
-	const int side_count = brush->numsides + 6;
+	int ptCount = 0;
+	int ptCountAll = 0;
+	const int sideCount = brush->numsides + 6;
 
-	std::int16_t side_index[3] = {};
-	float expanded_plane[3][4] = {};
+	std::int16_t windingSideIndex[3] = {};
+	float expandedPlane[3][4] = {};
 	constexpr int CM_MAX_BRUSHPOINTS_FROM_INTERSECTIONS = 128;
 
 	// first loop should only get the axial planes till brush->numsides < 3
-	for (side_index[0] = 0; side_index[0] < side_count - 2; ++side_index[0]) {
+	for (windingSideIndex[0] = 0; windingSideIndex[0] < sideCount - 2; ++windingSideIndex[0]) {
 		// sideIndex[0]-[5] are axial planes only; move the current plane into expandedPlane[0]
-		get_plane_vec4(brush->sides, axial_planes, side_index[0], (float*)expanded_plane);
+		getPlaneVec4(brush->sides, axialPlanes, windingSideIndex[0], (float*)expandedPlane);
 
 		// get a plane 1 plane ahead of our first plane
-		for (side_index[1] = side_index[0] + 1; side_index[1] < side_count - 1; ++side_index[1]) {
+		for (windingSideIndex[1] = windingSideIndex[0] + 1; windingSideIndex[1] < sideCount - 1; ++windingSideIndex[1]) {
 			// check if we're using an axial plane and 2 different planes
-			if (side_index[0] < 6 || side_index[1] < 6 || brush->sides[side_index[0] - 6].plane != brush->sides[side_index[1] - 6].plane) {
+			if (windingSideIndex[0] < 6 || windingSideIndex[1] < 6 || brush->sides[windingSideIndex[0] - 6].plane != brush->sides[windingSideIndex[1] - 6].plane) {
 				// move the current plane into expandedPlane[1]
-				get_plane_vec4(brush->sides, axial_planes, side_index[1], expanded_plane[1]);
+				getPlaneVec4(brush->sides, axialPlanes, windingSideIndex[1], expandedPlane[1]);
 
 				// get a plane 1 plane ahead of our second plane
-				for (side_index[2] = side_index[1] + 1; side_index[2] < side_count - 0; ++side_index[2]) {
+				for (windingSideIndex[2] = windingSideIndex[1] + 1; windingSideIndex[2] < sideCount - 0; ++windingSideIndex[2]) {
 					// check if we use axial planes or atleast 3 different sides
-					if ((side_index[0] < 6 || side_index[2] < 6 || brush->sides[side_index[0] - 6].plane != brush->sides[side_index[2] - 6].plane)
-						&& (side_index[1] < 6 || side_index[2] < 6 || brush->sides[side_index[1] - 6].plane != brush->sides[side_index[2] - 6].plane)) {
+					if ((windingSideIndex[0] < 6 || windingSideIndex[2] < 6 || brush->sides[windingSideIndex[0] - 6].plane != brush->sides[windingSideIndex[2] - 6].plane)
+						&& (windingSideIndex[1] < 6 || windingSideIndex[2] < 6 || brush->sides[windingSideIndex[1] - 6].plane != brush->sides[windingSideIndex[2] - 6].plane)) {
 						// move the current plane into expandedPlane[2]
-						get_plane_vec4(brush->sides, axial_planes, side_index[2], expanded_plane[2]);
+						getPlaneVec4(brush->sides, axialPlanes, windingSideIndex[2], expandedPlane[2]);
 
 						// intersect the 3 planes
 						float xyz[3];
 
-						if (intersect_planes(expanded_plane[0], expanded_plane[1], expanded_plane[2], xyz)) {
+						if (intersectPlanes(expandedPlane[0], expandedPlane[1], expandedPlane[2], xyz)) {
 							// snap our verts in xyz onto the grid
-							snap_point_to_intersecting_planes(expanded_plane[0], expanded_plane[1], expanded_plane[2], xyz, 0.25f, 0.0099999998f);
+							snapPointToIntersectingPlanes(expandedPlane[0], expandedPlane[1], expandedPlane[2], xyz, 0.25f, 0.0099999998f);
 
 							// if the planes intersected, put verts into brushPts and increase our pointCount
-							pt_count = add_simple_brush_point(brush, axial_planes, side_index, xyz, pt_count, brush_pts);
-							pt_count_all += pt_count;
+							ptCount = addSimpleBrushPoint(brush, axialPlanes, windingSideIndex, xyz, ptCount, brushPts);
+							ptCountAll += ptCount;
 
-							if (pt_count >= CM_MAX_BRUSHPOINTS_FROM_INTERSECTIONS - 1) {
+							if (ptCount >= CM_MAX_BRUSHPOINTS_FROM_INTERSECTIONS - 1) {
 								goto end;
 							}
 						}
@@ -338,19 +338,19 @@ std::vector<ShowCollisionBrushPt> Collision::getPointsForBrush(cbrush_t* brush)
 	}
 
 end:
-	brush_pts.resize(pt_count);
-	return brush_pts;
+	brushPts.resize(ptCount);
+	return brushPts;
 }
 
-std::vector<brushmodel_entity_s> Collision::get_brushmodels()
+std::vector<brushmodel_entity_s> Collision::getBrushmodels()
 {
 	clipMap_t* cm = reinterpret_cast<clipMap_t*>(addr_clipmap_t);
 
 	std::vector<brushmodel_entity_s> bmodels;
 
 	// geting the total clipmap size would prob. be better
-	const uintptr_t leaf_brushes_start = reinterpret_cast<uintptr_t>(&*cm->leafbrushNodes);
-	const uintptr_t leaf_brushes_end = leaf_brushes_start + sizeof(cLeafBrushNode_s) * (cm->leafbrushNodesCount + cm->numLeafBrushes); // wrong
+	const uintptr_t leafBrushesStart = reinterpret_cast<uintptr_t>(&*cm->leafbrushNodes);
+	const uintptr_t leafBrushesEnd = leafBrushesStart + sizeof(cLeafBrushNode_s) * (cm->leafbrushNodesCount + cm->numLeafBrushes); // wrong
 
 	// first element is always empty because
 	// the first submodel within the entsMap starts at 1 and we want to avoid subtracting - 1 everywhere 
@@ -363,59 +363,59 @@ std::vector<brushmodel_entity_s> Collision::get_brushmodels()
 
 			// if ent is a brushmodel/submodel
 			if (!model.empty() && model[0] == '*' && !origin.empty()) {
-				auto curr_bmodel = brushmodel_entity_s();
+				auto currBmodel = brushmodel_entity_s();
 
 				// get the submodel index 
-				const auto p_index = std::stoi(model.erase(0, 1));
+				const auto pIndex = std::stoi(model.erase(0, 1));
 
 				// the index should always match the size of our vector or we did something wrong
-				if (p_index != (int)bmodels.size()) {
-					//game::Com_PrintMessage(0, utils::va("[Entities::getBrushModels]: Something went wrong while parsing submodels. (%d != %d)", p_index, bmodels.size()), 0);
+				if (pIndex != (int)bmodels.size()) {
+					//game::Com_PrintMessage(0, utils::va("[Entities::getBrushModels]: Something went wrong while parsing submodels. (%d != %d)", pIndex, bmodels.size()), 0);
 				}
 
-				if (p_index >= static_cast<int>(cm->numSubModels)) {
-					//game::Com_PrintMessage(0, utils::va("[Entities::getBrushModels]: Something went wrong while parsing submodels. (%d >= %d numSubModels)", p_index, game::cm->numSubModels), 0);
+				if (pIndex >= static_cast<int>(cm->numSubModels)) {
+					//game::Com_PrintMessage(0, utils::va("[Entities::getBrushModels]: Something went wrong while parsing submodels. (%d >= %d numSubModels)", pIndex, game::cm->numSubModels), 0);
 					break;
 				}
 
 				// assign indices and pointers to both the brush and the submodel
-				curr_bmodel.cm_submodel_index = p_index;
+				currBmodel.cm_submodel_index = pIndex;
 
-				if (&cm->cmodels[p_index]) {
-					curr_bmodel.cm_submodel = &cm->cmodels[p_index];
+				if (&cm->cmodels[pIndex]) {
+					currBmodel.cm_submodel = &cm->cmodels[pIndex];
 				}
 
 				// fix me daddy
-				auto brush_index_ptr = cm->leafbrushNodes[cm->cmodels[p_index].leaf.leafBrushNode].data.leaf.brushes;
-				curr_bmodel.cm_brush_index = 0;
+				auto brushIndexPtr = cm->leafbrushNodes[cm->cmodels[pIndex].leaf.leafBrushNode].data.leaf.brushes;
+				currBmodel.cm_brush_index = 0;
 
 				// this is giving me cancer
-				if (cm->cmodels[p_index].leaf.leafBrushNode != 0 && brush_index_ptr) {
-					if ((uintptr_t) & *brush_index_ptr >= leaf_brushes_start && (uintptr_t) & *brush_index_ptr < leaf_brushes_end) {
-						curr_bmodel.cm_brush_index = static_cast<int>(*cm->leafbrushNodes[cm->cmodels[p_index].leaf.leafBrushNode].data.leaf.brushes);
+				if (cm->cmodels[pIndex].leaf.leafBrushNode != 0 && brushIndexPtr) {
+					if ((uintptr_t) & *brushIndexPtr >= leafBrushesStart && (uintptr_t) & *brushIndexPtr < leafBrushesEnd) {
+						currBmodel.cm_brush_index = static_cast<int>(*cm->leafbrushNodes[cm->cmodels[pIndex].leaf.leafBrushNode].data.leaf.brushes);
 					}
 					else {
-						//game::Com_PrintMessage(0, utils::va("[Entities::getBrushModels]: Skipping faulty brush-index pointer at leafbrushNodes[%d].data.leaf.brushes ...\n", p_index), 0);
+						//game::Com_PrintMessage(0, utils::va("[Entities::getBrushModels]: Skipping faulty brush-index pointer at leafbrushNodes[%d].data.leaf.brushes ...\n", pIndex), 0);
 					}
 
-					//currBModel.cmBrush = &Game::cm->brushes[*Game::cm->leafbrushNodes[Game::cm->cmodels[p_index].leaf.leafBrushNode].data.leaf.brushes];
-					curr_bmodel.cm_brush = &cm->brushes[curr_bmodel.cm_brush_index];
+					//currBModel.cmBrush = &Game::cm->brushes[*Game::cm->leafbrushNodes[Game::cm->cmodels[pIndex].leaf.leafBrushNode].data.leaf.brushes];
+					currBmodel.cm_brush = &cm->brushes[currBmodel.cm_brush_index];
 
 					// add the submodel index to the clipmap brush
-					curr_bmodel.cm_brush->isSubmodel = true;
-					curr_bmodel.cm_brush->cmSubmodelIndex = static_cast<std::int16_t>(p_index);
+					currBmodel.cm_brush->isSubmodel = true;
+					currBmodel.cm_brush->cmSubmodelIndex = static_cast<std::int16_t>(pIndex);
 				}
 
 
 				// save entity origin
-				if (!sscanf_s(origin.c_str(), "%f %f %f", &curr_bmodel.cm_submodel_origin[0], &curr_bmodel.cm_submodel_origin[1], &curr_bmodel.cm_submodel_origin[2])) {
-					//game::Com_PrintMessage(0, utils::va("[!]: sscanf failed for submodel %d", p_index), 0);
-					curr_bmodel.cm_submodel_origin[0] = 0.0f;
-					curr_bmodel.cm_submodel_origin[1] = 0.0f;
-					curr_bmodel.cm_submodel_origin[2] = 0.0f;
+				if (!sscanf_s(origin.c_str(), "%f %f %f", &currBmodel.cm_submodel_origin[0], &currBmodel.cm_submodel_origin[1], &currBmodel.cm_submodel_origin[2])) {
+					//game::Com_PrintMessage(0, utils::va("[!]: sscanf failed for submodel %d", pIndex), 0);
+					currBmodel.cm_submodel_origin[0] = 0.0f;
+					currBmodel.cm_submodel_origin[1] = 0.0f;
+					currBmodel.cm_submodel_origin[2] = 0.0f;
 				}
 
-				bmodels.push_back(curr_bmodel);
+				bmodels.push_back(currBmodel);
 			}
 		}
 	}
@@ -425,7 +425,7 @@ std::vector<brushmodel_entity_s> Collision::get_brushmodels()
 
 void Collision::parseEntities(const std::string& buffer)
 {
-	int parse_state = 0;
+	int parseState = 0;
 
 	std::string key;
 	std::string value;
@@ -454,20 +454,20 @@ void Collision::parseEntities(const std::string& buffer)
 
 		case '"':
 		{
-			if (parse_state == PARSE_AWAIT_KEY) {
+			if (parseState == PARSE_AWAIT_KEY) {
 				key.clear();
-				parse_state = PARSE_READ_KEY;
+				parseState = PARSE_READ_KEY;
 			}
-			else if (parse_state == PARSE_READ_KEY) {
-				parse_state = PARSE_AWAIT_VALUE;
+			else if (parseState == PARSE_READ_KEY) {
+				parseState = PARSE_AWAIT_VALUE;
 			}
-			else if (parse_state == PARSE_AWAIT_VALUE) {
+			else if (parseState == PARSE_AWAIT_VALUE) {
 				value.clear();
-				parse_state = PARSE_READ_VALUE;
+				parseState = PARSE_READ_VALUE;
 			}
-			else if (parse_state == PARSE_READ_VALUE) {
-				entity[str_to_lower(key)] = value;
-				parse_state = PARSE_AWAIT_KEY;
+			else if (parseState == PARSE_READ_VALUE) {
+				entity[strToLower(key)] = value;
+				parseState = PARSE_AWAIT_KEY;
 			}
 			else {
 				throw std::runtime_error("Parsing error!");
@@ -477,10 +477,10 @@ void Collision::parseEntities(const std::string& buffer)
 
 		default:
 		{
-			if (parse_state == PARSE_READ_KEY) {
+			if (parseState == PARSE_READ_KEY) {
 				key.push_back(character);
 			}
-			else if (parse_state == PARSE_READ_VALUE) {
+			else if (parseState == PARSE_READ_VALUE) {
 				value.push_back(character);
 			}
 
@@ -490,16 +490,16 @@ void Collision::parseEntities(const std::string& buffer)
 	}
 }
 
-std::string Collision::str_to_lower(std::string input)
+std::string Collision::strToLower(std::string input)
 {
 	std::transform(input.begin(), input.end(), input.begin(), ::tolower);
 	return input;
 }
 
-bool Collision::vec_compare_custom_epsilon(const vec3<float>* xyz_list, const int xyz_index, const float* v1, const float epsilon, const int coord_count)
+bool Collision::vecCompareCustomEpsilon(const vec3<float>* xyzList, const int xyzIndex, const float* v1, const float epsilon, const int coordCount)
 {
-	for (auto i = 0; i < coord_count; ++i) {
-		if (((xyz_list[xyz_index][i] - v1[i]) * (xyz_list[xyz_index][i] - v1[i])) > (epsilon * epsilon)) {
+	for (auto i = 0; i < coordCount; ++i) {
+		if (((xyzList[xyzIndex][i] - v1[i]) * (xyzList[xyzIndex][i] - v1[i])) > (epsilon * epsilon)) {
 			return false;
 		}
 	}
@@ -508,10 +508,10 @@ bool Collision::vec_compare_custom_epsilon(const vec3<float>* xyz_list, const in
 }
 
 // check if point exists (CM_PointInList)
-int Collision::point_exists_in_list(const float* point, const vec3<float>* xyz_list, const int xyz_count)
+int Collision::pointExistsInList(const float* point, const vec3<float>* xyzList, const int xyzCount)
 {
-	for (auto xyz_index = 0; xyz_index < xyz_count; ++xyz_index) {
-		if (vec_compare_custom_epsilon(xyz_list, xyz_index, point, 0.1f, 3)) // larger epsilon decreases quality
+	for (auto xyzIndex = 0; xyzIndex < xyzCount; ++xyzIndex) {
+		if (vecCompareCustomEpsilon(xyzList, xyzIndex, point, 0.1f, 3)) // larger epsilon decreases quality
 		{
 			return 1;
 		}
@@ -521,22 +521,22 @@ int Collision::point_exists_in_list(const float* point, const vec3<float>* xyz_l
 }
 
 // create a list of vertex points (CM_GetXyzList)
-int Collision::get_xyz_list(const unsigned int side_index, const std::vector<ShowCollisionBrushPt>& pts, vec3<float>* xyz_list, const int xyz_limit)
+int Collision::getXyzList(const unsigned int windingSideIndex, const std::vector<ShowCollisionBrushPt>& pts, vec3<float>* xyzList, const int xyzLimit)
 {
 	int count = 0;
-	int pt_count = pts.size();
+	int ptCount = pts.size();
 
-	for (auto index = 0; index < pt_count; ++index) {
-		if ((side_index == static_cast<std::uint16_t>(pts[index].sideIndex[0])
-			|| side_index == static_cast<std::uint16_t>(pts[index].sideIndex[1])
-			|| side_index == static_cast<std::uint16_t>(pts[index].sideIndex[2]))
-			&& !point_exists_in_list(reinterpret_cast<const float*>(&pts[index].xyz), xyz_list, count)) {
-			if (count == xyz_limit) {
-				//game::Com_PrintMessage(0, utils::va("^1get_xyz_list L#%d ^7:: Winding point limit (%i) exceeded on brush face \n", __LINE__, xyz_limit), 0);
+	for (auto index = 0; index < ptCount; ++index) {
+		if ((windingSideIndex == static_cast<std::uint16_t>(pts[index].sideIndex[0])
+			|| windingSideIndex == static_cast<std::uint16_t>(pts[index].sideIndex[1])
+			|| windingSideIndex == static_cast<std::uint16_t>(pts[index].sideIndex[2]))
+			&& !pointExistsInList(reinterpret_cast<const float*>(&pts[index].xyz), xyzList, count)) {
+			if (count == xyzLimit) {
+				//game::Com_PrintMessage(0, utils::va("^1get_xyz_list L#%d ^7:: Winding point limit (%i) exceeded on brush face \n", __LINE__, xyzLimit), 0);
 				return 0;
 			}
 
-			xyz_list[count] = pts[index].xyz;
+			xyzList[count] = pts[index].xyz;
 			++count;
 		}
 	}
@@ -544,7 +544,7 @@ int Collision::get_xyz_list(const unsigned int side_index, const std::vector<Sho
 	return count;
 }
 
-void Collision::pick_projection_axes(const float* normal, int* i, int* j)
+void Collision::pickProjectionAxes(const float* normal, int* i, int* j)
 {
 	int k = 0;
 
@@ -561,7 +561,7 @@ void Collision::pick_projection_axes(const float* normal, int* i, int* j)
 }
 
 // add a point that intersected behind another plane that still is within the bounding box? (CM_AddColinearExteriorPointToWindingProjected)
-void Collision::add_colinear_exterior_point_to_winding(winding_t* w, const vec3<float>& pt, int i, int j, int index0, int index1)
+void Collision::addColinearExteriorPointToWinding(winding_t* w, const vec3<float>& pt, int i, int j, int index0, int index1)
 {
 	float delta; int axis;
 
@@ -598,51 +598,51 @@ void Collision::add_colinear_exterior_point_to_winding(winding_t* w, const vec3<
 }
 
 // cross product (CM_SignedAreaForPointsProjected)
-float Collision::signed_area_for_points_projected(const float* pt0, const vec3<float>& pt1, const float* pt2, const int i, const int j)
+float Collision::signedAreaForPointsProjected(const float* pt0, const vec3<float>& pt1, const float* pt2, const int i, const int j)
 {
 	return (pt2[j] - pt1[j]) * pt0[i] + (pt0[j] - pt2[j]) * pt1[i] + (pt1[j] - pt0[j]) * pt2[i];
 }
 
-vec_t Collision::length_squared3(const vec3_t v)
+vec_t Collision::lengthSquared3(const vec3_t v)
 {
 	return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 }
 
 // Source :: PolyFromPlane || Q3 :: RemoveColinearPoints? (CM_AddExteriorPointToWindingProjected)
-void Collision::add_exterior_point_to_winding(winding_t* w, const vec3<float>& pt, int i, int j)
+void Collision::addExteriorPointToWinding(winding_t* w, const vec3<float>& pt, int i, int j)
 {
-	int best_index = -1;
-	float best_signed_area = FLT_MAX;
+	int bestIndex = -1;
+	float bestSignedArea = FLT_MAX;
 
-	int index_prev = w->numpoints - 1;
+	int indexPrev = w->numpoints - 1;
 
 	for (auto index = 0; index < w->numpoints; ++index) {
-		const float signed_area = signed_area_for_points_projected(w->p[index_prev], pt, w->p[index], i, j);
+		const float signedArea = signedAreaForPointsProjected(w->p[indexPrev], pt, w->p[index], i, j);
 
-		if (best_signed_area > signed_area) {
-			best_signed_area = signed_area;
-			best_index = index;
+		if (bestSignedArea > signedArea) {
+			bestSignedArea = signedArea;
+			bestIndex = index;
 		}
 
-		index_prev = index;
+		indexPrev = index;
 	}
 
-	if (best_signed_area < -0.001f) {
-		memmove((char*)w->p[best_index + 1], (char*)w->p[best_index], 12 * (w->numpoints - best_index));
+	if (bestSignedArea < -0.001f) {
+		memmove((char*)w->p[bestIndex + 1], (char*)w->p[bestIndex], 12 * (w->numpoints - bestIndex));
 
-	    *reinterpret_cast<vec3<float>*>(w->p[best_index]) = pt;
+	    *reinterpret_cast<vec3<float>*>(w->p[bestIndex]) = pt;
 		++w->numpoints;
 	}
 
-	else if (best_signed_area <= 0.001f) {
-		add_colinear_exterior_point_to_winding(w, pt, i, j, (best_index + w->numpoints - 1) % w->numpoints, best_index);
+	else if (bestSignedArea <= 0.001f) {
+		addColinearExteriorPointToWinding(w, pt, i, j, (bestIndex + w->numpoints - 1) % w->numpoints, bestIndex);
 	}
 }
 
 // create a triangle to check the winding order (CM_RepresentativeTriangleFromWinding)
-float Collision::representative_triangle_from_winding(const winding_t* w, const float* normal, int* i0, int* i1, int* i2)
+float Collision::representativeTriangleFromWinding(const winding_t* w, const float* normal, int* i0, int* i1, int* i2)
 {
-	float area_best = 0.0f;
+	float areaBest = 0.0f;
 	float va[3], vb[3], vc[3];
 
 	*i0 = 0;
@@ -661,10 +661,10 @@ float Collision::representative_triangle_from_winding(const winding_t* w, const 
 				va[2] = w->p[i][2] - w->p[j][2];
 
 				mm::cross3(va, vb, vc);
-				const float test_against = fabs(((vc[0] * normal[0]) + (vc[1] * normal[1])) + (vc[2] * normal[2]));
+				const float testAgainst = fabs(((vc[0] * normal[0]) + (vc[1] * normal[1])) + (vc[2] * normal[2]));
 
-				if (test_against > 0.0f) {
-					area_best = test_against;
+				if (testAgainst > 0.0f) {
+					areaBest = testAgainst;
 					*i0 = i;
 					*i1 = j;
 					*i2 = k;
@@ -673,45 +673,45 @@ float Collision::representative_triangle_from_winding(const winding_t* w, const 
 		}
 	}
 
-	return area_best;
+	return areaBest;
 }
 
 // create a plane from points
-bool Collision::plane_from_points(float* plane, const float* v0, const float* v1, const float* v2)
+bool Collision::planeFromPoints(float* plane, const float* v0, const float* v1, const float* v2)
 {
-	float v2_v0[3], v1_v0[3];
-	v1_v0[0] = v1[0] - v0[0];
-	v1_v0[1] = v1[1] - v0[1];
-	v1_v0[2] = v1[2] - v0[2];
-	v2_v0[0] = v2[0] - v0[0];
-	v2_v0[1] = v2[1] - v0[1];
-	v2_v0[2] = v2[2] - v0[2];
+	float v2V0[3], v1V0[3];
+	v1V0[0] = v1[0] - v0[0];
+	v1V0[1] = v1[1] - v0[1];
+	v1V0[2] = v1[2] - v0[2];
+	v2V0[0] = v2[0] - v0[0];
+	v2V0[1] = v2[1] - v0[1];
+	v2V0[2] = v2[2] - v0[2];
 
-	mm::cross3(v2_v0, v1_v0, plane);
-	const float length_sqr = ((plane[0] * plane[0]) + (plane[1] * plane[1])) + (plane[2] * plane[2]);
+	mm::cross3(v2V0, v1V0, plane);
+	const float lengthSqr = ((plane[0] * plane[0]) + (plane[1] * plane[1])) + (plane[2] * plane[2]);
 
-	if (length_sqr < 2.0f) {
-		if (length_sqr == 0.0f) {
+	if (lengthSqr < 2.0f) {
+		if (lengthSqr == 0.0f) {
 			return false;
 		}
 
-		if (length_squared3(v2_v0) * length_squared3(v1_v0) * 0.0000010000001f >= length_sqr) {
-			v1_v0[0] = v2[0] - v1[0];
-			v1_v0[1] = v2[1] - v1[1];
-			v1_v0[2] = v2[2] - v1[2];
-			v2_v0[0] = v0[0] - v1[0];
-			v2_v0[1] = v0[1] - v1[1];
-			v2_v0[2] = v0[2] - v1[2];
+		if (lengthSquared3(v2V0) * lengthSquared3(v1V0) * 0.0000010000001f >= lengthSqr) {
+			v1V0[0] = v2[0] - v1[0];
+			v1V0[1] = v2[1] - v1[1];
+			v1V0[2] = v2[2] - v1[2];
+			v2V0[0] = v0[0] - v1[0];
+			v2V0[1] = v0[1] - v1[1];
+			v2V0[2] = v0[2] - v1[2];
 
-			mm::cross3(v2_v0, v1_v0, plane);
+			mm::cross3(v2V0, v1V0, plane);
 
-			if (length_squared3(v2_v0) * length_squared3(v1_v0) * 0.0000010000001f >= length_sqr) {
+			if (lengthSquared3(v2V0) * lengthSquared3(v1V0) * 0.0000010000001f >= lengthSqr) {
 				return false;
 			}
 		}
 	}
 
-	const float length = sqrt(length_sqr);
+	const float length = sqrt(lengthSqr);
 	plane[0] = plane[0] / length;
 	plane[1] = plane[1] / length;
 	plane[2] = plane[2] / length;
@@ -720,10 +720,10 @@ bool Collision::plane_from_points(float* plane, const float* v0, const float* v1
 	return true;
 }
 
-void Collision::reverse_winding(winding_t* w)
+void Collision::reverseWinding(winding_t* w)
 {
 	for (auto i = 0; i < w->numpoints / 2; ++i) {
-		const float s_winding[3] =
+		const float sWinding[3] =
 		{
 			w->p[i][0], w->p[i][1], w->p[i][2]
 		};
@@ -732,13 +732,13 @@ void Collision::reverse_winding(winding_t* w)
 		w->p[i][1] = w->p[w->numpoints - 1 - i][1];
 		w->p[i][2] = w->p[w->numpoints - 1 - i][2];
 
-		w->p[w->numpoints - 1 - i][0] = s_winding[0];
-		w->p[w->numpoints - 1 - i][1] = s_winding[1];
-		w->p[w->numpoints - 1 - i][2] = s_winding[2];
+		w->p[w->numpoints - 1 - i][0] = sWinding[0];
+		w->p[w->numpoints - 1 - i][1] = sWinding[1];
+		w->p[w->numpoints - 1 - i][2] = sWinding[2];
 	}
 }
 
-void Collision::get_axial_planes(AxialPlane_t* planes, const cbrush_t* brush)
+void Collision::getAxialPlanes(AxialPlane_t* planes, const cbrush_t* brush)
 {
 	planes[0].plane = vec3<float>(-1.0f, 0.0f, 0.0f);
 	planes[0].dist = -brush->mins[0];
@@ -759,10 +759,10 @@ void Collision::get_axial_planes(AxialPlane_t* planes, const cbrush_t* brush)
 	planes[5].dist = brush->maxs[2];
 }
 
-bool Collision::build_brush_winding_for_side(winding_t* winding, const float* plane_normal, const int side_index, const std::vector<ShowCollisionBrushPt> pts)
+bool Collision::buildBrushWindingForSide(winding_t* winding, const float* planeNormal, const int windingSideIndex, const std::vector<ShowCollisionBrushPt> pts)
 {
 	int i, i0, i1, i2, j;
-	int pt_count = pts.size();
+	int ptCount = pts.size();
 	vec4_t plane {};
 
 	if (!winding) {
@@ -770,14 +770,14 @@ bool Collision::build_brush_winding_for_side(winding_t* winding, const float* pl
 		return false;
 	}
 
-	if (!plane_normal) {
+	if (!planeNormal) {
 		//game::Com_Error(0, COM_ERROR_MSG);
 		return false;
 	}
 
 	// create a list of vertex points
-	vec3<float> xyz_list[1024];
-	const int xyzCount = get_xyz_list(side_index, pts, xyz_list, 1024);
+	vec3<float> xyzList[1024];
+	const int xyzCount = getXyzList(windingSideIndex, pts, xyzList, 1024);
 
 	// we need atleast a triangle to create a poly
 	if (xyzCount < 3) {
@@ -785,28 +785,28 @@ bool Collision::build_brush_winding_for_side(winding_t* winding, const float* pl
 	}
 
 	/*/ direction of camera plane
-	const vec3<float> camera_direction_to_plane = xyz_list[0] - glob::lpmove_camera_origin;
+	const vec3<float> cameraDirectionToPlane = xyzList[0] - glob::lpmoveCameraOrigin;
 
 	// dot product between line from camera to the plane and the normal
 	// if dot > 0 then the plane is facing away from the camera (dot = 1 = plane is facing the same way as the camera; dot = -1 = plane looking directly towards the camera)
-	if (glm::dot(glm::vec3(plane_normal[0], plane_normal[1], plane_normal[2]), camera_direction_to_plane) > 0.0f && !dvars::r_drawCollision_polyFace->current.enabled) {
+	if (glm::dot(glm::vec3(planeNormal[0], planeNormal[1], planeNormal[2]), cameraDirectionToPlane) > 0.0f && !dvars::rDrawCollisionPolyFace->current.enabled) {
 		return false;
 	}*/
 
 	// find the major axis
-	pick_projection_axes(plane_normal, &i, &j);
+	pickProjectionAxes(planeNormal, &i, &j);
 
-    *reinterpret_cast<vec3<float>*>(winding->p[0]) = xyz_list[0];
-	*reinterpret_cast<vec3<float>*>(winding->p[1]) = xyz_list[1];
+    *reinterpret_cast<vec3<float>*>(winding->p[0]) = xyzList[0];
+	*reinterpret_cast<vec3<float>*>(winding->p[1]) = xyzList[1];
 
 	winding->numpoints = 2;
 
 	for (auto k = 2; k < xyzCount; ++k) {
-		add_exterior_point_to_winding(winding, xyz_list[k], i, j);
+		addExteriorPointToWinding(winding, xyzList[k], i, j);
 	}
 
 	// build a triangle of our winding points so we can check if the winding is clock-wise
-	if (representative_triangle_from_winding(winding, plane_normal, &i0, &i1, &i2) < 0.001f) {
+	if (representativeTriangleFromWinding(winding, planeNormal, &i0, &i1, &i2) < 0.001f) {
 		// do nothing if it is counter clock-wise
 		return false;
 	}
@@ -815,39 +815,39 @@ bool Collision::build_brush_winding_for_side(winding_t* winding, const float* pl
 	// winding is clock-wise ..
 
 	// create a temp plane
-	plane_from_points(&*plane, winding->p[i0], winding->p[i1], winding->p[i2]);
+	planeFromPoints(&*plane, winding->p[i0], winding->p[i1], winding->p[i2]);
 
 	// if our winding has a clock-wise winding, reverse it
-	if (mm::dot3(plane, plane_normal) > 0.0f) {
-		reverse_winding(winding);
+	if (mm::dot3(plane, planeNormal) > 0.0f) {
+		reverseWinding(winding);
 	}
 
 	return true;
 }
 
 // create plane for intersection (CM_GetPlaneVec4Form)
-void Collision::get_plane_vec4(const cbrushside_t* sides, const AxialPlane_t* axial_planes, const int index, float* expanded_plane)
+void Collision::getPlaneVec4(const cbrushside_t* sides, const AxialPlane_t* axialPlanes, const int index, float* expandedPlane)
 {
 	if (index >= 6) {
 		if (!sides) {
 			return;
 		}
 
-		expanded_plane[0] = sides[index - 6].plane->normal[0];
-		expanded_plane[1] = sides[index - 6].plane->normal[1];
-		expanded_plane[2] = sides[index - 6].plane->normal[2];
-		expanded_plane[3] = sides[index - 6].plane->dist;
+		expandedPlane[0] = sides[index - 6].plane->normal[0];
+		expandedPlane[1] = sides[index - 6].plane->normal[1];
+		expandedPlane[2] = sides[index - 6].plane->normal[2];
+		expandedPlane[3] = sides[index - 6].plane->dist;
 	}
 	else {
-		expanded_plane[0] = axial_planes[index].plane.x;
-		expanded_plane[1] = axial_planes[index].plane.y;
-		expanded_plane[2] = axial_planes[index].plane.z;
-		expanded_plane[3] = axial_planes[index].dist;
+		expandedPlane[0] = axialPlanes[index].plane.x;
+		expandedPlane[1] = axialPlanes[index].plane.y;
+		expandedPlane[2] = axialPlanes[index].plane.z;
+		expandedPlane[3] = axialPlanes[index].dist;
 	}
 }
 
 // intersect 3 planes
-int Collision::intersect_planes(const float* plane0, const float* plane1, const float* plane2, float* xyz)
+int Collision::intersectPlanes(const float* plane0, const float* plane1, const float* plane2, float* xyz)
 {
 	float determinant;
 
@@ -876,23 +876,23 @@ int Collision::intersect_planes(const float* plane0, const float* plane1, const 
 	return 1;
 }
 
-bool Collision::is_on_grid(const float* snapped, const float* xyz)
+bool Collision::isOnGrid(const float* snapped, const float* xyz)
 {
 	return xyz[0] == snapped[0] && xyz[1] == snapped[1] && xyz[2] == snapped[2];
 }
 
-void Collision::snap_point_to_intersecting_planes(const float* plane0, const float* plane1, const float* plane2, float* xyz, float snap_grid, const float snap_epsilon)
+void Collision::snapPointToIntersectingPlanes(const float* plane0, const float* plane1, const float* plane2, float* xyz, float snapGrid, const float snapEpsilon)
 {
-	float snapped[3], current_plane[4];
+	float snapped[3], currentPlane[4];
 
-	snap_grid = 1.0f / snap_grid;
+	snapGrid = 1.0f / snapGrid;
 
 	// cod4map
 	for (auto axis = 0; axis < 3; ++axis) {
-		const float rounded = round(xyz[axis] * snap_grid) / snap_grid;
+		const float rounded = round(xyz[axis] * snapGrid) / snapGrid;
 		const float delta = fabs(rounded - xyz[axis]);
 
-		if (snap_epsilon <= delta) {
+		if (snapEpsilon <= delta) {
 			snapped[axis] = xyz[axis];
 		}
 		else {
@@ -900,33 +900,33 @@ void Collision::snap_point_to_intersecting_planes(const float* plane0, const flo
 		}
 	}
 
-	if (!is_on_grid(snapped, xyz)) {
-		float max_snap_error = 0.0f;
-		float max_base_error = snap_epsilon;
+	if (!isOnGrid(snapped, xyz)) {
+		float maxSnapError = 0.0f;
+		float maxBaseError = snapEpsilon;
 
-		for (auto plane_index = 0; plane_index < 3; ++plane_index) {
-			if (plane_index == 0) {
-				memcpy(&current_plane, plane0, sizeof(current_plane));
+		for (auto planeIndex = 0; planeIndex < 3; ++planeIndex) {
+			if (planeIndex == 0) {
+				memcpy(&currentPlane, plane0, sizeof(currentPlane));
 			}
-			else if (plane_index == 1) {
-				memcpy(&current_plane, plane1, sizeof(current_plane));
+			else if (planeIndex == 1) {
+				memcpy(&currentPlane, plane1, sizeof(currentPlane));
 			}
-			else if (plane_index == 2) {
-				memcpy(&current_plane, plane2, sizeof(current_plane));
-			}
-
-			const float snap_error = log((current_plane[0] * snapped[0] + current_plane[1] * snapped[1] + current_plane[2] * snapped[2]) - current_plane[3]);
-			if (snap_error > max_snap_error) {
-				max_snap_error = snap_error;
+			else if (planeIndex == 2) {
+				memcpy(&currentPlane, plane2, sizeof(currentPlane));
 			}
 
-			const float base_error = log((current_plane[0] * xyz[0] + current_plane[1] * xyz[1] + current_plane[2] * xyz[2]) - current_plane[3]);
-			if (base_error > max_base_error) {
-				max_base_error = base_error;
+			const float snapError = log((currentPlane[0] * snapped[0] + currentPlane[1] * snapped[1] + currentPlane[2] * snapped[2]) - currentPlane[3]);
+			if (snapError > maxSnapError) {
+				maxSnapError = snapError;
+			}
+
+			const float baseError = log((currentPlane[0] * xyz[0] + currentPlane[1] * xyz[1] + currentPlane[2] * xyz[2]) - currentPlane[3]);
+			if (baseError > maxBaseError) {
+				maxBaseError = baseError;
 			}
 		}
 
-		if (max_base_error > max_snap_error) {
+		if (maxBaseError > maxSnapError) {
 			xyz[0] = snapped[0];
 			xyz[1] = snapped[1];
 			xyz[2] = snapped[2];
@@ -935,43 +935,43 @@ void Collision::snap_point_to_intersecting_planes(const float* plane0, const flo
 }
 
 // add valid vertices from 3 plane intersections (CM_AddSimpleBrushPoint)
-int Collision::add_simple_brush_point(const cbrush_t* brush, const AxialPlane_t* axial_planes, const __int16* side_indices, const float* xyz, int pt_count, std::vector<ShowCollisionBrushPt>& brush_pts)
+int Collision::addSimpleBrushPoint(const cbrush_t* brush, const AxialPlane_t* axialPlanes, const __int16* sideIndices, const float* xyz, int ptCount, std::vector<ShowCollisionBrushPt>& brushPts)
 {
 	constexpr int CM_MAX_BRUSHPOINTS_FROM_INTERSECTIONS = 128;
 	if (!brush) {
 		return 0;
 	}
 
-	for (auto side_index = 0u; side_index < 6; ++side_index) {
-		if (((axial_planes[side_index].plane.x * xyz[0] + axial_planes[side_index].plane.y * xyz[1] + axial_planes[side_index].plane.z * xyz[2])
-			- axial_planes[side_index].dist) > 0.1f) {
-			return pt_count;
+	for (auto windingSideIndex = 0u; windingSideIndex < 6; ++windingSideIndex) {
+		if (((axialPlanes[windingSideIndex].plane.x * xyz[0] + axialPlanes[windingSideIndex].plane.y * xyz[1] + axialPlanes[windingSideIndex].plane.z * xyz[2])
+			- axialPlanes[windingSideIndex].dist) > 0.1f) {
+			return ptCount;
 		}
 	}
 
-	for (auto side_index = 0u; side_index < brush->numsides; ++side_index) {
-		const auto plane = brush->sides[side_index].plane;
+	for (auto windingSideIndex = 0u; windingSideIndex < brush->numsides; ++windingSideIndex) {
+		const auto plane = brush->sides[windingSideIndex].plane;
 
-		if (plane != brush->sides[side_indices[0] - 6].plane
-			&& plane != brush->sides[side_indices[1] - 6].plane
-			&& plane != brush->sides[side_indices[2] - 6].plane
+		if (plane != brush->sides[sideIndices[0] - 6].plane
+			&& plane != brush->sides[sideIndices[1] - 6].plane
+			&& plane != brush->sides[sideIndices[2] - 6].plane
 			&& ((plane->normal[0] * xyz[0]) + (plane->normal[1] * xyz[1]) + (plane->normal[2] * xyz[2]) - plane->dist) > 0.1f) {
-			return pt_count;
+			return ptCount;
 		}
 	}
 
-	if (pt_count > CM_MAX_BRUSHPOINTS_FROM_INTERSECTIONS - 2) // T5: 1024
+	if (ptCount > CM_MAX_BRUSHPOINTS_FROM_INTERSECTIONS - 2) // T5: 1024
 	{
-		return pt_count;
+		return ptCount;
 	}
 
-	brush_pts[pt_count].xyz[0] = xyz[0];
-	brush_pts[pt_count].xyz[1] = xyz[1];
-	brush_pts[pt_count].xyz[2] = xyz[2];
+	brushPts[ptCount].xyz[0] = xyz[0];
+	brushPts[ptCount].xyz[1] = xyz[1];
+	brushPts[ptCount].xyz[2] = xyz[2];
 
-	brush_pts[pt_count].sideIndex[0] = side_indices[0];
-	brush_pts[pt_count].sideIndex[1] = side_indices[1];
-	brush_pts[pt_count].sideIndex[2] = side_indices[2];
+	brushPts[ptCount].sideIndex[0] = sideIndices[0];
+	brushPts[ptCount].sideIndex[1] = sideIndices[1];
+	brushPts[ptCount].sideIndex[2] = sideIndices[2];
 
-	return pt_count + 1;
+	return ptCount + 1;
 }

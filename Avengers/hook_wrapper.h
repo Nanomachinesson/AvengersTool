@@ -18,30 +18,30 @@ enum hook_type_
 class hook
 {
 private:
-	void replace_call(int addr, int dest);
+	void replaceCall(int addr, int dest);
 	void replace(int addr, int dest);
 	void detour(int addr, int dest);
-	BYTE p_orig[5];
-	BYTE m_orig[5];
+	BYTE pOrig[5];
+	BYTE mOrig[5];
 	PLH::x86Detour* phook;
 public: //methods
-	BYTE local_orig[5];
+	BYTE localOrig[5];
 	void remove();
-	bool is_local_hooked();
+	bool isLocalHooked();
 	~hook()
 	{
 		remove();
 	}
-	hook() : address{}, phook{}, p_orig{}, m_orig{}, local_orig{}, destination{}, trampoline{}, hook_type{ hook_type_detour } { };
+	hook() : address{}, phook{}, pOrig{}, mOrig{}, localOrig{}, destination{}, trampoline{}, hookType{ hook_type_detour } { };
 	template<typename X, typename T>
 	hook(X addr, T dest, hook_type_ hooktype = hook_type_detour, int tramp = -1)
 	{
 
 		address = (int)addr;
 		destination = (int)dest;
-		hook_type = hooktype;
-		memcpy(m_orig, dest, sizeof(m_orig));
-		switch (hook_type)
+		hookType = hooktype;
+		memcpy(mOrig, dest, sizeof(mOrig));
+		switch (hookType)
 		{
 		case hook_type_detour:
 		{
@@ -51,13 +51,13 @@ public: //methods
 		case hook_type_replace_call:
 		{
 			trampoline = tramp;
-			replace_call((int)addr, (int)dest);
+			replaceCall((int)addr, (int)dest);
 			break;
 		}
 		case hook_type_jmp:
 		{
 			trampoline = tramp;
-			replace_call((int)addr, (int)dest);
+			replaceCall((int)addr, (int)dest);
 			break;
 		}
 		}
@@ -72,20 +72,20 @@ public: //variables
 	int destination;
 	int address;
 	int trampoline;
-	hook_type_ hook_type;
+	hook_type_ hookType;
 };
 class hook_wrapper
 {
 public:
-	std::unordered_map<std::string, hook*> hook_map;
+	std::unordered_map<std::string, hook*> hookMap;
 	template<typename X, typename T>
-	hook* Add(const std::string name, X addr, T fnc, hook_type_ type)
+	hook* add(const std::string name, X addr, T fnc, hook_type_ type)
 	{
 		hook* x = new hook(addr, fnc, type);
 		if (x)
 		{
-			hook_map[name] = x;
-			x->hook_type = type;
+			hookMap[name] = x;
+			x->hookType = type;
 		}
 		else
 		{
@@ -96,7 +96,7 @@ public:
 	hook_wrapper() = default;
 	~hook_wrapper()
 	{
-		for (auto& hook : hook_map)
+		for (auto& hook : hookMap)
 		{
 			hook.second->remove();
 			delete hook.second;

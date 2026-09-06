@@ -8,19 +8,19 @@ class render
 public:
 	render(class Avengers* openhud);
 	~render();
-	void init_graphics();
+	void initGraphics();
 	void endscene(LPDIRECT3DDEVICE9 pDevice);
 	void __cdecl enginedraw();
-	void invalidate_objects(LPDIRECT3DDEVICE9 pDevice);
-	void create_objects(LPDIRECT3DDEVICE9 pDevice);
-	void init_imgui(LPDIRECT3DDEVICE9 dev);
-	void add_callback(RenderCallback);
-	void SetupImGuiStyle2();
+	void invalidateObjects(LPDIRECT3DDEVICE9 pDevice);
+	void createObjects(LPDIRECT3DDEVICE9 pDevice);
+	void initImgui(LPDIRECT3DDEVICE9 dev);
+	void addCallback(RenderCallback);
+	void setupImGuiStyle2();
 	int endsceneAddress = 0;
 
 private:
-	bool imgui_initialized = false;
-	bool first_run_style = true;
-	std::vector<RenderCallback> callbacks_render{};
+	bool imguiInitialized = false;
+	bool firstRunStyle = true;
+	std::vector<RenderCallback> callbacksRender{};
 };
 

@@ -1,7 +1,8 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ui_position_marker.h"
+#include "ui_widgets.h"
 
-ImU32 ui_position_marker::im_vec4_to_im_col32(const ImVec4& color)
+ImU32 ui_position_marker::imVec4ToImCol32(const ImVec4& color)
 {
     return IM_COL32(
         static_cast<int>(color.x * 255),
@@ -18,9 +19,9 @@ ImVec4 ui_position_marker::invertColor(const ImVec4& color)
 ui_position_marker::ui_position_marker(Avengers* avengers) :
     avengers(avengers)
 {
-    avengers->inst_input->add_callback(VK_NUMPAD2, [this](UINT key_state) { return this->bindToggleWidget(key_state); });
-    avengers->inst_input->add_callback(VK_NUMPAD1, [this](UINT key_state) { return this->bindSetMarker(key_state); });
-    avengers->inst_input->add_callback(VK_NUMPAD3, [this](UINT key_state) { return this->bindToggleRenderMarkers(key_state); });
+    avengers->instInput->addCallback(VK_NUMPAD2, [this](UINT keyState) { return this->bindToggleWidget(keyState); });
+    avengers->instInput->addCallback(VK_NUMPAD1, [this](UINT keyState) { return this->bindSetMarker(keyState); });
+    avengers->instInput->addCallback(VK_NUMPAD3, [this](UINT keyState) { return this->bindToggleRenderMarkers(keyState); });
 }
 
 ui_position_marker::~ui_position_marker()
@@ -29,12 +30,12 @@ ui_position_marker::~ui_position_marker()
 
 void ui_position_marker::render()
 {
-    bool isConnected = avengers->inst_game->is_connected();
+    bool isConnected = avengers->instGame->isConnected();
 
     if (isConnected) {
-        std::string currentMap = avengers->inst_game->getMapName();
+        std::string currentMap = avengers->instGame->getMapName();
         if (initializedForMap != currentMap) {
-            avengers->load_markers();
+            avengers->loadMarkers();
             initializedForMap = currentMap;
         }
     }
@@ -42,7 +43,7 @@ void ui_position_marker::render()
         return;
     }
 
-    if (!avengers->inst_ui_menu->render_markers) {
+    if (!avengers->instUiMenu->renderMarkers) {
         return;
     }
 
@@ -54,15 +55,15 @@ void ui_position_marker::render()
 
     bool centerDrawn = false;
     for (std::size_t i = 0; i < markers.size(); i++) {
-        vec3<float> playerPos = avengers->inst_game->get_origin();
+        vec3<float> playerPos = avengers->instGame->getOrigin();
         float lineWidth = LINE_WIDTH;
 
         Marker& marker = markers[i];
-        if (marker.position.Dist(playerPos) >= avengers->inst_ui_menu->marker_render_distance) {
+        if (marker.position.dist(playerPos) >= avengers->instUiMenu->markerRenderDistance) {
             continue;
         }
 
-        float markerDist = marker.position.Dist(playerPos);
+        float markerDist = marker.position.dist(playerPos);
         if (markerDist >= FADEOUT_DIST) {
             lineWidth = std::fmaxf(LINE_WIDTH * (FADEOUT_DIST / (markerDist * 2.f)), 1.f);
         }
@@ -76,64 +77,64 @@ void ui_position_marker::render()
         vec3<float> anglingHelper2(pos1.x + ANGLE_WIDTH, pos1.y, pos1.z + LINE_HEIGHT);
         float angleToRotate = marker.angles.y;
         float angleToRotate180 = mm::normalise(marker.angles.y + 180.f, 0.f, 360.f);
-        vec2<float> rotated = mm::rotate_point(vec2<float>(anglingHelper2.x, anglingHelper2.y), vec2<float>(anglingHelper1.x, anglingHelper1.y), angleToRotate);
+        vec2<float> rotated = mm::rotatePoint(vec2<float>(anglingHelper2.x, anglingHelper2.y), vec2<float>(anglingHelper1.x, anglingHelper1.y), angleToRotate);
         anglingHelper2.x = rotated.x;
         anglingHelper2.y = rotated.y;
 
         ImDrawList* backgroundDrawList = ImGui::GetBackgroundDrawList();
 
-        if (!avengers->inst_ui_menu->use_legacy_markers) {
+        if (!avengers->instUiMenu->useLegacyMarkers) {
             ImVec2 screen1;
             ImVec2 screen2;
             ImVec2 screenAngle1;
             ImVec2 screenAngle2;
 
-            bool v1 = avengers->inst_game->world_to_screen(pos1, &screen1.x, &screen1.y);
-            bool v2 = avengers->inst_game->world_to_screen(pos2, &screen2.x, &screen2.y);
+            bool v1 = avengers->instGame->worldToScreen(pos1, &screen1.x, &screen1.y);
+            bool v2 = avengers->instGame->worldToScreen(pos2, &screen2.x, &screen2.y);
 
-            bool sa1 = avengers->inst_game->world_to_screen(anglingHelper1, &screenAngle1.x, &screenAngle1.y);
-            bool sa2 = avengers->inst_game->world_to_screen(anglingHelper2, &screenAngle2.x, &screenAngle2.y);
+            bool sa1 = avengers->instGame->worldToScreen(anglingHelper1, &screenAngle1.x, &screenAngle1.y);
+            bool sa2 = avengers->instGame->worldToScreen(anglingHelper2, &screenAngle2.x, &screenAngle2.y);
 
             if (v1 && v2) {
-                backgroundDrawList->AddLine(screen1, screen2, im_vec4_to_im_col32(color), lineWidth);
-                backgroundDrawList->AddCircleFilled(screen1, CIRCLE_RADIUS, im_vec4_to_im_col32(invertColor(color)), 36.f);
+                backgroundDrawList->AddLine(screen1, screen2, imVec4ToImCol32(color), lineWidth);
+                backgroundDrawList->AddCircleFilled(screen1, CIRCLE_RADIUS, imVec4ToImCol32(invertColor(color)), 36.f);
             }
 
             if (sa1 && sa2) {
-                backgroundDrawList->AddLine(screenAngle1, screenAngle2, im_vec4_to_im_col32(invertColor(color)), lineWidth);
+                backgroundDrawList->AddLine(screenAngle1, screenAngle2, imVec4ToImCol32(invertColor(color)), lineWidth);
             }
         }
         else {
             ImVec2 screen;
             ImDrawList* drawList = ImGui::GetBackgroundDrawList();
 
-            avengers->inst_game->world_to_screen(marker.position, &screen.x, &screen.y);
+            avengers->instGame->worldToScreen(marker.position, &screen.x, &screen.y);
 
-            ImU32 outlineColor = im_vec4_to_im_col32(color);
+            ImU32 outlineColor = imVec4ToImCol32(color);
             int numSegments = 8;
 
-            float distance = avengers->gameState->origin.Dist(marker.position);
+            float distance = avengers->gameState->origin.dist(marker.position);
 
-            const float min_radius = 1.0f;
-            const float max_radius = CIRCLE_RADIUS * 5;
+            const float minRadius = 1.0f;
+            const float maxRadius = CIRCLE_RADIUS * 5;
 
             //make the circle get smaller and disappear if the player is over 512 units from the centre
-            unsigned int new_radius = min_radius + (max_radius - min_radius) * (min_radius - distance / 512.0f);
+            unsigned int newRadius = minRadius + (maxRadius - minRadius) * (minRadius - distance / 512.0f);
 
-            drawList->AddCircle(screen, new_radius, outlineColor, numSegments, 2);
+            drawList->AddCircle(screen, newRadius, outlineColor, numSegments, 2);
         }
 
         constexpr float HELPER_CIRCLE_RADIUS = 30.f;
         constexpr float WINDOW_SIZE = 200.f;
         constexpr float WINDOW_OFFSET = 200.f;
-        float widgetRenderDist = avengers->inst_ui_menu->widget_render_distance;
+        float widgetRenderDist = avengers->instUiMenu->widgetRenderDistance;
 
-        if (((avengers->inst_ui_menu->positioning_helper_onlyonground && avengers->gameState->onGround) || !avengers->inst_ui_menu->positioning_helper_onlyonground)
-            && avengers->inst_ui_menu->positioning_helper && marker.position.Dist(playerPos) <= widgetRenderDist) {
+        if (((avengers->instUiMenu->positioningHelperOnlyonground && avengers->gameState->onGround) || !avengers->instUiMenu->positioningHelperOnlyonground)
+            && avengers->instUiMenu->positioningHelper && marker.position.dist(playerPos) <= widgetRenderDist) {
             vec3<float> dist = playerPos - marker.position;
 
             ImGui::SetNextWindowSize(ImVec2(WINDOW_SIZE, WINDOW_SIZE));
-            ImGui::SetNextWindowPos(ImVec2(avengers->inst_game->get_screen_res().x / 2.f - WINDOW_SIZE / 2.f, avengers->inst_game->get_screen_res().y / 2.f - WINDOW_SIZE / 2.f + WINDOW_OFFSET));
+            ImGui::SetNextWindowPos(ImVec2(avengers->instGame->getScreenRes().x / 2.f - WINDOW_SIZE / 2.f, avengers->instGame->getScreenRes().y / 2.f - WINDOW_SIZE / 2.f + WINDOW_OFFSET));
             
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
             ImGui::Begin("Positioning Helper", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
@@ -141,13 +142,13 @@ void ui_position_marker::render()
             ImVec2 centerPos = ImVec2(ImGui::GetWindowPos().x + (ImGui::GetWindowSize().x / 2.f), ImGui::GetWindowPos().y + (ImGui::GetWindowSize().y / 2.f));
             ImVec2 markerPos = ImVec2(centerPos.x - dist.x, centerPos.y + dist.y);
 
-            ImGui::GetWindowDrawList()->AddCircleFilled(markerPos, HELPER_CIRCLE_RADIUS, im_vec4_to_im_col32(marker.color));
-            vec2<float> rotated = mm::rotate_point(vec2<float>(markerPos.x - HELPER_CIRCLE_RADIUS - 20.f, markerPos.y), vec2<float>(markerPos.x, markerPos.y), mm::normalise(360.f - angleToRotate180, 0.f, 360.f));
-            ImGui::GetWindowDrawList()->AddLine(markerPos, ImVec2(rotated.x, rotated.y), im_vec4_to_im_col32(invertColor(marker.color)), 1.f);
+            ImGui::GetWindowDrawList()->AddCircleFilled(markerPos, HELPER_CIRCLE_RADIUS, imVec4ToImCol32(marker.color));
+            vec2<float> rotated = mm::rotatePoint(vec2<float>(markerPos.x - HELPER_CIRCLE_RADIUS - 20.f, markerPos.y), vec2<float>(markerPos.x, markerPos.y), mm::normalise(360.f - angleToRotate180, 0.f, 360.f));
+            ImGui::GetWindowDrawList()->AddLine(markerPos, ImVec2(rotated.x, rotated.y), imVec4ToImCol32(invertColor(marker.color)), 1.f);
 
             if (!centerDrawn) {
                 ImGui::GetWindowDrawList()->AddCircleFilled(centerPos, HELPER_CIRCLE_RADIUS, ImColor(0.5f, 0.5f, 0.5f, 0.8f));
-                vec2<float> rotatedCenter = mm::rotate_point(vec2<float>(centerPos.x + HELPER_CIRCLE_RADIUS + 20.f, centerPos.y), vec2<float>(centerPos.x, centerPos.y), mm::normalise(-1.f * avengers->inst_game->get_view().y, 0.f, 360.f));
+                vec2<float> rotatedCenter = mm::rotatePoint(vec2<float>(centerPos.x + HELPER_CIRCLE_RADIUS + 20.f, centerPos.y), vec2<float>(centerPos.x, centerPos.y), mm::normalise(-1.f * avengers->instGame->getView().y, 0.f, 360.f));
                 
                 ImGui::GetWindowDrawList()->AddLine(centerPos, ImVec2(rotatedCenter.x, rotatedCenter.y), ImColor(1.f, 1.f, 1.f, 1.f), 1.f);
                 centerDrawn = true;
@@ -160,16 +161,16 @@ void ui_position_marker::render()
 
 void ui_position_marker::addMarker()
 {
-    Marker marker(avengers->gameState->origin, avengers->inst_game->get_view(), selectedColor);
+    Marker marker(avengers->gameState->origin, avengers->instGame->getView(), selectedColor);
     markers.push_back(marker);
-    avengers->save_markers();
+    avengers->saveMarkers();
 }
 
 bool ui_position_marker::bindSetMarker(UINT keyState)
 {
     if (keyState == WM_KEYUP) {
-        if (avengers->inst_ui_menu->use_marker_binds) {
-            avengers->inst_game->add_obituary("Marker set");
+        if (avengers->instUiMenu->useMarkerBinds) {
+            avengers->instGame->addObituary("Marker set");
             addMarker();
         }
     }
@@ -179,9 +180,9 @@ bool ui_position_marker::bindSetMarker(UINT keyState)
 bool ui_position_marker::bindToggleWidget(UINT keyState)
 {
     if (keyState == WM_KEYUP) {
-        if (avengers->inst_ui_menu->use_marker_binds) {
-            avengers->inst_game->add_obituary("Positioning widget toggled");
-            avengers->inst_ui_menu->positioning_helper = !avengers->inst_ui_menu->positioning_helper;
+        if (avengers->instUiMenu->useMarkerBinds) {
+            avengers->instGame->addObituary("Positioning widget toggled");
+            avengers->instUiMenu->positioningHelper = !avengers->instUiMenu->positioningHelper;
         }
     }
     return false;
@@ -190,9 +191,9 @@ bool ui_position_marker::bindToggleWidget(UINT keyState)
 bool ui_position_marker::bindToggleRenderMarkers(UINT keyState)
 {
     if (keyState == WM_KEYUP) {
-        if (avengers->inst_ui_menu->use_marker_binds) {
-            avengers->inst_game->add_obituary("Marker rendering toggled");
-            avengers->inst_ui_menu->render_markers = !avengers->inst_ui_menu->render_markers;
+        if (avengers->instUiMenu->useMarkerBinds) {
+            avengers->instGame->addObituary("Marker rendering toggled");
+            avengers->instUiMenu->renderMarkers = !avengers->instUiMenu->renderMarkers;
         }
     }
     return false;
@@ -201,12 +202,12 @@ bool ui_position_marker::bindToggleRenderMarkers(UINT keyState)
 void ui_position_marker::menu()
 {
     int closestMarkerIndex = -1;
-    if (avengers->inst_game->is_connected() && !markers.empty()) {
-        vec3<float> playerPos = avengers->inst_game->get_origin();
+    if (avengers->instGame->isConnected() && !markers.empty()) {
+        vec3<float> playerPos = avengers->instGame->getOrigin();
         float closestDistance = 0.f;
 
         for (int i = 0; i < static_cast<int>(markers.size()); ++i) {
-            float markerDistance = markers[i].position.Dist(playerPos);
+            float markerDistance = markers[i].position.dist(playerPos);
             if (closestMarkerIndex == -1 || markerDistance < closestDistance) {
                 closestDistance = markerDistance;
                 closestMarkerIndex = i;
@@ -214,7 +215,7 @@ void ui_position_marker::menu()
         }
     }
 
-    bool isConnected = avengers->inst_game->is_connected();
+    bool isConnected = avengers->instGame->isConnected();
 
     if (!isConnected) {
         ImGui::PushItemFlag(ImGuiItemFlags_::ImGuiItemFlags_Disabled, true);
@@ -237,45 +238,37 @@ void ui_position_marker::menu()
     if (ImGui::BeginPopup("MarkerColorPickerPopup")) {
         ImGui::ColorPicker4("Marker Color Picker", &selectedColor.x);
         ImGui::EndPopup();
-        avengers->save_configuration();
+        avengers->saveConfiguration();
     }
     ImGui::SameLine();
-    if (ImGui::Checkbox("Render Markers", &avengers->inst_ui_menu->render_markers)) {
-        avengers->save_configuration();
+    if (ImGui::Checkbox("Render Markers", &avengers->instUiMenu->renderMarkers)) {
+        avengers->saveConfiguration();
     }
     ImGui::SameLine();
-    if (ImGui::Checkbox("Allow Binds", &avengers->inst_ui_menu->use_marker_binds)) {
-        avengers->save_configuration();
+    if (ImGui::Checkbox("Allow Binds", &avengers->instUiMenu->useMarkerBinds)) {
+        avengers->saveConfiguration();
     }
-    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
-        ImGui::SetTooltip("Numpad 1: Set a marker\nNumpad 2: Toggle the positioning helper\nNumpad 3: Toggle marker rendering");
-    }
+    uiw::checkboxTooltip("Numpad 1: Set a marker\nNumpad 2: Toggle the positioning helper\nNumpad 3: Toggle marker rendering");
     ImGui::PushItemWidth(430.f);
-    if (ImGui::SliderFloat("Marker Render Distance", &avengers->inst_ui_menu->marker_render_distance, 0.f, 50000.f)) {
-        avengers->save_configuration();
+    if (ImGui::SliderFloat("Marker Render Distance", &avengers->instUiMenu->markerRenderDistance, 0.f, 50000.f)) {
+        avengers->saveConfiguration();
     }
-    if (ImGui::Checkbox("Positioning Helper", &avengers->inst_ui_menu->positioning_helper)) {
-        avengers->save_configuration();
+    if (ImGui::Checkbox("Positioning Helper", &avengers->instUiMenu->positioningHelper)) {
+        avengers->saveConfiguration();
     }
-    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
-        ImGui::SetTooltip("Displays a positioning helper for nearby markers");
-    }
+    uiw::checkboxTooltip("Displays a positioning helper for nearby markers");
     ImGui::SameLine();
-    if (ImGui::Checkbox("Only on ground", &avengers->inst_ui_menu->positioning_helper_onlyonground)) {
-        avengers->save_configuration();
+    if (ImGui::Checkbox("Only on ground", &avengers->instUiMenu->positioningHelperOnlyonground)) {
+        avengers->saveConfiguration();
     }
-    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
-        ImGui::SetTooltip("Only displays the positioning helper while on the ground");
-    }
+    uiw::checkboxTooltip("Only displays the positioning helper while on the ground");
     ImGui::SameLine();
-    if (ImGui::Checkbox("Use legacy markers", &avengers->inst_ui_menu->use_legacy_markers)) {
-        avengers->save_configuration();
+    if (ImGui::Checkbox("Use legacy markers", &avengers->instUiMenu->useLegacyMarkers)) {
+        avengers->saveConfiguration();
     }
-    if (ImGui::IsItemHovered() && avengers->inst_ui_menu->shouldDisplayTooltips()) {
-        ImGui::SetTooltip("Renders a red circle instead of a vertical line");
-    }
-    if (ImGui::SliderFloat("Widget Render Distance", &avengers->inst_ui_menu->widget_render_distance, 0.f, 500.f)) {
-        avengers->save_configuration();
+    uiw::checkboxTooltip("Renders a red circle instead of a vertical line");
+    if (ImGui::SliderFloat("Widget Render Distance", &avengers->instUiMenu->widgetRenderDistance, 0.f, 500.f)) {
+        avengers->saveConfiguration();
     }
     ImGui::PopItemWidth();
 
@@ -305,7 +298,7 @@ void ui_position_marker::menu()
 
         if (ImGui::Button("Delete")) {
             markers.erase(markers.begin() + i);
-            avengers->save_markers();
+            avengers->saveMarkers();
             if (isClosestMarker) {
                 closestMarkerIndex = -1;
             }
@@ -314,18 +307,18 @@ void ui_position_marker::menu()
             continue;
         }
 
-        if (avengers->inst_game->isDevmap()) {
+        if (avengers->instGame->isDevmap()) {
             ImGui::SameLine();
             if (ImGui::Button("Teleport")) {
-                avengers->inst_game->setPosition(m.position);
-                avengers->inst_game->setView(m.angles);
+                avengers->instGame->setPosition(m.position);
+                avengers->instGame->setView(m.angles);
             }
         }
 
         if (ImGui::BeginPopup(popupName.c_str())) {
             ImGui::ColorPicker4("Marker Color Picker", &m.color.x);
             ImGui::EndPopup();
-            avengers->save_markers();
+            avengers->saveMarkers();
         }
 
         ImGui::PopID();

@@ -9,7 +9,7 @@ void ui_settings::render()
 }
 ui_settings::ui_settings(Avengers* hud)
 {
-	hud->inst_render->add_callback([this]() { this->render(); });
+	hud->instRender->addCallback([this]() { this->render(); });
 
 }
 ui_settings::~ui_settings()

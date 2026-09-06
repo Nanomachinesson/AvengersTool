@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ui_fps_image.h"
 #include "Avengers.h"
 
@@ -8,7 +8,7 @@
 
 void ui_fps_image::render()
 {
-    Avengers* hud = Avengers::get_instance();
+    Avengers* hud = Avengers::getInstance();
 	
 	static LPDIRECT3DTEXTURE9 texture1 = nullptr;
 	static LPDIRECT3DTEXTURE9 texture2 = nullptr;
@@ -26,20 +26,20 @@ void ui_fps_image::render()
 	static int height = 0;
 
 	static bool init = false;
-	float scale = hud->inst_ui_demoplayer->image_scale;
+	float scale = hud->instUiDemoplayer->imageScale;
 
 	if (!init) {
-		load_texture_from_file("1.png", &texture1, &width, &height);
-		load_texture_from_file("2.png", &texture2, &width, &height);
-		load_texture_from_file("3.png", &texture3, &width, &height);
-		load_texture_from_file("4.png", &texture4, &width, &height);
-		load_texture_from_file("5.png", &texture5, &width, &height);
-		load_texture_from_file("6.png", &texture6, &width, &height);
-		load_texture_from_file("0.png", &texture0, &width, &height);
-		load_texture_from_file("15.png", &texture15, &width, &height);
-		load_texture_from_file("40.png", &texture40, &width, &height);
-		load_texture_from_file("76.png", &texture76, &width, &height);
-		load_texture_from_file("1000.png", &texture1000, &width, &height);
+		loadTextureFromFile("1.png", &texture1, &width, &height);
+		loadTextureFromFile("2.png", &texture2, &width, &height);
+		loadTextureFromFile("3.png", &texture3, &width, &height);
+		loadTextureFromFile("4.png", &texture4, &width, &height);
+		loadTextureFromFile("5.png", &texture5, &width, &height);
+		loadTextureFromFile("6.png", &texture6, &width, &height);
+		loadTextureFromFile("0.png", &texture0, &width, &height);
+		loadTextureFromFile("15.png", &texture15, &width, &height);
+		loadTextureFromFile("40.png", &texture40, &width, &height);
+		loadTextureFromFile("76.png", &texture76, &width, &height);
+		loadTextureFromFile("1000.png", &texture1000, &width, &height);
 		init = true;
 	}
 
@@ -47,11 +47,11 @@ void ui_fps_image::render()
 	ImGui::Begin("Written by Wilhelm uwu", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
 	
 	int fps = 0;
-	if (hud->inst_ui_demoplayer->threexp) {
-		fps = hud->inst_game->get_fps_3_xp();
+	if (hud->instUiDemoplayer->threexp) {
+		fps = hud->instGame->getFps3Xp();
 	}
 	else {
-		fps = hud->inst_game->get_fps_wtmod();
+		fps = hud->instGame->getFpsWtmod();
 	}
 
 	switch (fps)
@@ -97,7 +97,7 @@ void ui_fps_image::render()
 	ImGui::End();
 }
 
-bool ui_fps_image::load_texture_from_file(const char* filename, PDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height)
+bool ui_fps_image::loadTextureFromFile(const char* filename, PDIRECT3DTEXTURE9* outTexture, int* outWidth, int* outHeight)
 {
     // Load texture from disk
     PDIRECT3DTEXTURE9 texture;
@@ -107,12 +107,12 @@ bool ui_fps_image::load_texture_from_file(const char* filename, PDIRECT3DTEXTURE
         return false;
 
     // Retrieve description of the texture surface so we can access its size
-    D3DSURFACE_DESC my_image_desc;
-    texture->GetLevelDesc(0, &my_image_desc);
-    *out_texture = texture;
+    D3DSURFACE_DESC myImageDesc;
+    texture->GetLevelDesc(0, &myImageDesc);
+    *outTexture = texture;
 
     int c;
-    stbi_load(filename, out_width, out_height, &c, 0);
+    stbi_load(filename, outWidth, outHeight, &c, 0);
 	
     return true;
 }
